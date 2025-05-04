@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import MilkdownEditor from './components/MilkdownEditor'
 import MainLayout from './components/MainLayout'
 import ExportToolbar from './components/ExportToolbar'
@@ -35,28 +35,29 @@ function helloWorld() {
 | Row 2 | Data 2 |
 `);
 
-  const handleMarkdownChange = (newMarkdown) => {
+  // Wrap handleMarkdownChange with useCallback
+  const handleMarkdownChange = useCallback((newMarkdown) => {
     setMarkdown(newMarkdown);
-  };
+  }, []); // Empty dependency array means the function reference is stable
 
   return (
     <MainLayout>
       <ExportToolbar markdown={markdown} />
-      
+
       <div className="editor-container">
         <div className="editor-section">
           <h2>Editor</h2>
-          <MilkdownEditor 
-            markdown={markdown} 
-            onChange={handleMarkdownChange} 
+          <MilkdownEditor
+            markdown={markdown}
+            onChange={handleMarkdownChange}
           />
         </div>
 
         <div className="preview-section">
           <h2>Raw Markdown</h2>
-          <MarkdownCodeEditor 
-            value={markdown} 
-            onChange={handleMarkdownChange} 
+          <MarkdownCodeEditor
+            value={markdown}
+            onChange={handleMarkdownChange}
           />
         </div>
       </div>
