@@ -1,42 +1,103 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #242933;
+  color: #e5e9f0;
+}
+
 #root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 1rem 2rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.app-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #3b4252;
+  padding-bottom: 1rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.app-header h1 {
+  margin: 0;
+  color: #88c0d0;
+  font-size: 2.5rem;
+}
+
+.app-header p {
+  margin: 0.5rem 0 0;
+  color: #81a1c1;
+  font-size: 1.1rem;
+}
+
+.editor-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .editor-container {
+    grid-template-columns: 1fr 1fr;
   }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.editor-section,
+.preview-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.card {
-  padding: 2em;
+.editor-section h2,
+.preview-section h2 {
+  margin-top: 0;
+  color: #88c0d0;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.read-the-docs {
-  color: #888;
+/* Export Toolbar Styles */
+.export-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.export-button {
+  background-color: #5e81ac;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.export-button:hover {
+  background-color: #81a1c1;
+}
+
+.export-button:active {
+  background-color: #4c566a;
+}
+
+.markdown-preview {
+  background-color: #2e3440;
+  border-radius: 4px;
+  padding: 1rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  height: 300px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #d8dee9;
+  border: 1px solid #3b4252;
 }

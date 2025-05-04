@@ -1,0 +1,112 @@
+/* MilkdownEditor.css */
+
+.milkdown-editor-wrapper {
+  border: 1px solid #2e3440;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #2e3440;
+  color: #d8dee9;
+  min-height: 300px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.milkdown-loading {
+  padding: 20px;
+  text-align: center;
+  color: #81a1c1;
+  background-color: #2e3440;
+  font-size: 14px;
+}
+
+.milkdown-editor {
+  height: 100%;
+  min-height: 300px;
+}
+
+/* Override Nord theme styles for better contrast */
+.milkdown-editor .editor {
+  padding: 16px;
+  line-height: 1.6;
+}
+
+/* Style for code blocks */
+.milkdown-editor pre {
+  background-color: #3b4252 !important;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+/* Style for inline code */
+.milkdown-editor code {
+  background-color: #3b4252;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* Headings */
+.milkdown-editor h1, 
+.milkdown-editor h2, 
+.milkdown-editor h3, 
+.milkdown-editor h4, 
+.milkdown-editor h5, 
+.milkdown-editor h6 {
+  color: #88c0d0;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Links */
+.milkdown-editor a {
+  color: #8fbcbb;
+  text-decoration: none;
+}
+
+.milkdown-editor a:hover {
+  text-decoration: underline;
+}
+
+/* Blockquotes */
+.milkdown-editor blockquote {
+  border-left: 4px solid #4c566a;
+  margin-left: 0;
+  padding-left: 16px;
+  color: #9eaec7;
+}
+
+/* Tables */
+.milkdown-editor table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.milkdown-editor table th,
+.milkdown-editor table td {
+  border: 1px solid #4c566a;
+  padding: 8px 12px;
+}
+
+.milkdown-editor table th {
+  background-color: #3b4252;
+}
+
+/* Lists */
+.milkdown-editor ul,
+.milkdown-editor ol {
+  padding-left: 24px;
+}
+
+.milkdown-editor li + li {
+  margin-top: 4px;
+}
+
+/* Horizontal rule */
+.milkdown-editor hr {
+  border: none;
+  height: 1px;
+  background-color: #4c566a;
+  margin: 24px 0;
+}

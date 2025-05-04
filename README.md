@@ -1,12 +1,56 @@
-# React + Vite
+# MarkWrite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern Markdown editor built with React, Vite, and Milkdown.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- GitHub Flavored Markdown support
+- Nord dark theme
+- Real-time preview
+- Export to PDF and DOCX
+- Code syntax highlighting
 
-## Expanding the ESLint configuration
+## Technologies
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React for UI components
+- Vite for fast builds and development
+- Milkdown for the Markdown editor
+- html2pdf.js for PDF export
+- docx for DOCX export
+- react-simple-code-editor and Prism.js for the Markdown editor mode
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or newer)
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/markwrite.git
+cd markwrite
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+## Usage
+
+1. Write your Markdown in the editor on the left side
+2. See the raw Markdown on the right side
+3. Use the export buttons to save as PDF or DOCX
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [Milkdown](https://milkdown.dev/) - The WYSIWYG Markdown editor framework
+- [Nord Theme](https://www.nordtheme.com/) - The color palette used in the editor

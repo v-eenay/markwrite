@@ -1,34 +1,66 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import MilkdownEditor from './components/MilkdownEditor'
+import MainLayout from './components/MainLayout'
+import ExportToolbar from './components/ExportToolbar'
+import MarkdownCodeEditor from './components/MarkdownCodeEditor'
 import './App.css'
+import './styles/MilkdownEditor.css'
+import './styles/milkdown-styles.css'
+import 'prismjs/themes/prism-tomorrow.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [markdown, setMarkdown] = useState(`# MarkWrite
+
+A powerful Markdown editor built with React and Milkdown.
+
+## Features
+
+- GitHub Flavored Markdown support
+- Dark theme (Nord)
+- Real-time preview
+- Export to PDF and DOCX (coming soon)
+
+\`\`\`js
+// Example code block
+function helloWorld() {
+  console.log("Hello, world!");
+}
+\`\`\`
+
+> This is a blockquote example.
+
+| Table | Example |
+|-------|--------|
+| Row 1 | Data 1 |
+| Row 2 | Data 2 |
+`);
+
+  const handleMarkdownChange = (newMarkdown) => {
+    setMarkdown(newMarkdown);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <MainLayout>
+      <ExportToolbar markdown={markdown} />
+      
+      <div className="editor-container">
+        <div className="editor-section">
+          <h2>Editor</h2>
+          <MilkdownEditor 
+            markdown={markdown} 
+            onChange={handleMarkdownChange} 
+          />
+        </div>
+
+        <div className="preview-section">
+          <h2>Raw Markdown</h2>
+          <MarkdownCodeEditor 
+            value={markdown} 
+            onChange={handleMarkdownChange} 
+          />
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </MainLayout>
   )
 }
 
