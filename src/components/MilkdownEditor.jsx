@@ -4,6 +4,8 @@ import { nord } from '@milkdown/theme-nord';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
+import { menu, menuDefaultConfig } from '@milkdown-lab/plugin-menu';
+import { slashFactory } from '@milkdown/plugin-slash';
 
 /**
  * MilkdownEditor - A React component that wraps the Milkdown editor
@@ -16,18 +18,22 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
   const editorRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [editor, setEditor] = useState(null);
+  const lastContentRef = useRef(markdown);
+  const updateTimeoutRef = useRef(null);
+  const isInternalUpdateRef = useRef(false);
 
-  // Initialize the editor
+  // Initialize the editor only once
   useEffect(() => {
     if (!editorRef.current) return;
 
     let isMounted = true;
-    let milkdownEditor = null;
 
     const createEditor = async () => {
       try {
-        // Create the editor
-        milkdownEditor = await Editor.make()
+        console.log('Initializing Milkdown editor...');
+
+        // Create the editor with all necessary plugins
+        const milkdownEditor = await Editor.make()
           .config((ctx) => {
             ctx.set(rootCtx, editorRef.current);
             ctx.set(defaultValueCtx, markdown);
@@ -36,14 +42,26 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
           .use(commonmark)
           .use(gfm)
           .use(listener)
+          .config(menuDefaultConfig)
+          .use(menu)
+          .use(slashFactory())
           .create();
 
         // Set up the listener for content changes
         milkdownEditor.action((ctx) => {
-          ctx.get(listenerCtx).markdownUpdated((_, markdownContent, prevMarkdownContent) => {
-            if (onChange && markdownContent !== prevMarkdownContent) {
-              onChange(markdownContent);
+          ctx.get(listenerCtx).markdownUpdated((_, markdownContent) => {
+            if (!onChange || isInternalUpdateRef.current) return;
+
+            // Clear any pending updates
+            if (updateTimeoutRef.current) {
+              clearTimeout(updateTimeoutRef.current);
             }
+
+            // Update with a small delay to prevent flickering
+            updateTimeoutRef.current = setTimeout(() => {
+              lastContentRef.current = markdownContent;
+              onChange(markdownContent);
+            }, 50);
           });
         });
 
@@ -64,34 +82,48 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
     // Cleanup function
     return () => {
       isMounted = false;
-      if (milkdownEditor) {
-        milkdownEditor.destroy();
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
       }
     };
-  }, []);
+  }, []); // Empty dependency array means this only runs once
 
   // Update editor content when markdown prop changes
   useEffect(() => {
     if (!editor || loading) return;
 
+    // Skip update if it's the same as our last known content
+    if (markdown === lastContentRef.current) return;
+
     try {
-      const currentContent = editor.getMarkdown();
-      if (currentContent !== markdown) {
-        editor.action((ctx) => {
-          ctx.get(commandsCtx).call('setContent', markdown);
-        });
-      }
+      // Mark this as an internal update to prevent feedback loops
+      isInternalUpdateRef.current = true;
+
+      // Update the editor content
+      editor.action((ctx) => {
+        ctx.get(commandsCtx).call('setContent', markdown);
+      });
+
+      // Update our reference to the current content
+      lastContentRef.current = markdown;
+
+      // Reset the internal update flag after a short delay
+      setTimeout(() => {
+        isInternalUpdateRef.current = false;
+      }, 50);
     } catch (error) {
       console.error('Error updating Milkdown content:', error);
+      isInternalUpdateRef.current = false;
     }
   }, [markdown, editor, loading]);
 
   return (
     <div className="milkdown-editor-wrapper">
-      {loading ? (
-        <div className="milkdown-loading">Loading editor...</div>
-      ) : (
-        <div className="milkdown-editor" ref={editorRef} />
+      <div className="milkdown-editor" ref={editorRef} />
+      {loading && (
+        <div className="milkdown-loading-overlay">
+          <div className="milkdown-loading">Loading editor...</div>
+        </div>
       )}
     </div>
   );
