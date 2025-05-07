@@ -92,8 +92,9 @@ const ContextMenu = ({ commands, position, onClose }) => {
  * @param {Object} props - Component props
  * @param {string} props.markdown - The markdown content to initialize the editor with
  * @param {Function} props.onChange - Callback function when content changes
+ * @param {string} props.updateSource - Source of the update ('rich' or 'code')
  */
-const MilkdownEditor = ({ markdown = '', onChange }) => {
+const MilkdownEditor = ({ markdown = '', onChange, updateSource }) => {
   const editorRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [editor, setEditor] = useState(null);
@@ -187,11 +188,11 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
               clearTimeout(updateTimeoutRef.current);
             }
 
-            // Update with a small delay to prevent flickering
+            // Update with a minimal delay for real-time synchronization
             updateTimeoutRef.current = setTimeout(() => {
               lastContentRef.current = markdownContent;
               onChange(markdownContent);
-            }, 50);
+            }, 10); // Reduced delay for faster response
           });
         });
 
@@ -225,6 +226,10 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
     // Skip update if it's the same as our last known content
     if (markdown === lastContentRef.current) return;
 
+    // Only update the editor if the change came from the code editor
+    // This prevents feedback loops and ensures smooth synchronization
+    if (updateSource !== 'code') return;
+
     try {
       // Mark this as an internal update to prevent feedback loops
       isInternalUpdateRef.current = true;
@@ -240,12 +245,12 @@ const MilkdownEditor = ({ markdown = '', onChange }) => {
       // Reset the internal update flag after a short delay
       setTimeout(() => {
         isInternalUpdateRef.current = false;
-      }, 50);
+      }, 10); // Reduced delay for faster response
     } catch (error) {
       console.error('Error updating Milkdown content:', error);
       isInternalUpdateRef.current = false;
     }
-  }, [markdown, editor, loading]);
+  }, [markdown, editor, loading, updateSource]);
 
   return (
     <div className="milkdown-editor-wrapper">

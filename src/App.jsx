@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import MilkdownEditor from './components/MilkdownEditor'
 import MainLayout from './components/MainLayout'
 import ExportToolbar from './components/ExportToolbar'
@@ -35,10 +35,20 @@ function helloWorld() {
 | Row 2 | Data 2 |
 `);
 
-  // Wrap handleMarkdownChange with useCallback
-  const handleMarkdownChange = useCallback((newMarkdown) => {
+  // Track the source of the update to prevent feedback loops
+  const updateSourceRef = useRef(null);
+
+  // Handle updates from the rich text editor
+  const handleRichEditorChange = useCallback((newMarkdown) => {
+    updateSourceRef.current = 'rich';
     setMarkdown(newMarkdown);
-  }, []); // Empty dependency array means the function reference is stable
+  }, []);
+
+  // Handle updates from the code editor
+  const handleCodeEditorChange = useCallback((newMarkdown) => {
+    updateSourceRef.current = 'code';
+    setMarkdown(newMarkdown);
+  }, []);
 
   return (
     <MainLayout>
@@ -49,7 +59,8 @@ function helloWorld() {
           <h2>Editor</h2>
           <MilkdownEditor
             markdown={markdown}
-            onChange={handleMarkdownChange}
+            onChange={handleRichEditorChange}
+            updateSource={updateSourceRef.current}
           />
         </div>
 
@@ -57,7 +68,8 @@ function helloWorld() {
           <h2>Raw Markdown</h2>
           <MarkdownCodeEditor
             value={markdown}
-            onChange={handleMarkdownChange}
+            onChange={handleCodeEditorChange}
+            updateSource={updateSourceRef.current}
           />
         </div>
       </div>

@@ -5,12 +5,24 @@ import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
 import './MarkdownCodeEditor.css';
 
-const MarkdownCodeEditor = ({ value, onChange }) => {
+/**
+ * MarkdownCodeEditor - A component for editing raw markdown with syntax highlighting
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.value - The markdown content
+ * @param {Function} props.onChange - Callback function when content changes
+ * @param {string} props.updateSource - Source of the update ('rich' or 'code')
+ */
+const MarkdownCodeEditor = ({ value, onChange, updateSource }) => {
   const lastValueRef = useRef(value);
   const timeoutRef = useRef(null);
+  const isInternalUpdateRef = useRef(false);
 
   // Debounced onChange handler to make updates smoother
   const handleCodeChange = (code) => {
+    // Skip if this is an internal update
+    if (isInternalUpdateRef.current) return;
+
     // Clear any pending updates
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -20,7 +32,7 @@ const MarkdownCodeEditor = ({ value, onChange }) => {
     timeoutRef.current = setTimeout(() => {
       lastValueRef.current = code;
       onChange(code);
-    }, 50);
+    }, 10); // Reduced delay for faster response
   };
 
   // Cleanup on unmount
@@ -34,10 +46,24 @@ const MarkdownCodeEditor = ({ value, onChange }) => {
 
   // Update local value when external value changes
   useEffect(() => {
-    if (value !== lastValueRef.current) {
-      lastValueRef.current = value;
-    }
-  }, [value]);
+    // Skip update if it's the same as our last known content
+    if (value === lastValueRef.current) return;
+
+    // Only update if the change came from the rich text editor
+    // This prevents feedback loops and ensures smooth synchronization
+    if (updateSource !== 'rich') return;
+
+    // Mark this as an internal update
+    isInternalUpdateRef.current = true;
+
+    // Update our reference to the current content
+    lastValueRef.current = value;
+
+    // Reset the internal update flag after a short delay
+    setTimeout(() => {
+      isInternalUpdateRef.current = false;
+    }, 10);
+  }, [value, updateSource]);
 
   return (
     <div className="markdown-code-editor">
