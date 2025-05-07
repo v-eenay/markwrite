@@ -1,0 +1,118 @@
+/* ToggleableEditor.css */
+
+.toggleable-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Toggle Switch Container */
+.editor-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: var(--bg-secondary, #12151f);
+  border-radius: 8px;
+  border: 1px solid var(--border-primary, #2a2f4a);
+}
+
+/* Toggle Labels */
+.toggle-label {
+  margin: 0 15px;
+  font-family: var(--font-display, 'Orbitron', sans-serif);
+  font-size: 14px;
+  color: var(--text-secondary, #b8c0e0);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.toggle-label .active {
+  color: var(--neon-cyan, #00f0ff);
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary, #1a1e2e);
+  transition: .4s;
+  border: 1px solid var(--border-primary, #2a2f4a);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--text-primary, #ffffff);
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--neon-cyan, #00f0ff);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--neon-cyan, #00f0ff);
+}
+
+input:checked + .slider:before {
+  transform: translateX(28px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Editor Container */
+.editor-container {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Animation for switching editors */
+.editor-container > div {
+  animation: fade-in 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

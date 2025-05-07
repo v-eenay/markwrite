@@ -4,6 +4,7 @@ import MainLayout from './components/MainLayout'
 import ExportToolbar from './components/ExportToolbar'
 import MarkdownCodeEditor from './components/MarkdownCodeEditor'
 import MilkdownReactEditorDemo from './components/MilkdownReactEditorDemo'
+import ToggleableEditor from './components/ToggleableEditor'
 import './App.css'
 import './styles/MilkdownEditor.css'
 import './styles/milkdown-styles.css'
@@ -36,8 +37,8 @@ function helloWorld() {
 | Row 2 | Data 2 |
 `);
 
-  // State to toggle between original editor and React-based editor
-  const [showReactEditor, setShowReactEditor] = useState(false);
+  // State to toggle between different editor modes
+  const [editorMode, setEditorMode] = useState('original'); // 'original', 'react', or 'toggleable'
 
   // Track the source of the update to prevent feedback loops
   const updateSourceRef = useRef(null);
@@ -54,34 +55,57 @@ function helloWorld() {
     setMarkdown(newMarkdown);
   }, []);
 
-  // Toggle between editors
-  const toggleEditor = () => {
-    setShowReactEditor(!showReactEditor);
+  // Handle updates from the toggleable editor
+  const handleToggleableEditorChange = useCallback((newMarkdown) => {
+    setMarkdown(newMarkdown);
+  }, []);
+
+  // Switch between editor modes
+  const switchEditorMode = (mode) => {
+    setEditorMode(mode);
   };
 
   return (
     <MainLayout>
       <div className="editor-toggle">
         <button
-          className={`toggle-button ${!showReactEditor ? 'active' : ''}`}
-          onClick={toggleEditor}
+          className={`toggle-button ${editorMode === 'original' ? 'active' : ''}`}
+          onClick={() => switchEditorMode('original')}
         >
           Original Editor
         </button>
         <button
-          className={`toggle-button ${showReactEditor ? 'active' : ''}`}
-          onClick={toggleEditor}
+          className={`toggle-button ${editorMode === 'react' ? 'active' : ''}`}
+          onClick={() => switchEditorMode('react')}
         >
           React-based Editor
         </button>
+        <button
+          className={`toggle-button ${editorMode === 'toggleable' ? 'active' : ''}`}
+          onClick={() => switchEditorMode('toggleable')}
+        >
+          Toggleable Editor
+        </button>
       </div>
 
-      {showReactEditor ? (
+      {editorMode === 'react' ? (
         <MilkdownReactEditorDemo />
+      ) : editorMode === 'toggleable' ? (
+        <>
+          <ExportToolbar markdown={markdown} />
+          <div className="editor-container">
+            <div className="editor-section full-width">
+              <h2>Toggleable Editor</h2>
+              <ToggleableEditor
+                markdown={markdown}
+                onChange={handleToggleableEditorChange}
+              />
+            </div>
+          </div>
+        </>
       ) : (
         <>
           <ExportToolbar markdown={markdown} />
-
           <div className="editor-container">
             <div className="editor-section">
               <h2>Editor</h2>

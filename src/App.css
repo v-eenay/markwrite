@@ -173,6 +173,11 @@ body {
   position: relative;
 }
 
+.editor-section.full-width {
+  grid-column: 1 / -1; /* Span all columns */
+  width: 100%;
+}
+
 .editor-section::before,
 .preview-section::before {
   content: '';

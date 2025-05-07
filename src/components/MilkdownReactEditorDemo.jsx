@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
-import MilkdownReactEditor from './MilkdownReactEditor';
+import ToggleableEditor from './ToggleableEditor';
 import './MilkdownReactEditor.css';
 import './MilkdownReactEditorDemo.css';
 
 const MilkdownReactEditorDemo = () => {
-  const [markdown, setMarkdown] = useState(`# Milkdown React Editor Demo
+  const [markdown, setMarkdown] = useState(`# Toggleable Editor Demo
 
-This is a demo of the Milkdown React Editor integration.
+This is a demo of the Toggleable Editor component.
 
 ## Features
 
+- Toggle between Rich Text and Markdown modes
 - GitHub Flavored Markdown support
 - Nord dark theme
 - Real-time preview
 - Slash commands
+- Syntax highlighting in Markdown mode
 
 ### Code Example
 
@@ -53,17 +55,17 @@ function helloWorld() {
 
   return (
     <div className="milkdown-react-demo">
-      <h1>Milkdown React Editor</h1>
+      <h1>Toggleable Editor Demo</h1>
       <div className="editor-container">
         <div className="editor-section">
           <h2>Editor</h2>
-          <MilkdownReactEditor
+          <ToggleableEditor
             markdown={markdown}
             onChange={handleMarkdownChange}
           />
         </div>
         <div className="preview-section">
-          <h2>Raw Markdown</h2>
+          <h2>Preview</h2>
           <pre className="markdown-preview">{markdown}</pre>
         </div>
       </div>
