@@ -3,6 +3,7 @@ import MilkdownEditor from './components/MilkdownEditor'
 import MainLayout from './components/MainLayout'
 import ExportToolbar from './components/ExportToolbar'
 import MarkdownCodeEditor from './components/MarkdownCodeEditor'
+import MilkdownReactEditorDemo from './components/MilkdownReactEditorDemo'
 import './App.css'
 import './styles/MilkdownEditor.css'
 import './styles/milkdown-styles.css'
@@ -35,6 +36,9 @@ function helloWorld() {
 | Row 2 | Data 2 |
 `);
 
+  // State to toggle between original editor and React-based editor
+  const [showReactEditor, setShowReactEditor] = useState(false);
+
   // Track the source of the update to prevent feedback loops
   const updateSourceRef = useRef(null);
 
@@ -50,29 +54,55 @@ function helloWorld() {
     setMarkdown(newMarkdown);
   }, []);
 
+  // Toggle between editors
+  const toggleEditor = () => {
+    setShowReactEditor(!showReactEditor);
+  };
+
   return (
     <MainLayout>
-      <ExportToolbar markdown={markdown} />
-
-      <div className="editor-container">
-        <div className="editor-section">
-          <h2>Editor</h2>
-          <MilkdownEditor
-            markdown={markdown}
-            onChange={handleRichEditorChange}
-            updateSource={updateSourceRef.current}
-          />
-        </div>
-
-        <div className="preview-section">
-          <h2>Raw Markdown</h2>
-          <MarkdownCodeEditor
-            value={markdown}
-            onChange={handleCodeEditorChange}
-            updateSource={updateSourceRef.current}
-          />
-        </div>
+      <div className="editor-toggle">
+        <button
+          className={`toggle-button ${!showReactEditor ? 'active' : ''}`}
+          onClick={toggleEditor}
+        >
+          Original Editor
+        </button>
+        <button
+          className={`toggle-button ${showReactEditor ? 'active' : ''}`}
+          onClick={toggleEditor}
+        >
+          React-based Editor
+        </button>
       </div>
+
+      {showReactEditor ? (
+        <MilkdownReactEditorDemo />
+      ) : (
+        <>
+          <ExportToolbar markdown={markdown} />
+
+          <div className="editor-container">
+            <div className="editor-section">
+              <h2>Editor</h2>
+              <MilkdownEditor
+                markdown={markdown}
+                onChange={handleRichEditorChange}
+                updateSource={updateSourceRef.current}
+              />
+            </div>
+
+            <div className="preview-section">
+              <h2>Raw Markdown</h2>
+              <MarkdownCodeEditor
+                value={markdown}
+                onChange={handleCodeEditorChange}
+                updateSource={updateSourceRef.current}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </MainLayout>
   )
 }
