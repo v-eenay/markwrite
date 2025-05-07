@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useEditor, EditorRef } from '@milkdown/react';
+import { useEditor } from '@milkdown/react';
 import { nord } from '@milkdown/theme-nord';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
@@ -68,7 +68,7 @@ const MilkdownReactEditor = ({ markdown = '', onChange }) => {
 
         // Update the last content reference
         lastContentRef.current = markdownContent;
-        
+
         // Call the onChange handler
         onChange(markdownContent);
       });
@@ -114,11 +114,8 @@ const MilkdownReactEditor = ({ markdown = '', onChange }) => {
   return (
     <div className="milkdown-editor-wrapper">
       {/* Editor container */}
-      <div className="milkdown-editor" ref={editorRef}>
-        {/* The editor will be mounted here by the useEditor hook */}
-        <EditorRef ref={editor} />
-      </div>
-      
+      <div className="milkdown-editor" ref={editorRef} />
+
       {/* Loading indicator */}
       {(loading || editorLoading) && (
         <div className="milkdown-loading-overlay">
