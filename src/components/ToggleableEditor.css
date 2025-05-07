@@ -99,6 +99,64 @@ input:checked + .slider:before {
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border-primary, #2a2f4a);
+  background-color: var(--bg-tertiary, #1a1e2e);
+  min-height: 300px;
+}
+
+/* Rich Text Editor */
+.rich-editor-wrapper {
+  position: relative;
+  height: 100%;
+  min-height: 300px;
+}
+
+.rich-editor {
+  height: 100%;
+  min-height: 300px;
+}
+
+/* Loading Overlay */
+.editor-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(26, 30, 46, 0.8);
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.editor-loading {
+  padding: 20px 30px;
+  text-align: center;
+  color: var(--neon-cyan, #00f0ff);
+  background-color: var(--bg-tertiary, #1a1e2e);
+  font-size: 16px;
+  font-family: var(--font-mono, 'Roboto Mono', monospace);
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-primary, #2a2f4a);
+}
+
+/* Code Editor */
+.code-editor-wrapper {
+  min-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.code-editor {
+  min-height: 300px !important;
+  background-color: var(--bg-tertiary, #1a1e2e) !important;
+  color: var(--text-primary, #ffffff) !important;
+  font-family: var(--font-mono, 'Roboto Mono', monospace) !important;
+  width: 100%;
+  border-radius: 8px;
 }
 
 /* Animation for switching editors */
@@ -115,4 +173,69 @@ input:checked + .slider:before {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ProseMirror Styles */
+.rich-editor .ProseMirror {
+  padding: 16px;
+  min-height: 300px;
+  outline: none;
+}
+
+.rich-editor .ProseMirror p {
+  margin: 1em 0;
+}
+
+.rich-editor .ProseMirror h1,
+.rich-editor .ProseMirror h2,
+.rich-editor .ProseMirror h3,
+.rich-editor .ProseMirror h4,
+.rich-editor .ProseMirror h5,
+.rich-editor .ProseMirror h6 {
+  margin: 1.5em 0 0.5em;
+  font-weight: 600;
+}
+
+.rich-editor .ProseMirror h1 {
+  font-size: 2em;
+}
+
+.rich-editor .ProseMirror h2 {
+  font-size: 1.5em;
+}
+
+.rich-editor .ProseMirror h3 {
+  font-size: 1.25em;
+}
+
+.rich-editor .ProseMirror a {
+  color: var(--neon-cyan, #00f0ff);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(0, 240, 255, 0.5);
+}
+
+.rich-editor .ProseMirror a:hover {
+  border-bottom: 1px solid var(--neon-cyan, #00f0ff);
+}
+
+.rich-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--neon-cyan, #00f0ff);
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 1em;
+  color: var(--text-secondary, #b8c0e0);
+}
+
+.rich-editor .ProseMirror pre {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 0.5em;
+  overflow-x: auto;
+}
+
+.rich-editor .ProseMirror code {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  padding: 0.2em 0.4em;
+  font-family: var(--font-mono, 'Roboto Mono', monospace);
 }
