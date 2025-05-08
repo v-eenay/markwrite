@@ -181,7 +181,11 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     }),
   ], []);
 
+  // Create a ref to store the editor instance
+  const editorRef = useRef(null);
+
   // Create a more efficient update handler with increased debounce time
+  // This doesn't depend on the editor variable directly
   const handleUpdate = useCallback(({ editor }) => {
     if (isInternalUpdateRef.current) return;
 
@@ -236,21 +240,31 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     }, 500); // Increased debounce time for better performance
   }, [onChange]);
 
-  // Create a throttled transaction handler to prevent excessive focus calls
-  const handleTransaction = useCallback(throttle(() => {
-    // Only focus if the editor is already in a focused state to prevent unnecessary focus events
-    if (editor && editor.isFocused) {
-      editor.commands.focus();
-    }
-  }, 100), [editor]);
+  // Create a transaction handler that uses the editorRef instead of the editor variable
+  const handleTransaction = useCallback(() => {
+    // Use a function that will be called when a transaction happens
+    return () => {
+      // Access the current editor instance from the ref
+      const currentEditor = editorRef.current;
+      // Only focus if the editor exists and is already in a focused state
+      if (currentEditor && currentEditor.isFocused) {
+        currentEditor.commands.focus();
+      }
+    };
+  }, []); // No dependencies needed
 
   // Initialize the TipTap editor with memoized options
   const editor = useEditor({
     extensions,
     content: markdown,
     onUpdate: handleUpdate,
-    onTransaction: handleTransaction,
+    onTransaction: handleTransaction(),
   });
+
+  // Store the editor instance in the ref whenever it changes
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Set loading state when editor is ready
   useEffect(() => {
@@ -293,8 +307,10 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
   }, [markdown, editor, loading, updateSource]);
 
   // Handle right-click for context menu - optimized with throttling
+  // Use editorRef instead of editor to avoid dependency cycle
   const handleContextMenu = useCallback(throttle((event) => {
-    if (!editor) return;
+    const currentEditor = editorRef.current;
+    if (!currentEditor) return;
 
     event.preventDefault();
 
@@ -303,7 +319,7 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
       x: event.clientX,
       y: event.clientY
     });
-  }, 100), [editor]);
+  }, 100), []);
 
   // Close the context menu - optimized to not depend on previous state
   const closeContextMenu = useCallback(() => {
@@ -319,14 +335,17 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
       }
 
       // Destroy the editor instance to prevent memory leaks
-      if (editor) {
-        editor.destroy();
+      const currentEditor = editorRef.current;
+      if (currentEditor) {
+        currentEditor.destroy();
       }
     };
-  }, [editor]);
+  }, []);
 
   // Memoize bubble menu buttons to prevent unnecessary re-renders
-  const bubbleMenuButtons = useMemo(() => {
+  // We'll render the BubbleMenu conditionally in the return statement instead
+  // This avoids the dependency on editor in the useMemo
+  const renderBubbleMenu = () => {
     if (!editor) return null;
 
     return (
@@ -351,11 +370,11 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
         </button>
       </BubbleMenu>
     );
-  }, [editor]);
+  };
 
   return (
     <div className="tiptap-editor-wrapper">
-      {bubbleMenuButtons}
+      {editor && renderBubbleMenu()}
 
       <div
         className="tiptap-editor"
