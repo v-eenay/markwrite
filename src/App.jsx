@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import ToggleableEditor from './components/ToggleableEditor'
+import ToggleableTipTapEditor from './components/ToggleableTipTapEditor'
 import './App.css'
 import 'prismjs/themes/prism-tomorrow.css'
 
@@ -51,7 +51,7 @@ function helloWorld() {
       </header>
 
       <main className="app-main">
-        <ToggleableEditor
+        <ToggleableTipTapEditor
           markdown={markdown}
           onChange={handleMarkdownChange}
         />
