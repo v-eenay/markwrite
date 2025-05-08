@@ -5,12 +5,13 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { lowlight } from 'lowlight';
+import { common, createLowlight } from 'lowlight';
 import MarkdownIt from 'markdown-it';
 import './TipTapEditor.css';
 
-// Initialize markdown parser
+// Initialize markdown parser and lowlight
 const md = new MarkdownIt();
+const lowlight = createLowlight(common);
 
 /**
  * Context menu component for the TipTap editor
