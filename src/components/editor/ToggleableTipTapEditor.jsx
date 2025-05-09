@@ -1,12 +1,12 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo, memo, lazy, Suspense } from 'react';
-import CodeEditor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/themes/prism-tomorrow.css';
+import EnhancedMarkdownEditor from './markdown/EnhancedMarkdownEditor';
 import './ToggleableTipTapEditor.css';
 
 // Lazy load the TipTapEditor component to improve initial load time
-const TipTapEditor = lazy(() => import('./TipTapEditor'));
+const TipTapEditor = lazy(() => import('./richtext/TipTapEditor'));
 
 // Throttle function to limit function calls
 const throttle = (func, limit) => {
@@ -54,22 +54,13 @@ const ToggleSwitch = memo(({ isRichTextMode, toggleEditorMode }) => (
 ));
 
 /**
- * Markdown code editor component - extracted and memoized
+ * Markdown code editor component - using the enhanced version for better cursor handling
  */
 const MarkdownCodeEditor = memo(({ markdown, onValueChange }) => (
   <div className="code-editor-wrapper">
-    <CodeEditor
-      value={markdown}
+    <EnhancedMarkdownEditor
+      markdown={markdown}
       onValueChange={onValueChange}
-      highlight={(code) => highlight(code, languages.markdown)}
-      padding={16}
-      className="code-editor"
-      style={{
-        fontFamily: 'var(--font-mono, monospace)',
-        fontSize: 14,
-        lineHeight: 1.6,
-        minHeight: 450,
-      }}
     />
   </div>
 ));

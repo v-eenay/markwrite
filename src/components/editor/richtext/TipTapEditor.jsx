@@ -7,10 +7,16 @@ import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
 import MarkdownIt from 'markdown-it';
+import EditorToolbar from '../toolbar/EditorToolbar';
 import './TipTapEditor.css';
 
 // Initialize markdown parser and lowlight - outside component to avoid re-creation
-const md = new MarkdownIt();
+const md = new MarkdownIt({
+  html: false,
+  breaks: true,
+  linkify: true,
+  typographer: true
+});
 const lowlight = createLowlight(common);
 
 // Throttle function to limit function calls
@@ -23,6 +29,79 @@ const throttle = (func, limit) => {
       setTimeout(() => inThrottle = false, limit);
     }
   };
+};
+
+/**
+ * Convert HTML to Markdown using a more efficient approach
+ * This function uses regex patterns for common HTML elements
+ */
+const convertHtmlToMarkdown = (html) => {
+  try {
+    // Process the HTML in chunks to improve performance
+    return html
+      .replace(/<h1>(.*?)<\/h1>/g, '# $1\n\n')
+      .replace(/<h2>(.*?)<\/h2>/g, '## $1\n\n')
+      .replace(/<h3>(.*?)<\/h3>/g, '### $1\n\n')
+      .replace(/<h4>(.*?)<\/h4>/g, '#### $1\n\n')
+      .replace(/<h5>(.*?)<\/h5>/g, '##### $1\n\n')
+      .replace(/<h6>(.*?)<\/h6>/g, '###### $1\n\n')
+      .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+      .replace(/<em>(.*?)<\/em>/g, '*$1*')
+      .replace(/<s>(.*?)<\/s>/g, '~~$1~~')
+      .replace(/<code>(.*?)<\/code>/g, '`$1`')
+      .replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)')
+      .replace(/<blockquote>(.*?)<\/blockquote>/g, '> $1\n\n')
+      .replace(/<pre><code.*?>([\s\S]*?)<\/code><\/pre>/g, '```\n$1\n```\n\n')
+      .replace(/<ul>([\s\S]*?)<\/ul>/g, '$1\n')
+      .replace(/<ol>([\s\S]*?)<\/ol>/g, '$1\n')
+      .replace(/<li>(.*?)<\/li>/g, '- $1\n')
+      .replace(/<br\s*\/?>/g, '\n')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .trim();
+  } catch (error) {
+    console.error('Error converting HTML to Markdown:', error);
+    return html;
+  }
+};
+
+/**
+ * Convert Markdown to HTML using markdown-it with improved handling
+ * This function properly parses markdown syntax into HTML
+ */
+const convertMarkdownToHtml = (markdown) => {
+  try {
+    // Pre-process the markdown to handle special cases
+    let processedMarkdown = markdown
+      // Ensure proper line breaks for paragraphs
+      .replace(/\n\n/g, '\n\n')
+      // Fix code blocks that might be malformed
+      .replace(/```([^`]+)```/g, (match, code) => {
+        // Ensure code blocks have proper line breaks
+        if (!code.startsWith('\n')) {
+          return '```\n' + code + '\n```';
+        }
+        return match;
+      });
+
+    // Use markdown-it to render the processed markdown
+    const html = md.render(processedMarkdown);
+
+    // Post-process the HTML to fix any remaining issues
+    return html
+      // Ensure empty paragraphs are preserved (for Enter key functionality)
+      .replace(/<p><\/p>/g, '<p><br></p>')
+      // Fix any malformed list items
+      .replace(/<li>\s*<\/li>/g, '<li><br></li>');
+  } catch (error) {
+    console.error('Error converting Markdown to HTML:', error);
+    return markdown;
+  }
 };
 
 /**
@@ -128,29 +207,6 @@ const ContextMenu = memo(({ editor, position, onClose }) => {
 });
 
 /**
- * Convert HTML to Markdown using a more efficient approach
- * This function is memoized to prevent unnecessary recalculations
- */
-const convertHtmlToMarkdown = (html) => {
-  // Use the markdown-it library to parse HTML
-  // This is more efficient than using regex for complex HTML
-  try {
-    // Create a temporary div to handle HTML entities
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = html;
-    const decodedHtml = tempDiv.textContent || tempDiv.innerText || '';
-
-    // Use markdown-it to render the HTML to markdown
-    // This is a simplified approach - in a real implementation,
-    // you might want to use a dedicated HTML-to-Markdown converter
-    return md.render(decodedHtml);
-  } catch (error) {
-    console.error('Error converting HTML to Markdown:', error);
-    return html;
-  }
-};
-
-/**
  * TipTapEditor - A React component that wraps the TipTap editor
  * Optimized for performance
  *
@@ -168,7 +224,16 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
 
   // Memoize editor extensions to prevent recreation on each render
   const extensions = useMemo(() => [
-    StarterKit,
+    StarterKit.configure({
+      // Ensure proper handling of Enter key for new paragraphs
+      paragraph: {
+        HTMLAttributes: {
+          class: 'paragraph',
+        },
+      },
+      // Improve code block handling
+      codeBlock: false,
+    }),
     Placeholder.configure({
       placeholder: 'Write something...',
     }),
@@ -178,6 +243,9 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     Image,
     CodeBlockLowlight.configure({
       lowlight,
+      HTMLAttributes: {
+        class: 'code-block',
+      },
     }),
   ], []);
 
@@ -200,34 +268,8 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
         // Get HTML content
         const html = editor.getHTML();
 
-        // Use a more efficient HTML-to-Markdown conversion
-        // For large documents, we'll use a worker or chunked processing in a real implementation
-        const content = html
-          .replace(/<h1>(.*?)<\/h1>/g, '# $1\n\n')
-          .replace(/<h2>(.*?)<\/h2>/g, '## $1\n\n')
-          .replace(/<h3>(.*?)<\/h3>/g, '### $1\n\n')
-          .replace(/<h4>(.*?)<\/h4>/g, '#### $1\n\n')
-          .replace(/<h5>(.*?)<\/h5>/g, '##### $1\n\n')
-          .replace(/<h6>(.*?)<\/h6>/g, '###### $1\n\n')
-          .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
-          .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
-          .replace(/<em>(.*?)<\/em>/g, '*$1*')
-          .replace(/<s>(.*?)<\/s>/g, '~~$1~~')
-          .replace(/<code>(.*?)<\/code>/g, '`$1`')
-          .replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)')
-          .replace(/<blockquote>(.*?)<\/blockquote>/g, '> $1\n\n')
-          .replace(/<pre><code>(.*?)<\/code><\/pre>/g, '```\n$1\n```\n\n')
-          .replace(/<ul>(.*?)<\/ul>/g, '$1\n')
-          .replace(/<ol>(.*?)<\/ol>/g, '$1\n')
-          .replace(/<li>(.*?)<\/li>/g, '- $1\n')
-          .replace(/<br>/g, '\n')
-          .replace(/&nbsp;/g, ' ')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&amp;/g, '&')
-          .replace(/&quot;/g, '"')
-          .replace(/&apos;/g, "'")
-          .trim();
+        // Use our improved HTML-to-Markdown conversion function
+        const content = convertHtmlToMarkdown(html);
 
         // Only update if content has actually changed
         if (content !== lastContentRef.current) {
@@ -259,6 +301,45 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     content: markdown,
     onUpdate: handleUpdate,
     onTransaction: handleTransaction(),
+    // Add keyboard event handlers for better editing experience
+    editorProps: {
+      // Handle keyboard events
+      handleKeyDown: (view, event) => {
+        // Ensure Enter key creates new paragraphs properly
+        if (event.key === 'Enter' && !event.shiftKey) {
+          // Let TipTap handle it normally, but ensure we're tracking the state
+          return false; // Return false to let TipTap handle it
+        }
+
+        // Handle tab key to indent lists
+        if (event.key === 'Tab') {
+          // Check if we're in a list
+          if (editor && (editor.isActive('bulletList') || editor.isActive('orderedList'))) {
+            // Indent or outdent based on shift key
+            if (event.shiftKey) {
+              editor.chain().focus().liftListItem('listItem').run();
+            } else {
+              editor.chain().focus().sinkListItem('listItem').run();
+            }
+            return true; // Prevent default behavior
+          }
+        }
+
+        return false; // Let TipTap handle other keys
+      },
+      // Improve click handling for better cursor positioning
+      handleClick: (view, pos, event) => {
+        // Ensure the editor is focused when clicked
+        if (editor && !editor.isFocused) {
+          editor.commands.focus();
+        }
+        return false; // Let TipTap handle the click
+      }
+    },
+    // Ensure proper parsing of Markdown
+    parseOptions: {
+      preserveWhitespace: 'full',
+    }
   });
 
   // Store the editor instance in the ref whenever it changes
@@ -287,8 +368,12 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
       // Mark this as an internal update to prevent feedback loops
       isInternalUpdateRef.current = true;
 
-      // Update the editor content
-      editor.commands.setContent(markdown);
+      // Convert markdown to HTML before setting content
+      // This ensures proper rendering of markdown syntax in rich text mode
+      const html = convertMarkdownToHtml(markdown);
+
+      // Update the editor content with the HTML
+      editor.commands.setContent(html);
 
       // Update our reference to the current content
       lastContentRef.current = markdown;
@@ -374,6 +459,9 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
 
   return (
     <div className="tiptap-editor-wrapper">
+      {/* Add the formatting toolbar */}
+      {editor && <EditorToolbar editor={editor} />}
+
       {editor && renderBubbleMenu()}
 
       <div

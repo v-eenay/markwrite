@@ -4,6 +4,8 @@
   border-radius: var(--radius-xl);
   background-color: var(--bg-tertiary);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .tiptap-editor {
@@ -11,7 +13,7 @@
   min-height: 450px;
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
-  border-radius: var(--radius-xl);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   overflow: hidden;
 }
 
@@ -20,6 +22,12 @@
   min-height: 450px;
   outline: none;
   color: var(--text-primary);
+  cursor: text;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0; /* the above doesn't work in Edge */
 }
 
 .tiptap-editor .ProseMirror p {
@@ -76,6 +84,30 @@
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: 0.9em;
+  white-space: pre;
+  margin: 1em 0;
+}
+
+/* Improve code block appearance */
+.tiptap-editor .ProseMirror .code-block {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin: 1em 0;
+  position: relative;
+}
+
+/* Add language indicator for code blocks */
+.tiptap-editor .ProseMirror .code-block::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.2em 0.5em;
+  font-size: 0.7em;
+  color: var(--text-muted);
+  background-color: var(--bg-accent);
+  border-radius: 0 var(--radius-md) 0 var(--radius-md);
+  opacity: 0.8;
 }
 
 .tiptap-editor .ProseMirror code {
@@ -226,9 +258,45 @@
 
 .tiptap-editor .ProseMirror ul[data-type="taskList"] li > label {
   margin-right: 0.5em;
+  -webkit-user-select: none;
   user-select: none;
 }
 
 .tiptap-editor .ProseMirror ul[data-type="taskList"] li > div {
   flex: 1;
+}
+
+/* Cursor and selection styles */
+.tiptap-editor .ProseMirror .selection {
+  background-color: rgba(14, 165, 233, 0.2);
+}
+
+.tiptap-editor .ProseMirror.ProseMirror-focused {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Improve paragraph spacing */
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-muted);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Improve list item spacing */
+.tiptap-editor .ProseMirror ul li p,
+.tiptap-editor .ProseMirror ol li p {
+  margin: 0.2em 0;
+}
+
+/* Fix for empty paragraphs to ensure they're clickable */
+.tiptap-editor .ProseMirror p:empty::after {
+  content: '\00a0'; /* Non-breaking space */
+}
+
+/* Ensure proper cursor in editable areas */
+.tiptap-editor .ProseMirror * {
+  caret-color: var(--text-primary);
 }
