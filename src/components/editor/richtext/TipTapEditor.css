@@ -33,6 +33,14 @@
 .tiptap-editor .ProseMirror p {
   margin: 1em 0;
   line-height: 1.7;
+  min-height: 1.7em; /* Ensure paragraphs have a minimum height */
+}
+
+/* Ensure hard breaks (Shift+Enter) are properly displayed */
+.tiptap-editor .ProseMirror br {
+  display: block;
+  content: "";
+  margin-top: 0.5em;
 }
 
 .tiptap-editor .ProseMirror h1,
@@ -94,6 +102,12 @@
   border-radius: var(--radius-md);
   margin: 1em 0;
   position: relative;
+  max-height: 400px; /* Limit height to prevent excessive rendering */
+  overflow-y: auto; /* Add scrolling for large code blocks */
+  padding: 1em;
+  font-family: monospace;
+  white-space: pre-wrap;
+  color: var(--text-primary);
 }
 
 /* Add language indicator for code blocks */
@@ -178,13 +192,26 @@
 
 /* Context menu */
 .tiptap-context-menu {
+  position: fixed; /* Ensure it's using fixed positioning */
   background-color: var(--bg-primary);
   border-radius: var(--radius-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
+  z-index: 1000; /* Higher z-index to ensure it's above other elements */
   min-width: 180px;
   max-width: 280px;
   overflow: hidden;
+  animation: contextMenuFadeIn 0.15s ease-out; /* Add a subtle animation */
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tiptap-context-menu-items {
@@ -274,6 +301,32 @@
 .tiptap-editor .ProseMirror.ProseMirror-focused {
   outline: none;
   box-shadow: none;
+}
+
+/* Placeholder styles for our SafePlaceholder extension */
+.tiptap-editor .ProseMirror .placeholder {
+  position: relative;
+  pointer-events: none;
+}
+
+.tiptap-editor .ProseMirror .placeholder::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Ensure empty nodes are properly handled */
+.tiptap-editor .ProseMirror .is-node-empty {
+  min-height: 1em;
+}
+
+/* Add class for empty editor */
+.tiptap-editor .ProseMirror.is-editor-empty {
+  min-height: 100px;
 }
 
 /* Improve paragraph spacing */

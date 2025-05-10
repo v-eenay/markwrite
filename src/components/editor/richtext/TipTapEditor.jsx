@@ -1,23 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { common, createLowlight } from 'lowlight';
-import MarkdownIt from 'markdown-it';
+import CodeBlock from '@tiptap/extension-code-block';
 import EditorToolbar from '../toolbar/EditorToolbar';
+import { SafePlaceholder } from './SafePlaceholder';
 import './TipTapEditor.css';
-
-// Initialize markdown parser and lowlight - outside component to avoid re-creation
-const md = new MarkdownIt({
-  html: false,
-  breaks: true,
-  linkify: true,
-  typographer: true
-});
-const lowlight = createLowlight(common);
 
 // Throttle function to limit function calls
 const throttle = (func, limit) => {
@@ -32,84 +21,48 @@ const throttle = (func, limit) => {
 };
 
 /**
- * Convert HTML to Markdown using a more efficient approach
- * This function uses regex patterns for common HTML elements
- */
-const convertHtmlToMarkdown = (html) => {
-  try {
-    // Process the HTML in chunks to improve performance
-    return html
-      .replace(/<h1>(.*?)<\/h1>/g, '# $1\n\n')
-      .replace(/<h2>(.*?)<\/h2>/g, '## $1\n\n')
-      .replace(/<h3>(.*?)<\/h3>/g, '### $1\n\n')
-      .replace(/<h4>(.*?)<\/h4>/g, '#### $1\n\n')
-      .replace(/<h5>(.*?)<\/h5>/g, '##### $1\n\n')
-      .replace(/<h6>(.*?)<\/h6>/g, '###### $1\n\n')
-      .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
-      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
-      .replace(/<em>(.*?)<\/em>/g, '*$1*')
-      .replace(/<s>(.*?)<\/s>/g, '~~$1~~')
-      .replace(/<code>(.*?)<\/code>/g, '`$1`')
-      .replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)')
-      .replace(/<blockquote>(.*?)<\/blockquote>/g, '> $1\n\n')
-      .replace(/<pre><code.*?>([\s\S]*?)<\/code><\/pre>/g, '```\n$1\n```\n\n')
-      .replace(/<ul>([\s\S]*?)<\/ul>/g, '$1\n')
-      .replace(/<ol>([\s\S]*?)<\/ol>/g, '$1\n')
-      .replace(/<li>(.*?)<\/li>/g, '- $1\n')
-      .replace(/<br\s*\/?>/g, '\n')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&apos;/g, "'")
-      .trim();
-  } catch (error) {
-    console.error('Error converting HTML to Markdown:', error);
-    return html;
-  }
-};
-
-/**
- * Convert Markdown to HTML using markdown-it with improved handling
- * This function properly parses markdown syntax into HTML
- */
-const convertMarkdownToHtml = (markdown) => {
-  try {
-    // Pre-process the markdown to handle special cases
-    let processedMarkdown = markdown
-      // Ensure proper line breaks for paragraphs
-      .replace(/\n\n/g, '\n\n')
-      // Fix code blocks that might be malformed
-      .replace(/```([^`]+)```/g, (match, code) => {
-        // Ensure code blocks have proper line breaks
-        if (!code.startsWith('\n')) {
-          return '```\n' + code + '\n```';
-        }
-        return match;
-      });
-
-    // Use markdown-it to render the processed markdown
-    const html = md.render(processedMarkdown);
-
-    // Post-process the HTML to fix any remaining issues
-    return html
-      // Ensure empty paragraphs are preserved (for Enter key functionality)
-      .replace(/<p><\/p>/g, '<p><br></p>')
-      // Fix any malformed list items
-      .replace(/<li>\s*<\/li>/g, '<li><br></li>');
-  } catch (error) {
-    console.error('Error converting Markdown to HTML:', error);
-    return markdown;
-  }
-};
-
-/**
  * Context menu component for the TipTap editor
  * Memoized to prevent unnecessary re-renders
  */
 const ContextMenu = memo(({ editor, position, onClose }) => {
   const menuRef = useRef(null);
+
+  // Effect to adjust menu position after it's rendered
+  useEffect(() => {
+    if (menuRef.current) {
+      // Get actual menu dimensions
+      const menuRect = menuRef.current.getBoundingClientRect();
+
+      // Get viewport dimensions
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Set a maximum distance from the edge of the viewport (in pixels)
+      const margin = 10;
+
+      // Calculate adjusted position
+      let adjustedX = position.x;
+      let adjustedY = position.y;
+
+      // Check right edge
+      if (position.x + menuRect.width > viewportWidth - margin) {
+        adjustedX = viewportWidth - menuRect.width - margin;
+      }
+
+      // Check bottom edge
+      if (position.y + menuRect.height > viewportHeight - margin) {
+        adjustedY = viewportHeight - menuRect.height - margin;
+      }
+
+      // Ensure we don't position off the left or top edge
+      adjustedX = Math.max(margin, adjustedX);
+      adjustedY = Math.max(margin, adjustedY);
+
+      // Apply the adjusted position
+      menuRef.current.style.left = `${adjustedX}px`;
+      menuRef.current.style.top = `${adjustedY}px`;
+    }
+  }, [position.x, position.y]);
 
   // Memoize event handlers to prevent recreating them on each render
   const handleButtonClick = useCallback((action) => {
@@ -136,12 +89,13 @@ const ContextMenu = memo(({ editor, position, onClose }) => {
 
   if (!editor) return null;
 
-  // Memoize menu position style to prevent object recreation on each render
-  const menuStyle = useMemo(() => ({
-    position: 'absolute',
+  // Initial menu position style
+  const menuStyle = {
+    position: 'fixed', // Changed from absolute to fixed for better positioning
     left: `${position.x}px`,
-    top: `${position.y}px`
-  }), [position.x, position.y]);
+    top: `${position.y}px`,
+    zIndex: 1000 // Ensure it's above other elements
+  };
 
   // Memoize link handler
   const handleLinkClick = useCallback(() => {
@@ -211,13 +165,12 @@ const ContextMenu = memo(({ editor, position, onClose }) => {
  * Optimized for performance
  *
  * @param {Object} props - Component props
- * @param {string} props.markdown - The markdown content to initialize the editor with
+ * @param {string} props.content - The HTML content to initialize the editor with
  * @param {Function} props.onChange - Callback function when content changes
- * @param {string} props.updateSource - Source of the update ('rich' or 'code')
  */
-const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
+const TipTapEditor = memo(({ content = '', onChange, useContextMenu = false }) => {
   const [loading, setLoading] = useState(true);
-  const lastContentRef = useRef(markdown);
+  const lastContentRef = useRef(content);
   const updateTimeoutRef = useRef(null);
   const isInternalUpdateRef = useRef(false);
   const [contextMenuState, setContextMenuState] = useState({ visible: false, x: 0, y: 0 });
@@ -230,19 +183,39 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
         HTMLAttributes: {
           class: 'paragraph',
         },
+        // Ensure proper handling of Enter key
+        keepOnSplit: false,
       },
-      // Improve code block handling
-      codeBlock: false,
+      // Configure headings to properly handle Enter key
+      heading: {
+        levels: [1, 2, 3],
+        HTMLAttributes: {
+          class: 'heading',
+        },
+        // Don't keep heading style when pressing Enter
+        keepOnSplit: false,
+      },
+      // Use the built-in code block
+      codeBlock: true,
+      // Configure hard breaks (Enter key behavior)
+      hardBreak: {
+        keepMarks: true,
+      },
     }),
-    Placeholder.configure({
+    SafePlaceholder.configure({
       placeholder: 'Write something...',
+      emptyEditorClass: 'is-editor-empty',
+      emptyNodeClass: 'is-node-empty',
+      showOnlyWhenEditable: true,
+      includeChildren: false,
+      maxRecursionDepth: 3,
     }),
     Link.configure({
       openOnClick: false,
     }),
     Image,
-    CodeBlockLowlight.configure({
-      lowlight,
+    // Use regular CodeBlock instead of CodeBlockLowlight to avoid stack overflow errors
+    CodeBlock.configure({
       HTMLAttributes: {
         class: 'code-block',
       },
@@ -255,31 +228,41 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
   // Create a more efficient update handler with increased debounce time
   // This doesn't depend on the editor variable directly
   const handleUpdate = useCallback(({ editor }) => {
-    if (isInternalUpdateRef.current) return;
+    try {
+      if (isInternalUpdateRef.current) return;
 
-    // Clear any pending updates
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
-
-    // Use a longer debounce for better performance (500ms)
-    updateTimeoutRef.current = setTimeout(() => {
-      try {
-        // Get HTML content
-        const html = editor.getHTML();
-
-        // Use our improved HTML-to-Markdown conversion function
-        const content = convertHtmlToMarkdown(html);
-
-        // Only update if content has actually changed
-        if (content !== lastContentRef.current) {
-          lastContentRef.current = content;
-          onChange(content);
-        }
-      } catch (error) {
-        console.error('Error in editor update handler:', error);
+      // Clear any pending updates
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
       }
-    }, 500); // Increased debounce time for better performance
+
+      // Use a longer debounce for better performance (300ms)
+      updateTimeoutRef.current = setTimeout(() => {
+        try {
+          // Get HTML content safely
+          let html;
+          try {
+            html = editor.getHTML();
+          } catch (htmlError) {
+            console.error('Error getting HTML from editor:', htmlError);
+            // Fallback to a simpler approach if getHTML fails
+            const editorElement = document.querySelector('.ProseMirror');
+            html = editorElement ? editorElement.innerHTML : '';
+          }
+
+          // Only update if content has actually changed and is valid
+          if (html && html !== lastContentRef.current) {
+            lastContentRef.current = html;
+            onChange(html);
+          }
+        } catch (error) {
+          console.error('Error in editor update handler:', error);
+        }
+      }, 300); // Debounce time for better performance
+    } catch (outerError) {
+      // Catch any errors that might occur outside the timeout
+      console.error('Critical error in update handler:', outerError);
+    }
   }, [onChange]);
 
   // Create a transaction handler that uses the editorRef instead of the editor variable
@@ -295,10 +278,12 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     };
   }, []); // No dependencies needed
 
+  // No special handler needed for code blocks anymore
+
   // Initialize the TipTap editor with memoized options
   const editor = useEditor({
     extensions,
-    content: markdown,
+    content: content,
     onUpdate: handleUpdate,
     onTransaction: handleTransaction(),
     // Add keyboard event handlers for better editing experience
@@ -306,9 +291,51 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
       // Handle keyboard events
       handleKeyDown: (view, event) => {
         // Ensure Enter key creates new paragraphs properly
-        if (event.key === 'Enter' && !event.shiftKey) {
-          // Let TipTap handle it normally, but ensure we're tracking the state
-          return false; // Return false to let TipTap handle it
+        if (event.key === 'Enter') {
+          // If Shift+Enter, insert a hard break (line break within the same paragraph)
+          if (event.shiftKey) {
+            editor.chain().focus().setHardBreak().run();
+            return true; // Prevent default behavior
+          }
+
+          // For regular Enter, handle different node types appropriately
+          const { state } = view;
+          const { selection } = state;
+          const { empty, $from, $to } = selection;
+          const nodeType = $from.parent.type.name;
+
+          // Check if we're at the end of a heading
+          const isHeading = nodeType.startsWith('heading');
+          const isAtEnd = $from.pos === $from.end();
+
+          // Special handling for headings - create a paragraph below when at the end
+          if (empty && isHeading && isAtEnd) {
+            // Insert a paragraph node after the heading
+            editor.chain()
+              .focus()
+              .createParagraphNear()
+              .run();
+            return true; // We've handled it
+          }
+
+          // If we're at the end of a paragraph, ensure we create a new one
+          if (empty && nodeType === 'paragraph' && $from.pos === $to.pos) {
+            // Let TipTap handle it with its default behavior
+            return false;
+          }
+
+          // If we have a selection, replace it and create a paragraph
+          if (!empty) {
+            editor.chain()
+              .focus()
+              .deleteSelection()
+              .createParagraphNear()
+              .run();
+            return true;
+          }
+
+          // Default behavior for other cases
+          return false;
         }
 
         // Handle tab key to indent lists
@@ -336,7 +363,6 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
         return false; // Let TipTap handle the click
       }
     },
-    // Ensure proper parsing of Markdown
     parseOptions: {
       preserveWhitespace: 'full',
     }
@@ -354,57 +380,142 @@ const TipTapEditor = memo(({ markdown = '', onChange, updateSource }) => {
     }
   }, [editor]);
 
-  // Update editor content when markdown prop changes - optimized
+  // Update editor content when content prop changes
   useEffect(() => {
     if (!editor || loading) return;
 
     // Skip update if it's the same as our last known content
-    if (markdown === lastContentRef.current) return;
-
-    // Only update the editor if the change came from the code editor
-    if (updateSource !== 'code') return;
+    if (content === lastContentRef.current) return;
 
     try {
       // Mark this as an internal update to prevent feedback loops
       isInternalUpdateRef.current = true;
 
-      // Convert markdown to HTML before setting content
-      // This ensures proper rendering of markdown syntax in rich text mode
-      const html = convertMarkdownToHtml(markdown);
-
-      // Update the editor content with the HTML
-      editor.commands.setContent(html);
-
-      // Update our reference to the current content
-      lastContentRef.current = markdown;
-
-      // Reset the internal update flag after a short delay
+      // Set the content with a small delay to avoid race conditions
       const timerId = setTimeout(() => {
-        isInternalUpdateRef.current = false;
-      }, 50); // Increased from 10ms to 50ms for better stability
+        editor.commands.setContent(content);
+        lastContentRef.current = content;
+
+        // Reset the internal update flag after a short delay
+        setTimeout(() => {
+          isInternalUpdateRef.current = false;
+        }, 50);
+      }, 0);
 
       // Clean up the timer if the component unmounts or the effect runs again
       return () => clearTimeout(timerId);
     } catch (error) {
-      console.error('Error updating TipTap content:', error);
+      console.error('Error updating editor content:', error);
       isInternalUpdateRef.current = false;
     }
-  }, [markdown, editor, loading, updateSource]);
+  }, [content, editor, loading]);
 
   // Handle right-click for context menu - optimized with throttling
   // Use editorRef instead of editor to avoid dependency cycle
   const handleContextMenu = useCallback(throttle((event) => {
+    // Only handle context menu if useContextMenu is true
+    if (!useContextMenu) return;
+
     const currentEditor = editorRef.current;
     if (!currentEditor) return;
 
     event.preventDefault();
 
+    // Get the editor's DOM element and its position
+    const editorElement = event.currentTarget;
+    const editorRect = editorElement.getBoundingClientRect();
+
+    // Get the ProseMirror view
+    const view = currentEditor.view;
+
+    // Get the position in the document based on DOM event
+    const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
+
+    // If we couldn't find a valid position, use the event coordinates
+    if (pos === null) {
+      // Fallback to event coordinates
+      const x = event.clientX;
+      const y = event.clientY;
+
+      // Get viewport dimensions
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Set a maximum distance from the edge of the viewport (in pixels)
+      const margin = 10;
+
+      // Estimate menu dimensions
+      const menuWidth = 180;
+      const menuHeight = 300;
+
+      // Adjust position to ensure menu stays within viewport
+      let adjustedX = x;
+      let adjustedY = y;
+
+      // Check right edge
+      if (x + menuWidth > viewportWidth - margin) {
+        adjustedX = viewportWidth - menuWidth - margin;
+      }
+
+      // Check bottom edge
+      if (y + menuHeight > viewportHeight - margin) {
+        adjustedY = viewportHeight - menuHeight - margin;
+      }
+
+      // Ensure we don't position off the left or top edge
+      adjustedX = Math.max(margin, adjustedX);
+      adjustedY = Math.max(margin, adjustedY);
+
+      setContextMenuState({
+        visible: true,
+        x: adjustedX,
+        y: adjustedY
+      });
+      return;
+    }
+
+    // Get the coordinates for the position in the document
+    const coords = view.coordsAtPos(pos.pos);
+
+    // Calculate position relative to the viewport
+    const x = coords.left;
+    const y = coords.bottom; // Use bottom to position below the cursor
+
+    // Get viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Set a maximum distance from the edge of the viewport (in pixels)
+    const margin = 10;
+
+    // Estimate menu dimensions
+    const menuWidth = 180;
+    const menuHeight = 300;
+
+    // Adjust position to ensure menu stays within viewport
+    let adjustedX = x;
+    let adjustedY = y;
+
+    // Check right edge
+    if (x + menuWidth > viewportWidth - margin) {
+      adjustedX = viewportWidth - menuWidth - margin;
+    }
+
+    // Check bottom edge
+    if (y + menuHeight > viewportHeight - margin) {
+      adjustedY = viewportHeight - menuHeight - margin;
+    }
+
+    // Ensure we don't position off the left or top edge
+    adjustedX = Math.max(margin, adjustedX);
+    adjustedY = Math.max(margin, adjustedY);
+
     setContextMenuState({
       visible: true,
-      x: event.clientX,
-      y: event.clientY
+      x: adjustedX,
+      y: adjustedY
     });
-  }, 100), []);
+  }, 100), [useContextMenu]);
 
   // Close the context menu - optimized to not depend on previous state
   const closeContextMenu = useCallback(() => {
