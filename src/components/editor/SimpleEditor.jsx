@@ -15,18 +15,20 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
   const updateTimeoutRef = useRef(null);
   const isInternalUpdateRef = useRef(false);
 
-  // Initialize the editor with the initial content
+  // Initialize the editor with the initial content - only on first render
   useEffect(() => {
-    if (editorRef.current && initialContent && !isInternalUpdateRef.current) {
+    if (editorRef.current && initialContent) {
       try {
-        // Set the content safely
+        // Set the content safely - only on first render
         isInternalUpdateRef.current = true;
 
         // Ensure proper text direction
         editorRef.current.setAttribute('dir', 'ltr');
 
-        // Set the content
-        editorRef.current.innerHTML = initialContent;
+        // Set the content only if it's different
+        if (editorRef.current.innerHTML !== initialContent) {
+          editorRef.current.innerHTML = initialContent;
+        }
 
         // Force a reflow to ensure proper rendering
         void editorRef.current.offsetHeight;
@@ -40,7 +42,31 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
         isInternalUpdateRef.current = false;
       }
     }
-  }, [initialContent]);
+  }, []); // Empty dependency array - only run on mount
+
+  // Handle updates to initialContent prop after initial render
+  useEffect(() => {
+    if (!editorRef.current || isInternalUpdateRef.current) return;
+
+    // Only update if content is different and editor doesn't have focus
+    if (initialContent !== content && document.activeElement !== editorRef.current) {
+      try {
+        isInternalUpdateRef.current = true;
+
+        // Set content without disrupting cursor if possible
+        editorRef.current.innerHTML = initialContent;
+        setContent(initialContent);
+
+        // Reset the flag
+        setTimeout(() => {
+          isInternalUpdateRef.current = false;
+        }, 50);
+      } catch (error) {
+        console.error('Error updating editor content:', error);
+        isInternalUpdateRef.current = false;
+      }
+    }
+  }, [initialContent, content]);
 
   // Handle content changes with debouncing
   const handleContentChange = () => {
@@ -53,32 +79,114 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
 
     // Ensure proper text direction is maintained
     if (editorRef.current) {
-      // Ensure the dir attribute is set to ltr
+      // Ensure the dir attribute is set to ltr without disrupting cursor
       if (editorRef.current.getAttribute('dir') !== 'ltr') {
+        // Save selection
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const savedRange = {
+          startContainer: range.startContainer,
+          startOffset: range.startOffset,
+          endContainer: range.endContainer,
+          endOffset: range.endOffset
+        };
+
+        // Set direction
         editorRef.current.setAttribute('dir', 'ltr');
+
+        // Restore selection
+        try {
+          const newRange = document.createRange();
+          newRange.setStart(savedRange.startContainer, savedRange.startOffset);
+          newRange.setEnd(savedRange.endContainer, savedRange.endOffset);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        } catch (e) {
+          console.error('Error restoring selection:', e);
+        }
       }
 
-      // Get the current content
+      // Get the current content without modifying the DOM
       const newContent = editorRef.current.innerHTML;
 
-      // Set the content state
-      setContent(newContent);
+      // Update state without affecting the DOM
+      if (newContent !== content) {
+        // Set the content state without re-rendering the contentEditable
+        setContent(newContent);
 
-      // Debounce the onChange callback to prevent excessive updates
-      updateTimeoutRef.current = setTimeout(() => {
-        if (onChange) {
-          onChange(newContent);
-        }
-      }, 300);
+        // Debounce the onChange callback to prevent excessive updates
+        updateTimeoutRef.current = setTimeout(() => {
+          if (onChange) {
+            onChange(newContent);
+          }
+        }, 300);
+      }
     }
   };
 
-  // Execute a document command for formatting
+  // Execute a document command for formatting with cursor preservation
   const execCommand = (command, value = null) => {
+    // Save selection state
+    const selection = window.getSelection();
+    let savedRange = null;
+
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      savedRange = {
+        startContainer: range.startContainer,
+        startOffset: range.startOffset,
+        endContainer: range.endContainer,
+        endOffset: range.endOffset
+      };
+    }
+
+    // Execute the command
     document.execCommand('styleWithCSS', false, true);
     document.execCommand(command, false, value);
+
+    // Ensure focus is on the editor
     editorRef.current.focus();
-    handleContentChange();
+
+    // Restore selection if needed
+    if (savedRange && ['formatBlock', 'insertUnorderedList', 'insertOrderedList'].includes(command)) {
+      try {
+        // For commands that might significantly change the DOM structure,
+        // we need to be careful about restoring selection
+        setTimeout(() => {
+          try {
+            // Try to find the closest valid selection point
+            const newRange = document.createRange();
+
+            // Find valid nodes to select
+            let startNode = savedRange.startContainer;
+            let endNode = savedRange.endContainer;
+
+            // If nodes are no longer in the document, find alternatives
+            if (!document.contains(startNode)) {
+              startNode = editorRef.current.firstChild || editorRef.current;
+            }
+
+            if (!document.contains(endNode)) {
+              endNode = editorRef.current.lastChild || editorRef.current;
+            }
+
+            // Set the range to something valid
+            newRange.setStart(startNode, Math.min(savedRange.startOffset, startNode.textContent?.length || 0));
+            newRange.setEnd(endNode, Math.min(savedRange.endOffset, endNode.textContent?.length || 0));
+
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          } catch (e) {
+            console.error('Error restoring selection after command:', e);
+          }
+        }, 0);
+      } catch (e) {
+        console.error('Error in delayed selection restoration:', e);
+      }
+    }
+
+    // Update content state without modifying DOM
+    setContent(editorRef.current.innerHTML);
   };
 
   // Format handlers
@@ -103,17 +211,44 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
   const handleBlockquote = () => execCommand('formatBlock', 'blockquote');
   const handleClearFormat = () => execCommand('removeFormat');
 
-  // Handle text direction toggle
+  // Handle text direction toggle with cursor preservation
   const handleTextDirection = (direction) => {
     if (editorRef.current) {
+      // Save current selection
+      const selection = window.getSelection();
+      let savedRange = null;
+
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        savedRange = {
+          startContainer: range.startContainer,
+          startOffset: range.startOffset,
+          endContainer: range.endContainer,
+          endOffset: range.endOffset
+        };
+      }
+
       // Set the direction attribute
       editorRef.current.setAttribute('dir', direction);
+
+      // Restore selection if we had one
+      if (savedRange) {
+        try {
+          const newRange = document.createRange();
+          newRange.setStart(savedRange.startContainer, savedRange.startOffset);
+          newRange.setEnd(savedRange.endContainer, savedRange.endOffset);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        } catch (e) {
+          console.error('Error restoring selection after direction change:', e);
+        }
+      }
 
       // Force focus to ensure the change takes effect
       editorRef.current.focus();
 
-      // Trigger content change to update the state
-      handleContentChange();
+      // Update state without modifying DOM
+      setContent(editorRef.current.innerHTML);
     }
   };
 
@@ -261,13 +396,16 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
       <div
         className="simple-editor-content"
         ref={editorRef}
-        contentEditable
+        contentEditable="true"
+        suppressContentEditableWarning={true}
         onInput={handleContentChange}
         onBlur={handleContentChange}
+        onClick={() => editorRef.current.focus()} // Ensure clicking anywhere focuses the editor
         dir="ltr" // Explicitly set left-to-right text direction
         spellCheck="true" // Enable spell checking
         data-gramm="false" // Disable Grammarly or similar extensions that might interfere
-        dangerouslySetInnerHTML={{ __html: initialContent }}
+        // Don't use dangerouslySetInnerHTML here as it can cause cursor issues
+        // Initial content is set in the useEffect
       />
     </div>
   );
