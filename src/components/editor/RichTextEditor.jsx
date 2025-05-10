@@ -2,8 +2,8 @@ import React, { useState, useRef, memo } from 'react';
 import { Suspense, lazy } from 'react';
 import './RichTextEditor.css';
 
-// Lazy load the QuillEditor component to improve initial load time
-const QuillEditor = lazy(() => import('./QuillEditor'));
+// Lazy load the SimpleEditor component to improve initial load time
+const SimpleEditor = lazy(() => import('./SimpleEditor'));
 
 // Loading fallback component
 const EditorLoadingFallback = () => (
@@ -75,7 +75,7 @@ const RichTextEditor = memo(({ initialContent = '', onChange }) => {
       <div className="editor-wrapper">
         <Suspense fallback={<EditorLoadingFallback />}>
           <ErrorBoundary onError={handleEditorError}>
-            <QuillEditor
+            <SimpleEditor
               initialContent={initialContent}
               onChange={handleContentChange}
             />

@@ -10,10 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "quill": "^2.0.0-dev.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-quill": "^2.0.0"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
