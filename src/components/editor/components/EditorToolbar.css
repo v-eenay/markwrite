@@ -1,0 +1,101 @@
+/* EditorToolbar.css */
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  gap: 8px;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.toolbar-group-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.toolbar-button {
+  background-color: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.toolbar-button:hover {
+  background-color: #f0f0f0;
+}
+
+.toolbar-button:active,
+.toolbar-button.active {
+  background-color: #e0e0e0;
+}
+
+.toolbar-button.mode-toggle {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
+
+.toolbar-button.mode-toggle:hover {
+  background-color: #3a80d2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editor-toolbar {
+    flex-wrap: wrap;
+  }
+  
+  .toolbar-group {
+    margin-bottom: 8px;
+  }
+  
+  .toolbar-group-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .editor-toolbar {
+    background-color: #252525;
+    border-color: #333;
+  }
+  
+  .toolbar-button {
+    border-color: #444;
+    color: #ddd;
+  }
+  
+  .toolbar-button:hover {
+    background-color: #333;
+  }
+  
+  .toolbar-button:active,
+  .toolbar-button.active {
+    background-color: #444;
+  }
+  
+  .toolbar-button.mode-toggle {
+    background-color: #58a6ff;
+    color: white;
+    border-color: #58a6ff;
+  }
+  
+  .toolbar-button.mode-toggle:hover {
+    background-color: #4a90e2;
+  }
+}

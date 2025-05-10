@@ -2,8 +2,8 @@ import React, { useState, useRef, memo } from 'react';
 import { Suspense, lazy } from 'react';
 import './RichTextEditor.css';
 
-// Lazy load the SimpleEditor component to improve initial load time
-const SimpleEditor = lazy(() => import('./SimpleEditor'));
+// Lazy load the MarkdownEditor component to improve initial load time
+const MarkdownEditor = lazy(() => import('./MarkdownEditor'));
 
 // Loading fallback component
 const EditorLoadingFallback = () => (
@@ -75,9 +75,10 @@ const RichTextEditor = memo(({ initialContent = '', onChange }) => {
       <div className="editor-wrapper">
         <Suspense fallback={<EditorLoadingFallback />}>
           <ErrorBoundary onError={handleEditorError}>
-            <SimpleEditor
+            <MarkdownEditor
               initialContent={initialContent}
               onChange={handleContentChange}
+              initialMode="wysiwyg"
             />
           </ErrorBoundary>
         </Suspense>

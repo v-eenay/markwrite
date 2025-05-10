@@ -7,13 +7,23 @@ import './SimpleEditor.css';
  * @param {Object} props - Component props
  * @param {string} props.initialContent - The HTML content to initialize the editor with
  * @param {Function} props.onChange - Callback function when content changes
+ * @param {Function} props.onCursorPositionChange - Callback when cursor position changes
+ * @param {React.RefObject} props.editorRef - External ref to the editor element
  */
-const SimpleEditor = memo(({ initialContent = '', onChange }) => {
+const SimpleEditor = memo(function SimpleEditor({
+  initialContent = '',
+  onChange,
+  onCursorPositionChange,
+  editorRef: externalEditorRef
+}) {
   const [content, setContent] = useState(initialContent);
-  const editorRef = useRef(null);
+  const internalEditorRef = useRef(null);
   const toolbarRef = useRef(null);
   const updateTimeoutRef = useRef(null);
   const isInternalUpdateRef = useRef(false);
+
+  // Use external ref if provided, otherwise use internal ref
+  const editorRef = externalEditorRef || internalEditorRef;
 
   // Initialize the editor with the initial content - only on first render
   useEffect(() => {
@@ -114,6 +124,27 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
         // Set the content state without re-rendering the contentEditable
         setContent(newContent);
 
+        // Notify about cursor position if callback provided
+        if (onCursorPositionChange) {
+          try {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+              const range = selection.getRangeAt(0);
+
+              // Create a range from the start of the editor to the cursor
+              const preCaretRange = document.createRange();
+              preCaretRange.setStart(editorRef.current, 0);
+              preCaretRange.setEnd(range.startContainer, range.startOffset);
+
+              // Get the text content of this range
+              const text = preCaretRange.toString();
+              onCursorPositionChange(text.length);
+            }
+          } catch (error) {
+            console.error('Error getting cursor position:', error);
+          }
+        }
+
         // Debounce the onChange callback to prevent excessive updates
         updateTimeoutRef.current = setTimeout(() => {
           if (onChange) {
@@ -176,6 +207,22 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
 
             selection.removeAllRanges();
             selection.addRange(newRange);
+
+            // Notify about cursor position change
+            if (onCursorPositionChange) {
+              try {
+                // Create a range from the start of the editor to the cursor
+                const preCaretRange = document.createRange();
+                preCaretRange.setStart(editorRef.current, 0);
+                preCaretRange.setEnd(newRange.startContainer, newRange.startOffset);
+
+                // Get the text content of this range
+                const text = preCaretRange.toString();
+                onCursorPositionChange(text.length);
+              } catch (error) {
+                console.error('Error getting cursor position after command:', error);
+              }
+            }
           } catch (e) {
             console.error('Error restoring selection after command:', e);
           }
@@ -263,7 +310,9 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
 
   return (
     <div className="simple-editor">
-      <div className="simple-editor-toolbar" ref={toolbarRef}>
+      {/* Only show the toolbar if we're not being used inside MarkdownEditor */}
+      {!externalEditorRef && (
+        <div className="simple-editor-toolbar" ref={toolbarRef}>
         <div className="toolbar-group">
           <button
             type="button"
@@ -391,7 +440,7 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
             RTL
           </button>
         </div>
-      </div>
+      )}
 
       <div
         className="simple-editor-content"
@@ -401,6 +450,7 @@ const SimpleEditor = memo(({ initialContent = '', onChange }) => {
         onInput={handleContentChange}
         onBlur={handleContentChange}
         onClick={() => editorRef.current.focus()} // Ensure clicking anywhere focuses the editor
+        onSelect={handleContentChange} // Track selection changes
         dir="ltr" // Explicitly set left-to-right text direction
         spellCheck="true" // Enable spell checking
         data-gramm="false" // Disable Grammarly or similar extensions that might interfere
