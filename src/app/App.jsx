@@ -1,41 +1,8 @@
-import { useState, useCallback } from 'react'
-import ToggleableTipTapEditor from '../components/editor/ToggleableTipTapEditor'
+import { useState } from 'react'
+import RichTextEditorDemo from '../components/editor/RichTextEditorDemo'
 import './App.css'
-import 'prismjs/themes/prism-tomorrow.css'
 
 function App() {
-  const [markdown, setMarkdown] = useState(`# MarkWrite
-
-A modern, minimal Markdown editor with toggle between Rich Text and Markdown modes.
-
-## Features
-
-- Toggle between Rich Text and Markdown modes
-- GitHub Flavored Markdown support
-- Modern, minimal UI
-- Real-time synchronization
-- Syntax highlighting in Markdown mode
-
-\`\`\`js
-// Example code block
-function helloWorld() {
-  console.log("Hello, world!");
-}
-\`\`\`
-
-> This is a blockquote example with a modern design.
-
-| Feature | Description |
-|---------|-------------|
-| Toggle Mode | Switch between rich text and raw markdown |
-| Syntax Highlighting | Code blocks with language detection |
-| Real-time Preview | See changes instantly |
-`);
-
-  // Handle markdown changes
-  const handleMarkdownChange = useCallback((newMarkdown) => {
-    setMarkdown(newMarkdown);
-  }, []);
 
   // Current year for copyright
   const currentYear = new Date().getFullYear();
@@ -45,16 +12,13 @@ function helloWorld() {
       <header className="app-header">
         <img src="/logo.svg" alt="MarkWrite Logo" className="app-logo" />
         <div className="app-title-container">
-          <h1>MarkWrite</h1>
-          <p>Modern Markdown Editor</p>
+          <h1>RichText</h1>
+          <p>Modern Rich Text Editor</p>
         </div>
       </header>
 
       <main className="app-main">
-        <ToggleableTipTapEditor
-          markdown={markdown}
-          onChange={handleMarkdownChange}
-        />
+        <RichTextEditorDemo />
       </main>
 
       <footer className="app-footer">

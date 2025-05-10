@@ -10,15 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tiptap/extension-bubble-menu": "^2.12.0",
-    "@tiptap/extension-code-block": "^2.12.0",
-    "@tiptap/extension-image": "^2.12.0",
-    "@tiptap/extension-link": "^2.12.0",
-    "@tiptap/pm": "^2.12.0",
-    "@tiptap/react": "^2.12.0",
-    "@tiptap/starter-kit": "^2.12.0",
+    "quill": "^2.0.0-dev.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-quill": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

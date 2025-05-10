@@ -1,0 +1,153 @@
+/* RichTextEditor.css */
+:root {
+  --editor-primary: #6366f1;
+  --editor-secondary: #8b5cf6;
+  --editor-tertiary: #ec4899;
+  --editor-quaternary: #10b981;
+  --editor-bg-primary: #f8fafc;
+  --editor-bg-secondary: #f1f5f9;
+  --editor-bg-tertiary: #ffffff;
+  --editor-text-primary: #1e293b;
+  --editor-text-secondary: #64748b;
+  --editor-border: #e2e8f0;
+  --editor-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --editor-radius: 12px;
+  --editor-transition: all 0.3s ease;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --editor-bg-primary: #0f172a;
+    --editor-bg-secondary: #1e293b;
+    --editor-bg-tertiary: #0f172a;
+    --editor-text-primary: #f1f5f9;
+    --editor-text-secondary: #94a3b8;
+    --editor-border: #334155;
+  }
+}
+
+.rich-text-editor {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--editor-radius);
+  overflow: hidden;
+  background-color: var(--editor-bg-tertiary);
+  box-shadow: var(--editor-shadow);
+  border: 1px solid var(--editor-border);
+  transition: var(--editor-transition);
+}
+
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Loading fallback styles */
+.editor-loading-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: var(--editor-bg-secondary);
+  color: var(--editor-text-secondary);
+  border-radius: var(--editor-radius);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--editor-primary);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state styles */
+.editor-error {
+  padding: 24px;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: var(--editor-radius);
+  text-align: center;
+}
+
+.editor-error h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.editor-error p {
+  margin-bottom: 0;
+}
+
+/* Quill-specific styles */
+.rich-text-editor .quill-editor-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+/* Hide the Quill attribution link in the editor */
+.rich-text-editor .ql-container .ql-tooltip[data-mode="link"]::before {
+  content: "Enter link URL:";
+}
+
+.rich-text-editor .ql-container .ql-tooltip.ql-editing a.ql-action::after {
+  content: 'Save';
+}
+
+/* Ensure Quill toolbar has proper styling */
+.rich-text-editor .ql-toolbar {
+  background-color: var(--editor-bg-secondary);
+  border-color: var(--editor-border);
+  border-top-left-radius: var(--editor-radius);
+  border-top-right-radius: var(--editor-radius);
+}
+
+.rich-text-editor .ql-container {
+  border-color: var(--editor-border);
+  border-bottom-left-radius: var(--editor-radius);
+  border-bottom-right-radius: var(--editor-radius);
+  background-color: var(--editor-bg-tertiary);
+}
+
+.rich-text-editor .ql-editor {
+  color: var(--editor-text-primary);
+}
+
+/* Dark mode adjustments for Quill */
+@media (prefers-color-scheme: dark) {
+  .rich-text-editor .ql-toolbar {
+    background-color: var(--editor-bg-secondary);
+  }
+
+  .rich-text-editor .ql-toolbar .ql-stroke {
+    stroke: var(--editor-text-secondary);
+  }
+
+  .rich-text-editor .ql-toolbar .ql-fill {
+    fill: var(--editor-text-secondary);
+  }
+
+  .rich-text-editor .ql-toolbar button:hover .ql-stroke,
+  .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+    stroke: var(--editor-primary);
+  }
+
+  .rich-text-editor .ql-toolbar button:hover .ql-fill,
+  .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
+    fill: var(--editor-primary);
+  }
+}

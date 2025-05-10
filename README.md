@@ -1,23 +1,22 @@
-# MarkWrite
+# RichText Editor
 
-A modern Markdown editor built with React, Vite, and Milkdown.
+A modern rich text editor built with React, Vite, and TipTap.
 
 ## Features
 
-- GitHub Flavored Markdown support
-- Nord dark theme
-- Real-time preview
-- Export to PDF and DOCX
+- Clean, focused rich text editing
+- Modern UI with right-click formatting options
+- Toolbar with common formatting options
+- Support for headings, lists, blockquotes, and more
 - Code syntax highlighting
+- Optimized for performance
 
 ## Technologies
 
 - React for UI components
 - Vite for fast builds and development
-- Milkdown for the Markdown editor
-- html2pdf.js for PDF export
-- docx for DOCX export
-- react-simple-code-editor and Prism.js for the Markdown editor mode
+- TipTap for the rich text editor
+- Lowlight for code syntax highlighting
 
 ## Getting Started
 
@@ -30,8 +29,8 @@ A modern Markdown editor built with React, Vite, and Milkdown.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/markwrite.git
-cd markwrite
+git clone https://github.com/yourusername/richtext-editor.git
+cd richtext-editor
 
 # Install dependencies
 npm install
@@ -42,9 +41,9 @@ npm run dev
 
 ## Usage
 
-1. Write your Markdown in the editor on the left side
-2. See the raw Markdown on the right side
-3. Use the export buttons to save as PDF or DOCX
+1. Use the toolbar at the top for common formatting options
+2. Right-click in the editor for additional formatting options
+3. Write and format your content with a clean, distraction-free interface
 
 ## License
 
@@ -52,5 +51,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- [Milkdown](https://milkdown.dev/) - The WYSIWYG Markdown editor framework
-- [Nord Theme](https://www.nordtheme.com/) - The color palette used in the editor
+- [TipTap](https://tiptap.dev/) - The headless editor framework for web artisans
