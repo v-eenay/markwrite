@@ -113,15 +113,24 @@ const MarkdownEditor = ({
         // Set flag to prevent recursive updates
         isInternalUpdateRef.current = true;
 
+        // Normalize the HTML content to ensure consistent line breaks
+        const normalizedHtml = newHtmlContent
+          // Replace any sequence of <br> tags with a single <br>
+          .replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<br>')
+          // Replace any div that only contains a <br> with a single <br>
+          .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
+          // Replace any empty paragraphs with a single <br>
+          .replace(/<p>\s*<\/p>/gi, '<br>');
+
         // Convert HTML to Markdown
-        const newMarkdownContent = htmlToMarkdown(newHtmlContent);
+        const newMarkdownContent = htmlToMarkdown(normalizedHtml);
 
         // Update Markdown content state
         setMarkdownContent(newMarkdownContent);
 
         // Notify parent component with the appropriate content based on current mode
         if (onChange) {
-          onChange(editorMode === 'markdown' ? newMarkdownContent : newHtmlContent);
+          onChange(editorMode === 'markdown' ? newMarkdownContent : normalizedHtml);
         }
 
         // Reset the internal update flag after a short delay
@@ -155,15 +164,24 @@ const MarkdownEditor = ({
         // Set flag to prevent recursive updates
         isInternalUpdateRef.current = true;
 
+        // Normalize the markdown content to ensure consistent line breaks
+        const normalizedMarkdown = newMarkdownContent
+          // Ensure consistent line endings
+          .replace(/\r\n/g, '\n')
+          // Remove any trailing backslashes at the end of lines
+          .replace(/\\$/gm, '')
+          // Fix any escaped characters that shouldn't be escaped
+          .replace(/\\([^\\`*_{}[\]()#+\-.!])/g, '$1');
+
         // Convert Markdown to HTML
-        const newHtmlContent = markdownToHtml(newMarkdownContent);
+        const newHtmlContent = markdownToHtml(normalizedMarkdown);
 
         // Update HTML content state
         setHtmlContent(newHtmlContent);
 
         // Notify parent component with the appropriate content based on current mode
         if (onChange) {
-          onChange(editorMode === 'markdown' ? newMarkdownContent : newHtmlContent);
+          onChange(editorMode === 'markdown' ? normalizedMarkdown : newHtmlContent);
         }
 
         // Reset the internal update flag after a short delay
@@ -198,6 +216,7 @@ const MarkdownEditor = ({
 
       // Save current selection/cursor position
       let cursorPos = 0;
+      let contentLength = 0;
 
       if (editorMode === 'wysiwyg' && wysiwygEditorRef.current) {
         // Save selection in WYSIWYG editor
@@ -206,12 +225,36 @@ const MarkdownEditor = ({
         if (selection) {
           // Get the cursor offset for approximate position mapping
           cursorPos = getContentEditableCursorOffset(wysiwygEditorRef.current);
-          savedSelectionRef.current = cursorPos;
+
+          // Get the total content length for relative positioning
+          contentLength = wysiwygEditorRef.current.textContent.length;
+
+          // Calculate relative position (0-1) for better mapping between formats
+          const relativePos = contentLength > 0 ? cursorPos / contentLength : 0;
+
+          // Store both absolute and relative positions
+          savedSelectionRef.current = {
+            absolute: cursorPos,
+            relative: relativePos,
+            contentLength: contentLength
+          };
         }
       } else if (editorMode === 'markdown' && markdownEditorRef.current) {
         // Save cursor position in Markdown editor
         cursorPos = getTextareaCursorPosition(markdownEditorRef.current);
-        savedSelectionRef.current = cursorPos;
+
+        // Get the total content length for relative positioning
+        contentLength = markdownEditorRef.current.value.length;
+
+        // Calculate relative position (0-1) for better mapping between formats
+        const relativePos = contentLength > 0 ? cursorPos / contentLength : 0;
+
+        // Store both absolute and relative positions
+        savedSelectionRef.current = {
+          absolute: cursorPos,
+          relative: relativePos,
+          contentLength: contentLength
+        };
       }
 
       // Switch mode
@@ -221,10 +264,24 @@ const MarkdownEditor = ({
       // Use a longer timeout to ensure the editor has fully rendered
       setTimeout(() => {
         try {
-          if (newMode === 'wysiwyg' && wysiwygEditorRef.current && savedSelectionRef.current !== null) {
+          if (newMode === 'wysiwyg' && wysiwygEditorRef.current && savedSelectionRef.current) {
             // For switching to WYSIWYG, find the position in the HTML
-            // Use the saved cursor position as an approximate character offset
-            const position = findPositionByOffset(wysiwygEditorRef.current, savedSelectionRef.current);
+            const newContentLength = wysiwygEditorRef.current.textContent.length;
+
+            // Try to use relative position for better mapping between formats
+            let targetPos;
+            if (savedSelectionRef.current.relative !== undefined && newContentLength > 0) {
+              // Calculate new position based on relative position
+              targetPos = Math.round(savedSelectionRef.current.relative * newContentLength);
+              // Ensure it's within bounds
+              targetPos = Math.max(0, Math.min(targetPos, newContentLength));
+            } else {
+              // Fall back to absolute position
+              targetPos = Math.min(savedSelectionRef.current.absolute || 0, newContentLength);
+            }
+
+            // Find the position in the DOM
+            const position = findPositionByOffset(wysiwygEditorRef.current, targetPos);
 
             if (position) {
               // Create a new range at the found position
@@ -240,11 +297,25 @@ const MarkdownEditor = ({
               // Ensure the editor is focused
               wysiwygEditorRef.current.focus();
             }
-          } else if (newMode === 'markdown' && markdownEditorRef.current && savedSelectionRef.current !== null) {
+          } else if (newMode === 'markdown' && markdownEditorRef.current && savedSelectionRef.current) {
             // For switching to Markdown, set the cursor position in the textarea
+            const newContentLength = markdownEditorRef.current.value.length;
+
+            // Try to use relative position for better mapping between formats
+            let targetPos;
+            if (savedSelectionRef.current.relative !== undefined && newContentLength > 0) {
+              // Calculate new position based on relative position
+              targetPos = Math.round(savedSelectionRef.current.relative * newContentLength);
+              // Ensure it's within bounds
+              targetPos = Math.max(0, Math.min(targetPos, newContentLength));
+            } else {
+              // Fall back to absolute position
+              targetPos = Math.min(savedSelectionRef.current.absolute || 0, newContentLength);
+            }
+
             // Use a small delay to ensure the textarea is ready
             setTimeout(() => {
-              setTextareaCursorPosition(markdownEditorRef.current, savedSelectionRef.current);
+              setTextareaCursorPosition(markdownEditorRef.current, targetPos);
             }, 10);
           }
         } catch (error) {
@@ -253,7 +324,7 @@ const MarkdownEditor = ({
           // Reset the internal update flag
           isInternalUpdateRef.current = false;
         }
-      }, 50);
+      }, 100); // Increased timeout for better reliability
     } catch (error) {
       console.error('Error toggling editor mode:', error);
       isInternalUpdateRef.current = false;

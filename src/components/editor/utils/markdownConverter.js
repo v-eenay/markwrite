@@ -30,7 +30,15 @@ const turndownService = new TurndownService({
   emDelimiter: '*',
   bulletListMarker: '-',
   hr: '---',
-  linkStyle: 'inlined'
+  linkStyle: 'inlined',
+  // Improve line break handling
+  blankReplacement: (content, node) => {
+    return node.isBlock ? '\n\n' : '';
+  },
+  // Preserve line breaks
+  keepReplacement: (content, node) => {
+    return node.isBlock ? `\n\n${content}\n\n` : content;
+  }
 });
 
 // Add rules for code blocks
@@ -59,6 +67,31 @@ turndownService.addRule('checkbox', {
   }
 });
 
+// Add rule for line breaks
+turndownService.addRule('lineBreaks', {
+  filter: 'br',
+  replacement: function(content, node) {
+    // Use a simple line break instead of a backslash followed by a line break
+    return '\n';
+  }
+});
+
+// Add rule for paragraphs to ensure proper spacing
+turndownService.addRule('paragraphs', {
+  filter: 'p',
+  replacement: function(content, node) {
+    return '\n\n' + content + '\n\n';
+  }
+});
+
+// Add rule for divs to handle them as paragraphs
+turndownService.addRule('divs', {
+  filter: 'div',
+  replacement: function(content, node) {
+    return content + '\n';
+  }
+});
+
 /**
  * Convert Markdown to HTML
  * @param {string} markdown - Markdown content
@@ -67,7 +100,26 @@ turndownService.addRule('checkbox', {
 export function markdownToHtml(markdown) {
   if (!markdown) return '';
   try {
-    return marked.parse(markdown);
+    // Normalize line breaks in the Markdown before conversion
+    const normalizedMarkdown = markdown
+      // Ensure consistent line endings
+      .replace(/\r\n/g, '\n')
+      // Ensure a single newline at the end of the document
+      .replace(/\n+$/, '\n');
+
+    // Convert to HTML
+    let html = marked.parse(normalizedMarkdown);
+
+    // Post-process the HTML to fix common issues
+    html = html
+      // Ensure paragraphs have proper spacing
+      .replace(/<p>\s*<\/p>/g, '<p>&nbsp;</p>')
+      // Fix any consecutive <br> tags
+      .replace(/(<br\s*\/?>\s*){2,}/g, '<br><br>')
+      // Ensure proper spacing around block elements
+      .replace(/(<\/(div|p|h[1-6]|ul|ol|li|blockquote)>)(<(div|p|h[1-6]|ul|ol|li|blockquote))/g, '$1\n$3');
+
+    return html;
   } catch (error) {
     console.error('Error converting Markdown to HTML:', error);
     return '<p>Error rendering Markdown</p>';
@@ -82,7 +134,30 @@ export function markdownToHtml(markdown) {
 export function htmlToMarkdown(html) {
   if (!html) return '';
   try {
-    return turndownService.turndown(html);
+    // Normalize line breaks in the HTML before conversion
+    const normalizedHtml = html
+      // Replace any sequence of <br> tags with a single <br>
+      .replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<br>')
+      // Replace any div that only contains a <br> with a single <br>
+      .replace(/<div>\s*<br\s*\/?>\s*<\/div>/gi, '<br>')
+      // Replace any empty paragraphs with a single <br>
+      .replace(/<p>\s*<\/p>/gi, '<br>');
+
+    // Convert to Markdown
+    let markdown = turndownService.turndown(normalizedHtml);
+
+    // Post-process the Markdown to fix common issues
+    markdown = markdown
+      // Remove any backslash followed by a newline (common issue with turndown)
+      .replace(/\\\n/g, '\n')
+      // Remove any trailing backslashes at the end of lines
+      .replace(/\\$/gm, '')
+      // Normalize multiple consecutive blank lines to a maximum of two
+      .replace(/\n{3,}/g, '\n\n')
+      // Fix any escaped characters that shouldn't be escaped
+      .replace(/\\([^\\`*_{}[\]()#+\-.!])/g, '$1');
+
+    return markdown;
   } catch (error) {
     console.error('Error converting HTML to Markdown:', error);
     return 'Error converting to Markdown';
@@ -99,7 +174,7 @@ export function htmlToMarkdown(html) {
  */
 export function getMarkdownCursorPosition(htmlPosition, html, markdown) {
   if (!html || !markdown) return 0;
-  
+
   // Simple ratio-based approximation
   const ratio = markdown.length / html.length;
   return Math.min(Math.floor(htmlPosition * ratio), markdown.length);
@@ -115,7 +190,7 @@ export function getMarkdownCursorPosition(htmlPosition, html, markdown) {
  */
 export function getHtmlCursorPosition(markdownPosition, markdown, html) {
   if (!markdown || !html) return 0;
-  
+
   // Simple ratio-based approximation
   const ratio = html.length / markdown.length;
   return Math.min(Math.floor(markdownPosition * ratio), html.length);
