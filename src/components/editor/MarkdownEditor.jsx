@@ -341,84 +341,93 @@ const MarkdownEditor = ({
       // Apply Markdown syntax in raw editor
       if (!markdownEditorRef.current) return;
 
-      const textarea = markdownEditorRef.current;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = textarea.value.substring(start, end);
+      // Get the current content and selection
+      const start = markdownEditorRef.current.selectionStart;
+      const end = markdownEditorRef.current.selectionEnd;
+      const selectedText = markdownContent.substring(start, end);
       let newText = '';
+      let newCursorPos = 0;
 
       if (command.options?.wrap) {
         // Wrap selected text with syntax (e.g., **bold**)
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  command.syntax + selectedText + command.syntax +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Set new cursor position
-        const newCursorPos = end + (command.syntax.length * 2);
-
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+        // Calculate new cursor position
+        newCursorPos = end + (command.syntax.length * 2);
       } else if (command.options?.list) {
         // Add list item prefix to each line
         const lines = selectedText.split('\n');
         const prefixedLines = lines.map(line => command.syntax + line);
 
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  prefixedLines.join('\n') +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = end +
-                                 (command.syntax.length * lines.length) +
-                                 (lines.length - 1);
+        // Calculate new cursor position
+        newCursorPos = end + (command.syntax.length * lines.length) + (lines.length - 1);
       } else if (command.options?.block) {
         // Add block prefix (e.g., > for blockquote)
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  command.syntax + selectedText +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = end + command.syntax.length;
+        // Calculate new cursor position
+        newCursorPos = end + command.syntax.length;
       } else if (command.options?.codeBlock) {
         // Add code block
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  '```\n' + selectedText + '\n```' +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = end + 8 + selectedText.length;
+        // Calculate new cursor position
+        newCursorPos = end + 8 + selectedText.length;
       } else if (command.options?.link) {
         // Add link syntax
         const url = prompt('Enter the URL:') || 'url';
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  '[' + (selectedText || 'link text') + '](' + url + ')' +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = start +
-                                 (selectedText || 'link text').length +
-                                 url.length + 4;
+        // Calculate new cursor position
+        newCursorPos = start + (selectedText || 'link text').length + url.length + 4;
       } else {
         // Simple prefix (e.g., # for heading)
-        newText = textarea.value.substring(0, start) +
+        newText = markdownContent.substring(0, start) +
                  command.syntax + selectedText +
-                 textarea.value.substring(end);
+                 markdownContent.substring(end);
 
-        // Update textarea
-        textarea.value = newText;
-        textarea.selectionStart = textarea.selectionEnd = end + command.syntax.length;
+        // Calculate new cursor position
+        newCursorPos = end + command.syntax.length;
       }
 
-      // Trigger change event
-      const event = new Event('input', { bubbles: true });
-      textarea.dispatchEvent(event);
+      // Update the markdown content through the proper state update
+      setMarkdownContent(newText);
+
+      // Update cursor position
+      setCursorPosition(newCursorPos);
+
+      // Notify parent component
+      if (onChange) {
+        onChange(newText);
+      }
+
+      // Convert to HTML with debouncing
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      updateTimeoutRef.current = setTimeout(() => {
+        try {
+          const newHtmlContent = markdownToHtml(newText);
+          setHtmlContent(newHtmlContent);
+        } catch (error) {
+          console.error('Error converting Markdown to HTML after formatting:', error);
+        }
+      }, 300);
     }
-  }, []);
+  }, [markdownContent, onChange, setCursorPosition]);
 
   // Clean up on unmount
   useEffect(() => {
