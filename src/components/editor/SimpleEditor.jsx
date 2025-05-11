@@ -58,16 +58,37 @@ const SimpleEditor = memo(function SimpleEditor({
   useEffect(() => {
     if (!editorRef.current || isInternalUpdateRef.current) return;
 
-    // Only update if content is different and editor doesn't have focus
-    if (initialContent !== content && document.activeElement !== editorRef.current) {
+    // Update if content is different, regardless of focus state
+    // This ensures proper synchronization with the Markdown editor
+    if (initialContent !== content) {
       try {
         isInternalUpdateRef.current = true;
 
-        // Set content without disrupting cursor if possible
+        // Save selection if editor has focus
+        let savedSelection = null;
+        if (document.activeElement === editorRef.current) {
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0) {
+            savedSelection = selection.getRangeAt(0).cloneRange();
+          }
+        }
+
+        // Set content
         editorRef.current.innerHTML = initialContent;
         setContent(initialContent);
 
-        // Reset the flag
+        // Restore selection if we had one
+        if (savedSelection) {
+          try {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(savedSelection);
+          } catch (selectionError) {
+            console.error('Error restoring selection after content update:', selectionError);
+          }
+        }
+
+        // Reset the flag after a short delay
         setTimeout(() => {
           isInternalUpdateRef.current = false;
         }, 50);
@@ -80,9 +101,10 @@ const SimpleEditor = memo(function SimpleEditor({
 
   // Handle content changes with debouncing
   const handleContentChange = () => {
+    // Skip processing if this is an internal update
     if (isInternalUpdateRef.current) return;
 
-    // Clear any pending updates
+    // Clear any pending updates to prevent race conditions
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
@@ -91,66 +113,80 @@ const SimpleEditor = memo(function SimpleEditor({
     if (editorRef.current) {
       // Ensure the dir attribute is set to ltr without disrupting cursor
       if (editorRef.current.getAttribute('dir') !== 'ltr') {
-        // Save selection
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const savedRange = {
-          startContainer: range.startContainer,
-          startOffset: range.startOffset,
-          endContainer: range.endContainer,
-          endOffset: range.endOffset
-        };
-
-        // Set direction
-        editorRef.current.setAttribute('dir', 'ltr');
-
-        // Restore selection
         try {
-          const newRange = document.createRange();
-          newRange.setStart(savedRange.startContainer, savedRange.startOffset);
-          newRange.setEnd(savedRange.endContainer, savedRange.endOffset);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
+          // Save selection
+          const selection = window.getSelection();
+          let savedRange = null;
+
+          if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            savedRange = {
+              startContainer: range.startContainer,
+              startOffset: range.startOffset,
+              endContainer: range.endContainer,
+              endOffset: range.endOffset
+            };
+          }
+
+          // Set direction
+          editorRef.current.setAttribute('dir', 'ltr');
+
+          // Restore selection if we had one
+          if (savedRange) {
+            try {
+              const newRange = document.createRange();
+              newRange.setStart(savedRange.startContainer, savedRange.startOffset);
+              newRange.setEnd(savedRange.endContainer, savedRange.endOffset);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            } catch (e) {
+              console.error('Error restoring selection after direction change:', e);
+            }
+          }
         } catch (e) {
-          console.error('Error restoring selection:', e);
+          console.error('Error handling text direction:', e);
         }
       }
 
-      // Get the current content without modifying the DOM
-      const newContent = editorRef.current.innerHTML;
+      try {
+        // Get the current content without modifying the DOM
+        const newContent = editorRef.current.innerHTML;
 
-      // Update state without affecting the DOM
-      if (newContent !== content) {
-        // Set the content state without re-rendering the contentEditable
-        setContent(newContent);
+        // Update state without affecting the DOM
+        if (newContent !== content) {
+          // Set the content state without re-rendering the contentEditable
+          setContent(newContent);
 
-        // Notify about cursor position if callback provided
-        if (onCursorPositionChange) {
-          try {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-              const range = selection.getRangeAt(0);
+          // Notify about cursor position if callback provided
+          if (onCursorPositionChange) {
+            try {
+              const selection = window.getSelection();
+              if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
 
-              // Create a range from the start of the editor to the cursor
-              const preCaretRange = document.createRange();
-              preCaretRange.setStart(editorRef.current, 0);
-              preCaretRange.setEnd(range.startContainer, range.startOffset);
+                // Create a range from the start of the editor to the cursor
+                const preCaretRange = document.createRange();
+                preCaretRange.setStart(editorRef.current, 0);
+                preCaretRange.setEnd(range.startContainer, range.startOffset);
 
-              // Get the text content of this range
-              const text = preCaretRange.toString();
-              onCursorPositionChange(text.length);
+                // Get the text content of this range
+                const text = preCaretRange.toString();
+                onCursorPositionChange(text.length);
+              }
+            } catch (error) {
+              console.error('Error getting cursor position:', error);
             }
-          } catch (error) {
-            console.error('Error getting cursor position:', error);
           }
-        }
 
-        // Debounce the onChange callback to prevent excessive updates
-        updateTimeoutRef.current = setTimeout(() => {
-          if (onChange) {
-            onChange(newContent);
-          }
-        }, 300);
+          // Debounce the onChange callback to prevent excessive updates (300ms as per preferences)
+          updateTimeoutRef.current = setTimeout(() => {
+            if (onChange) {
+              onChange(newContent);
+            }
+          }, 300);
+        }
+      } catch (error) {
+        console.error('Error handling content change:', error);
       }
     }
   };
@@ -313,132 +349,133 @@ const SimpleEditor = memo(function SimpleEditor({
       {/* Only show the toolbar if we're not being used inside MarkdownEditor */}
       {!externalEditorRef && (
         <div className="simple-editor-toolbar" ref={toolbarRef}>
-        <div className="toolbar-group">
-          <button
-            type="button"
-            onClick={() => handleHeading(1)}
-            title="Heading 1"
-            className="toolbar-button"
-          >
-            H1
-          </button>
-          <button
-            type="button"
-            onClick={() => handleHeading(2)}
-            title="Heading 2"
-            className="toolbar-button"
-          >
-            H2
-          </button>
-          <button
-            type="button"
-            onClick={() => handleHeading(3)}
-            title="Heading 3"
-            className="toolbar-button"
-          >
-            H3
-          </button>
-          <button
-            type="button"
-            onClick={() => handleHeading(0)}
-            title="Paragraph"
-            className="toolbar-button"
-          >
-            P
-          </button>
-        </div>
+          <div className="toolbar-group">
+            <button
+              type="button"
+              onClick={() => handleHeading(1)}
+              title="Heading 1"
+              className="toolbar-button"
+            >
+              H1
+            </button>
+            <button
+              type="button"
+              onClick={() => handleHeading(2)}
+              title="Heading 2"
+              className="toolbar-button"
+            >
+              H2
+            </button>
+            <button
+              type="button"
+              onClick={() => handleHeading(3)}
+              title="Heading 3"
+              className="toolbar-button"
+            >
+              H3
+            </button>
+            <button
+              type="button"
+              onClick={() => handleHeading(0)}
+              title="Paragraph"
+              className="toolbar-button"
+            >
+              P
+            </button>
+          </div>
 
-        <div className="toolbar-group">
-          <button
-            type="button"
-            onClick={handleBold}
-            title="Bold"
-            className="toolbar-button"
-          >
-            <strong>B</strong>
-          </button>
-          <button
-            type="button"
-            onClick={handleItalic}
-            title="Italic"
-            className="toolbar-button"
-          >
-            <em>I</em>
-          </button>
-          <button
-            type="button"
-            onClick={handleUnderline}
-            title="Underline"
-            className="toolbar-button"
-          >
-            <u>U</u>
-          </button>
-        </div>
+          <div className="toolbar-group">
+            <button
+              type="button"
+              onClick={handleBold}
+              title="Bold"
+              className="toolbar-button"
+            >
+              <strong>B</strong>
+            </button>
+            <button
+              type="button"
+              onClick={handleItalic}
+              title="Italic"
+              className="toolbar-button"
+            >
+              <em>I</em>
+            </button>
+            <button
+              type="button"
+              onClick={handleUnderline}
+              title="Underline"
+              className="toolbar-button"
+            >
+              <u>U</u>
+            </button>
+          </div>
 
-        <div className="toolbar-group">
-          <button
-            type="button"
-            onClick={handleBulletList}
-            title="Bullet List"
-            className="toolbar-button"
-          >
-            • List
-          </button>
-          <button
-            type="button"
-            onClick={handleNumberedList}
-            title="Numbered List"
-            className="toolbar-button"
-          >
-            1. List
-          </button>
-        </div>
+          <div className="toolbar-group">
+            <button
+              type="button"
+              onClick={handleBulletList}
+              title="Bullet List"
+              className="toolbar-button"
+            >
+              • List
+            </button>
+            <button
+              type="button"
+              onClick={handleNumberedList}
+              title="Numbered List"
+              className="toolbar-button"
+            >
+              1. List
+            </button>
+          </div>
 
-        <div className="toolbar-group">
-          <button
-            type="button"
-            onClick={handleBlockquote}
-            title="Blockquote"
-            className="toolbar-button"
-          >
-            Quote
-          </button>
-          <button
-            type="button"
-            onClick={handleLink}
-            title="Insert Link"
-            className="toolbar-button"
-          >
-            Link
-          </button>
-          <button
-            type="button"
-            onClick={handleClearFormat}
-            title="Clear Formatting"
-            className="toolbar-button"
-          >
-            Clear
-          </button>
-        </div>
+          <div className="toolbar-group">
+            <button
+              type="button"
+              onClick={handleBlockquote}
+              title="Blockquote"
+              className="toolbar-button"
+            >
+              Quote
+            </button>
+            <button
+              type="button"
+              onClick={handleLink}
+              title="Insert Link"
+              className="toolbar-button"
+            >
+              Link
+            </button>
+            <button
+              type="button"
+              onClick={handleClearFormat}
+              title="Clear Formatting"
+              className="toolbar-button"
+            >
+              Clear
+            </button>
+          </div>
 
-        {/* Text Direction Controls */}
-        <div className="toolbar-group">
-          <button
-            type="button"
-            onClick={() => handleTextDirection('ltr')}
-            title="Left to Right Text"
-            className="toolbar-button"
-          >
-            LTR
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTextDirection('rtl')}
-            title="Right to Left Text"
-            className="toolbar-button"
-          >
-            RTL
-          </button>
+          {/* Text Direction Controls */}
+          <div className="toolbar-group">
+            <button
+              type="button"
+              onClick={() => handleTextDirection('ltr')}
+              title="Left to Right Text"
+              className="toolbar-button"
+            >
+              LTR
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTextDirection('rtl')}
+              title="Right to Left Text"
+              className="toolbar-button"
+            >
+              RTL
+            </button>
+          </div>
         </div>
       )}
 
