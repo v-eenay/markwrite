@@ -224,15 +224,24 @@ function CodeMirrorEditor({ value, onChange }) {
             allowMultipleSelections: true,
             indentOnInput: true,
             bracketMatching: true,
+            scrollPastEnd: false, // Don't allow scrolling past the end of the document
           }}
           onCreateEditor={(view) => {
             // Store the CodeMirror view instance on the DOM element for external access
             view.dom.CodeMirror = view;
             view.dom.addEventListener('keyup', () => handleCursorActivity(view));
             view.dom.addEventListener('click', () => handleCursorActivity(view));
+
+            // Force scrollbar visibility
+            const scroller = view.scrollDOM;
+            if (scroller) {
+              scroller.style.overflow = 'auto';
+              scroller.style.overflowY = 'scroll';
+            }
           }}
           placeholder="Write your markdown here..."
           height="100%"
+          style={{ overflow: 'auto', height: '100%' }}
         />
       </div>
     </div>

@@ -32,29 +32,25 @@
 .editor-container {
   position: relative;
   flex: 1;
-  overflow: hidden;
+  overflow: auto; /* Changed from hidden to auto */
 }
 
 /* Override some CodeMirror styles */
 .codemirror-editor .cm-editor {
   height: 100%;
-  overflow: visible;
+  overflow: auto; /* Changed from visible to auto */
   -webkit-overscroll-behavior: contain; /* Prevent scroll chaining */
-  overscroll-behavior: contain; /* Prevent scroll chaining */}
-
-/* Force scrollbars to be always visible in WebKit browsers */
-.codemirror-editor .cm-scroller::-webkit-scrollbar {
-  -webkit-appearance: none;
-  display: block !important;
+  overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
+/* Force scrollbars to be always visible */
 .codemirror-editor .cm-scroller {
   font-family: var(--font-mono);
   line-height: 1.6;
   overflow: auto !important;
+  overflow-y: scroll !important; /* Force vertical scrollbar to always be visible */
   /* Ensure scrollbars are always visible */
   scrollbar-width: thin;
-  -webkit-scrollbar-width: thin;
   scrollbar-color: rgba(107, 114, 128, 0.8) transparent;
   /* Improve touch scrolling */
   -webkit-overflow-scrolling: touch;
@@ -62,13 +58,15 @@
   /* Ensure the scroller takes full height */
   height: 100% !important;
   /* Add some padding to ensure content isn't hidden behind scrollbars */
-  padding-right: 4px;
+  padding-right: 8px;
 }
 
 /* Scrollbar styling for WebKit browsers */
 .codemirror-editor .cm-scroller::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  -webkit-appearance: none;
+  display: block !important;
+  width: 16px;
+  height: 16px;
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-track {
@@ -82,6 +80,7 @@
   border: 3px solid rgba(255, 255, 255, 0.8);
   /* Add a subtle shadow for better visibility */
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  min-height: 40px; /* Ensure the thumb has a minimum height */
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
@@ -91,6 +90,12 @@
 /* Ensure scrollbar corner is styled properly */
 .codemirror-editor .cm-scroller::-webkit-scrollbar-corner {
   background-color: transparent;
+}
+
+/* Add specific styles for vertical scrollbar */
+.codemirror-editor .cm-scroller::-webkit-scrollbar-vertical {
+  width: 16px;
+  display: block !important;
 }
 
 .codemirror-editor .cm-content {

@@ -50,6 +50,9 @@
 
 .editor-pane {
   background-color: var(--bg-editor);
+  overflow-y: auto !important; /* Force vertical scrollbar */
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-pane {
