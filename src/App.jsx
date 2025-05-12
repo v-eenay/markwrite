@@ -56,7 +56,7 @@ function hello() {
 
 [Link text](https://github.com/v-eenay/markwrite.git)
 
-![Alt text](/placeholder.svg)
+![Alt text](./placeholder.svg)
 
 ### Blockquotes
 
