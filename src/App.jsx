@@ -318,6 +318,17 @@ function App() {
           minSize={100}
           gutterSize={10}
           snapOffset={30}
+          dragInterval={1}
+          direction="horizontal"
+          cursor="col-resize"
+          elementStyle={(dimension, size, gutterSize) => ({
+            'flex-basis': `calc(${size}% - ${gutterSize}px)`,
+          })}
+          gutterStyle={() => ({
+            'width': '10px',
+            'cursor': 'col-resize',
+            'touch-action': 'none',
+          })}
         >
           <div className="editor-pane" ref={editorRef}>
             <CodeMirrorEditor
