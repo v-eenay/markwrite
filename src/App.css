@@ -29,6 +29,12 @@
   gap: 1rem;
 }
 
+.download-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .app-content {
   flex: 1;
   overflow: hidden;
