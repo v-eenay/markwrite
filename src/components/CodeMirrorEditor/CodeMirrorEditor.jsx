@@ -10,8 +10,9 @@ import { markdownCompletions } from './autocomplete/markdownCompletions';
 import { detectCodeBlockLanguage, getLanguageExtension } from './autocomplete/languageDetection';
 import './CodeMirrorEditor.css';
 
-// Create a compartment for dynamic language extensions
+// Create compartments for dynamic extensions
 const languageCompartment = new Compartment();
+const autocompletionCompartment = new Compartment();
 
 function CodeMirrorEditor({ value, onChange }) {
   const editorRef = useRef(null);
@@ -46,14 +47,16 @@ function CodeMirrorEditor({ value, onChange }) {
       addKeymap: true
     }),
 
-    // Custom autocompletion
-    autocompletion({
-      override: [customCompletions],
-      defaultKeymap: true,
-      maxRenderedOptions: 10,
-      activateOnTyping: true,
-      icons: true
-    }),
+    // Custom autocompletion (in a compartment so it can be reconfigured)
+    autocompletionCompartment.of(
+      autocompletion({
+        override: [customCompletions],
+        defaultKeymap: true,
+        maxRenderedOptions: 10,
+        activateOnTyping: true,
+        icons: true
+      })
+    ),
 
     // Add Ctrl+Space to force show completions
     keymap.of([
@@ -149,25 +152,42 @@ function CodeMirrorEditor({ value, onChange }) {
       setCurrentLanguage(detectedLanguage);
 
       const langExtension = getLanguageExtension(detectedLanguage);
+
+      // Create an array to hold the effects we want to dispatch
+      const effects = [];
+
+      // Add language compartment reconfiguration effect
       if (langExtension) {
-        // Configure with the language extension and enable autocompletion for it
-        view.dispatch({
-          effects: languageCompartment.reconfigure([
-            langExtension,
-            // Add language-specific autocompletion
-            autocompletion({
-              override: [], // Use the language's built-in completions
-              defaultKeymap: true,
-              maxRenderedOptions: 10,
-              activateOnTyping: true,
-              icons: true
-            })
-          ])
-        });
+        effects.push(languageCompartment.reconfigure([langExtension]));
+
+        // Also reconfigure autocompletion to use language-specific completions
+        effects.push(autocompletionCompartment.reconfigure(
+          autocompletion({
+            override: [], // Use the language's built-in completions
+            defaultKeymap: true,
+            maxRenderedOptions: 10,
+            activateOnTyping: true,
+            icons: true
+          })
+        ));
       } else {
-        view.dispatch({
-          effects: languageCompartment.reconfigure([])
-        });
+        effects.push(languageCompartment.reconfigure([]));
+
+        // Reset autocompletion to use markdown completions
+        effects.push(autocompletionCompartment.reconfigure(
+          autocompletion({
+            override: [customCompletions],
+            defaultKeymap: true,
+            maxRenderedOptions: 10,
+            activateOnTyping: true,
+            icons: true
+          })
+        ));
+      }
+
+      // Dispatch all effects at once
+      if (effects.length > 0) {
+        view.dispatch({ effects });
       }
     }
   };
