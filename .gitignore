@@ -1,3 +1,26 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+.npm
+
+# Build outputs
+/dist
+/dist-ssr
+/build
+/out
+/.output
+/.vite
+
+# Testing
+/coverage
+/.nyc_output
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -7,18 +30,58 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Cache and temporary files
+.cache/
+.temp/
+.tmp/
+.eslintcache
+.stylelintcache
+.parcel-cache
+.rts2_cache*/
+.rpt2_cache*/
+.sass-cache/
+.webpack/
+.rollup.cache/
+tsconfig.tsbuildinfo
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# Miscellaneous
+*.tgz
+*.zip
+*.tar.gz
+*.bak
+*.swp
+*.tmp
+*~
+.history/
+.~lock.*
+er.email*
