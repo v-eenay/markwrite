@@ -4,6 +4,7 @@ import CodeMirrorEditor from './components/CodeMirrorEditor/CodeMirrorEditor';
 import Preview from './components/Preview/Preview';
 import Toolbar from './components/Toolbar/Toolbar';
 import PdfDownloadButton from './components/PdfDownloadButton/PdfDownloadButton';
+import DocxDownloadButton from './components/DocxDownloadButton/DocxDownloadButton';
 import './App.css';
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
@@ -55,7 +56,7 @@ function hello() {
 
 [Link text](https://github.com/v-eenay/markwrite.git)
 
-![Alt text](/placeholder.svg)
+![Alt text](./placeholder.svg)
 
 ### Blockquotes
 
@@ -308,7 +309,10 @@ function App() {
         <h1>MarkWrite</h1>
         <div className="header-actions">
           <Toolbar onAction={handleToolbarAction} />
-          <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
+          <div className="download-buttons">
+            <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
+            <DocxDownloadButton previewRef={previewRef} markdown={markdown} />
+          </div>
         </div>
       </header>
       <main className="app-content">
