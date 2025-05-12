@@ -22,11 +22,22 @@
 
 .language-indicator {
   font-size: 0.75rem;
-  color: var(--primary-color);
-  background-color: rgba(59, 130, 246, 0.1);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Style for code language indicator */
+.language-code {
+  color: var(--primary-color);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Style for markdown language indicator */
+.language-markdown {
+  color: #4b5563;
+  background-color: rgba(229, 231, 235, 0.5);
 }
 
 .editor-container {

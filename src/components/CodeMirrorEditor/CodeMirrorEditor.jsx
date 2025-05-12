@@ -16,7 +16,7 @@ const autocompletionCompartment = new Compartment();
 
 function CodeMirrorEditor({ value, onChange }) {
   const editorRef = useRef(null);
-  const [currentLanguage, setCurrentLanguage] = useState(null);
+  const [currentLanguage, setCurrentLanguage] = useState("markdown");
 
   // Custom autocompletion source that combines markdown completions
   // with language-specific completions in code blocks
@@ -150,10 +150,13 @@ function CodeMirrorEditor({ value, onChange }) {
     // Detect if we're in a code block and get the language
     const detectedLanguage = detectCodeBlockLanguage(state, pos);
 
-    // Only update if the language has changed (including changing to/from null)
-    if (detectedLanguage !== currentLanguage) {
+    // Use the detected language or default to "markdown" when outside code blocks
+    const displayLanguage = detectedLanguage || "markdown";
+
+    // Only update if the language has changed
+    if (displayLanguage !== currentLanguage) {
       // Update the current language state
-      setCurrentLanguage(detectedLanguage);
+      setCurrentLanguage(displayLanguage);
 
       // Get the language extension if we're in a code block with a recognized language
       const langExtension = getLanguageExtension(detectedLanguage);
@@ -202,11 +205,14 @@ function CodeMirrorEditor({ value, onChange }) {
     <div className="codemirror-editor">
       <div className="editor-header">
         <span>Markdown</span>
-        {currentLanguage && (
-          <span className="language-indicator" title={`Code block language: ${currentLanguage}`}>
-            Language: {currentLanguage}
-          </span>
-        )}
+        <span
+          className={`language-indicator ${currentLanguage === 'markdown' ? 'language-markdown' : 'language-code'}`}
+          title={currentLanguage === 'markdown'
+            ? 'Currently editing Markdown text'
+            : `Code block language: ${currentLanguage}`}
+        >
+          Language: {currentLanguage}
+        </span>
       </div>
       <div className="editor-container">
         <ReactCodeMirror
