@@ -1,0 +1,63 @@
+.markdown-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--bg-editor);
+  box-shadow: var(--shadow-sm);
+}
+
+.editor-header {
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.editor-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.markdown-editor textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+  overflow: auto;
+  white-space: pre-wrap;
+  z-index: 1;
+  caret-color: var(--primary-color);
+}
+
+.editor-syntax-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: transparent;
+  white-space: pre-wrap;
+  overflow: auto;
+  pointer-events: none;
+  z-index: 0;
+}
