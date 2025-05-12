@@ -146,21 +146,26 @@ function CodeMirrorEditor({ value, onChange }) {
   const handleCursorActivity = (view) => {
     const { state } = view;
     const pos = state.selection.main.head;
+
+    // Detect if we're in a code block and get the language
     const detectedLanguage = detectCodeBlockLanguage(state, pos);
 
+    // Only update if the language has changed (including changing to/from null)
     if (detectedLanguage !== currentLanguage) {
+      // Update the current language state
       setCurrentLanguage(detectedLanguage);
 
+      // Get the language extension if we're in a code block with a recognized language
       const langExtension = getLanguageExtension(detectedLanguage);
 
       // Create an array to hold the effects we want to dispatch
       const effects = [];
 
-      // Add language compartment reconfiguration effect
-      if (langExtension) {
+      if (detectedLanguage && langExtension) {
+        // We're in a code block with a recognized language
         effects.push(languageCompartment.reconfigure([langExtension]));
 
-        // Also reconfigure autocompletion to use language-specific completions
+        // Configure autocompletion to use language-specific completions
         effects.push(autocompletionCompartment.reconfigure(
           autocompletion({
             override: [], // Use the language's built-in completions
@@ -171,6 +176,7 @@ function CodeMirrorEditor({ value, onChange }) {
           })
         ));
       } else {
+        // We're not in a code block or the language isn't recognized
         effects.push(languageCompartment.reconfigure([]));
 
         // Reset autocompletion to use markdown completions

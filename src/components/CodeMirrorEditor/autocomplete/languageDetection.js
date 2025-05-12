@@ -46,45 +46,61 @@ export function detectCodeBlockLanguage(state, pos) {
   const doc = state.doc;
   const linePos = doc.lineAt(pos);
   const currentLine = linePos.number;
-  
+
   // Look backward for the start of a code block
   let startLine = null;
   let language = null;
-  
+
   for (let i = currentLine; i >= 1; i--) {
     const line = doc.line(i);
-    const text = line.text;
-    
+    const text = line.text.trim();
+
     // Check if this line is the start of a code block
-    const match = text.match(/^```(\w*)$/);
+    // Match both ```language and ``` language formats
+    const match = text.match(/^```(\w*)(?:\s+(\w+))?$/);
     if (match) {
       startLine = i;
-      language = match[1] || null;
+      // Use the first captured group if it exists, otherwise try the second group
+      language = (match[1] && match[1].length > 0) ? match[1] : (match[2] || null);
       break;
     }
+
+    // If we encounter another code block end marker before finding a start,
+    // then we're not in a code block
+    if (text === '```') {
+      return null;
+    }
   }
-  
+
   // If we found a start, look forward for the end
   if (startLine !== null) {
+    // Get the position right after the opening ```
+    const startPos = doc.line(startLine).from + doc.line(startLine).text.indexOf('```') + 3;
+
     for (let i = startLine + 1; i <= doc.lines; i++) {
       const line = doc.line(i);
-      const text = line.text;
-      
+      const text = line.text.trim();
+
       // Check if this line is the end of the code block
-      if (text.match(/^```$/)) {
+      if (text === '```') {
         // Check if our position is between start and end
-        const startPos = doc.line(startLine).from;
-        const endPos = line.to;
-        
+        const endPos = line.from;
+
         if (pos > startPos && pos < endPos) {
           return language;
         }
-        
+
         break;
+      }
+
+      // If we reach the end of the document without finding a closing marker,
+      // check if we're after the opening marker
+      if (i === doc.lines && pos > startPos) {
+        return language;
       }
     }
   }
-  
+
   return null;
 }
 
@@ -95,6 +111,6 @@ export function detectCodeBlockLanguage(state, pos) {
  */
 export function getLanguageExtension(language) {
   if (!language) return null;
-  
+
   return languageMap[language.toLowerCase()] || null;
 }

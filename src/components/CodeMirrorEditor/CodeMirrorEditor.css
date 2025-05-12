@@ -41,29 +41,40 @@
   overflow: visible;
 }
 
+/* Force scrollbars to be always visible in WebKit browsers */
+.codemirror-editor .cm-scroller::-webkit-scrollbar {
+  -webkit-appearance: none;
+  display: block !important;
+}
+
 .codemirror-editor .cm-scroller {
   font-family: var(--font-mono);
   line-height: 1.6;
   overflow: auto !important;
   /* Ensure scrollbars are always visible */
   scrollbar-width: thin;
-  scrollbar-color: var(--border-hover) transparent;
+  scrollbar-color: rgba(107, 114, 128, 0.8) transparent;
 }
 
 /* Scrollbar styling for WebKit browsers */
 .codemirror-editor .cm-scroller::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(229, 231, 235, 0.3);
+  border-radius: 6px;
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-thumb {
-  background-color: var(--border-hover);
-  border-radius: 4px;
-  border: 2px solid transparent;
+  background-color: rgba(107, 114, 128, 0.8);
+  border-radius: 6px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+}
+
+.codemirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(75, 85, 99, 0.9);
 }
 
 .codemirror-editor .cm-content {
