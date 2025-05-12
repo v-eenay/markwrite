@@ -16,19 +16,23 @@ function MarkdownEditor({ value, onChange }) {
   useEffect(() => {
     // Apply syntax highlighting to the preview
     if (previewRef.current) {
-      // Create a hidden element to process code blocks with highlight.js
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = value
+      // Process the markdown content for syntax highlighting
+      let processedContent = value
+        // Preserve line breaks and spaces exactly as they are in the textarea
+        .replace(/\n/g, '<br>')
+        // Escape HTML characters
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         // Highlight code blocks with ```
         .replace(
           /```(\w*)([\s\S]*?)```/g,
           (match, lang, code) => {
-            if (lang && hljs.getLanguage(lang)) {
-              return `<pre><code class="language-${lang}">${hljs.highlight(code.trim(), { language: lang }).value}</code></pre>`;
-            }
-            return `<pre><code>${hljs.highlightAuto(code.trim()).value}</code></pre>`;
+            const highlightedCode = lang && hljs.getLanguage(lang)
+              ? hljs.highlight(code.trim(), { language: lang }).value
+              : hljs.highlightAuto(code.trim()).value;
+
+            // Replace <br> with actual line breaks inside code blocks
+            return `<pre><code class="language-${lang || ''}">${highlightedCode}</code></pre>`;
           }
         )
         // Highlight inline code with `
@@ -37,7 +41,12 @@ function MarkdownEditor({ value, onChange }) {
           (match, code) => `<code>${code}</code>`
         );
 
-      previewRef.current.innerHTML = tempDiv.innerHTML;
+      // Handle spaces to ensure they render exactly like in a textarea
+      processedContent = processedContent
+        .replace(/ {2}/g, ' &nbsp;')  // Replace double spaces with space + nbsp
+        .replace(/\t/g, '&nbsp;&nbsp;'); // Replace tabs with two nbsp
+
+      previewRef.current.innerHTML = processedContent;
     }
   }, [value]);
 
@@ -57,6 +66,41 @@ function MarkdownEditor({ value, onChange }) {
     return () => {
       textarea.removeEventListener('scroll', handleTextareaScroll);
       preview.removeEventListener('scroll', handlePreviewScroll);
+    };
+  }, []);
+
+  // Ensure proper alignment on initial load and window resize
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    const preview = previewRef.current;
+
+    if (!textarea || !preview) return;
+
+    // Function to ensure exact alignment of textarea and preview
+    const ensureAlignment = () => {
+      // Match computed styles exactly
+      const textareaStyles = window.getComputedStyle(textarea);
+
+      // Apply the exact same computed line height to both elements
+      const lineHeight = textareaStyles.lineHeight;
+      textarea.style.lineHeight = lineHeight;
+      preview.style.lineHeight = lineHeight;
+
+      // Ensure padding is exactly the same
+      preview.style.padding = textareaStyles.padding;
+
+      // Force a synchronization of scroll position
+      syncScroll(textarea, preview);
+    };
+
+    // Run alignment on load
+    ensureAlignment();
+
+    // Also run alignment on window resize
+    window.addEventListener('resize', ensureAlignment);
+
+    return () => {
+      window.removeEventListener('resize', ensureAlignment);
     };
   }, []);
 
