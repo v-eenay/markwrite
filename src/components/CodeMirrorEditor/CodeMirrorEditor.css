@@ -39,8 +39,8 @@
 .codemirror-editor .cm-editor {
   height: 100%;
   overflow: visible;
-  overscroll-behavior: contain; /* Prevent scroll chaining */
-}
+  -webkit-overscroll-behavior: contain; /* Prevent scroll chaining */
+  overscroll-behavior: contain; /* Prevent scroll chaining */}
 
 /* Force scrollbars to be always visible in WebKit browsers */
 .codemirror-editor .cm-scroller::-webkit-scrollbar {
@@ -54,6 +54,7 @@
   overflow: auto !important;
   /* Ensure scrollbars are always visible */
   scrollbar-width: thin;
+  -webkit-scrollbar-width: thin;
   scrollbar-color: rgba(107, 114, 128, 0.8) transparent;
   /* Improve touch scrolling */
   -webkit-overflow-scrolling: touch;
