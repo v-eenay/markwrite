@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Split from 'react-split';
-import MarkdownEditor from './components/MarkdownEditor/MarkdownEditor';
+import CodeMirrorEditor from './components/CodeMirrorEditor/CodeMirrorEditor';
 import Preview from './components/Preview/Preview';
 import Toolbar from './components/Toolbar/Toolbar';
 import PdfDownloadButton from './components/PdfDownloadButton/PdfDownloadButton';
@@ -100,7 +100,8 @@ function App() {
 
   // Set up scroll synchronization
   useEffect(() => {
-    const editorElement = editorRef.current?.querySelector('textarea');
+    // For CodeMirror, we need to find the .cm-scroller element
+    const editorElement = editorRef.current?.querySelector('.cm-scroller');
     const previewElement = previewRef.current?.querySelector('.preview-content');
 
     if (!editorElement || !previewElement) return;
@@ -118,59 +119,140 @@ function App() {
   }, []);
 
   const handleToolbarAction = (action) => {
-    let updatedMarkdown = markdown;
-    const textarea = document.querySelector('.markdown-editor textarea');
-    const selectionStart = textarea.selectionStart;
-    const selectionEnd = textarea.selectionEnd;
-    const selectedText = markdown.substring(selectionStart, selectionEnd);
-    const beforeSelection = markdown.substring(0, selectionStart);
-    const afterSelection = markdown.substring(selectionEnd);
+    // Get the CodeMirror editor view
+    const editorElement = editorRef.current?.querySelector('.cm-editor');
+    if (!editorElement) return;
+
+    // Get the CodeMirror view instance
+    const view = editorElement.CodeMirror;
+    if (!view) {
+      // Fallback to direct text manipulation if we can't get the CodeMirror instance
+      let updatedMarkdown = markdown;
+
+      // Try to get the current selection from the document
+      const selection = window.getSelection();
+      let selectedText = '';
+      let beforeSelection = markdown;
+      let afterSelection = '';
+
+      if (selection && selection.rangeCount > 0) {
+        selectedText = selection.toString();
+        const selectionStart = markdown.indexOf(selectedText);
+        if (selectionStart !== -1) {
+          beforeSelection = markdown.substring(0, selectionStart);
+          afterSelection = markdown.substring(selectionStart + selectedText.length);
+        }
+      }
+
+      // Apply the formatting
+      switch (action) {
+        case 'heading1':
+          updatedMarkdown = beforeSelection + '# ' + selectedText + afterSelection;
+          break;
+        case 'heading2':
+          updatedMarkdown = beforeSelection + '## ' + selectedText + afterSelection;
+          break;
+        case 'heading3':
+          updatedMarkdown = beforeSelection + '### ' + selectedText + afterSelection;
+          break;
+        case 'bold':
+          updatedMarkdown = beforeSelection + '**' + selectedText + '**' + afterSelection;
+          break;
+        case 'italic':
+          updatedMarkdown = beforeSelection + '*' + selectedText + '*' + afterSelection;
+          break;
+        case 'strikethrough':
+          updatedMarkdown = beforeSelection + '~~' + selectedText + '~~' + afterSelection;
+          break;
+        case 'code':
+          updatedMarkdown = beforeSelection + '`' + selectedText + '`' + afterSelection;
+          break;
+        case 'codeblock':
+          updatedMarkdown = beforeSelection + '```\n' + selectedText + '\n```' + afterSelection;
+          break;
+        case 'link':
+          updatedMarkdown = beforeSelection + '[' + (selectedText || 'Link text') + '](url)' + afterSelection;
+          break;
+        case 'image':
+          updatedMarkdown = beforeSelection + '![' + (selectedText || 'Alt text') + '](image-url)' + afterSelection;
+          break;
+        case 'unorderedList':
+          updatedMarkdown = beforeSelection + '- ' + selectedText + afterSelection;
+          break;
+        case 'orderedList':
+          updatedMarkdown = beforeSelection + '1. ' + selectedText + afterSelection;
+          break;
+        case 'blockquote':
+          updatedMarkdown = beforeSelection + '> ' + selectedText + afterSelection;
+          break;
+        default:
+          break;
+      }
+
+      setMarkdown(updatedMarkdown);
+      return;
+    }
+
+    // Get the current selection
+    const { state } = view;
+    const selection = state.selection.main;
+    const selectedText = state.sliceDoc(selection.from, selection.to);
+
+    // Prepare the text to insert based on the action
+    let textToInsert = '';
 
     switch (action) {
       case 'heading1':
-        updatedMarkdown = beforeSelection + '# ' + selectedText + afterSelection;
+        textToInsert = '# ' + selectedText;
         break;
       case 'heading2':
-        updatedMarkdown = beforeSelection + '## ' + selectedText + afterSelection;
+        textToInsert = '## ' + selectedText;
         break;
       case 'heading3':
-        updatedMarkdown = beforeSelection + '### ' + selectedText + afterSelection;
+        textToInsert = '### ' + selectedText;
         break;
       case 'bold':
-        updatedMarkdown = beforeSelection + '**' + selectedText + '**' + afterSelection;
+        textToInsert = '**' + selectedText + '**';
         break;
       case 'italic':
-        updatedMarkdown = beforeSelection + '*' + selectedText + '*' + afterSelection;
+        textToInsert = '*' + selectedText + '*';
         break;
       case 'strikethrough':
-        updatedMarkdown = beforeSelection + '~~' + selectedText + '~~' + afterSelection;
+        textToInsert = '~~' + selectedText + '~~';
         break;
       case 'code':
-        updatedMarkdown = beforeSelection + '`' + selectedText + '`' + afterSelection;
+        textToInsert = '`' + selectedText + '`';
         break;
       case 'codeblock':
-        updatedMarkdown = beforeSelection + '```\n' + selectedText + '\n```' + afterSelection;
+        textToInsert = '```\n' + selectedText + '\n```';
         break;
       case 'link':
-        updatedMarkdown = beforeSelection + '[' + (selectedText || 'Link text') + '](url)' + afterSelection;
+        textToInsert = '[' + (selectedText || 'Link text') + '](url)';
         break;
       case 'image':
-        updatedMarkdown = beforeSelection + '![' + (selectedText || 'Alt text') + '](image-url)' + afterSelection;
+        textToInsert = '![' + (selectedText || 'Alt text') + '](image-url)';
         break;
       case 'unorderedList':
-        updatedMarkdown = beforeSelection + '- ' + selectedText + afterSelection;
+        textToInsert = '- ' + selectedText;
         break;
       case 'orderedList':
-        updatedMarkdown = beforeSelection + '1. ' + selectedText + afterSelection;
+        textToInsert = '1. ' + selectedText;
         break;
       case 'blockquote':
-        updatedMarkdown = beforeSelection + '> ' + selectedText + afterSelection;
+        textToInsert = '> ' + selectedText;
         break;
       default:
-        break;
+        return;
     }
 
-    setMarkdown(updatedMarkdown);
+    // Replace the selection with the new text
+    view.dispatch({
+      changes: {
+        from: selection.from,
+        to: selection.to,
+        insert: textToInsert
+      }
+    });
   };
 
   return (
@@ -191,7 +273,7 @@ function App() {
           snapOffset={30}
         >
           <div className="editor-pane" ref={editorRef}>
-            <MarkdownEditor
+            <CodeMirrorEditor
               value={markdown}
               onChange={handleMarkdownChange}
             />

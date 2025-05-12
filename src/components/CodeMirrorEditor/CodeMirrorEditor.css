@@ -1,0 +1,132 @@
+.codemirror-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--bg-editor);
+  box-shadow: var(--shadow-sm);
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.language-indicator {
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.editor-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Override some CodeMirror styles */
+.codemirror-editor .cm-editor {
+  height: 100%;
+}
+
+.codemirror-editor .cm-scroller {
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}
+
+/* Syntax highlighting for Markdown */
+.codemirror-editor .cm-header {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.codemirror-editor .cm-header-1 {
+  font-size: 1.4em;
+}
+
+.codemirror-editor .cm-header-2 {
+  font-size: 1.3em;
+}
+
+.codemirror-editor .cm-header-3 {
+  font-size: 1.2em;
+}
+
+.codemirror-editor .cm-header-4,
+.codemirror-editor .cm-header-5,
+.codemirror-editor .cm-header-6 {
+  font-size: 1.1em;
+}
+
+.codemirror-editor .cm-strong {
+  color: #000;
+  font-weight: bold;
+}
+
+.codemirror-editor .cm-em {
+  color: #000;
+  font-style: italic;
+}
+
+.codemirror-editor .cm-link {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.codemirror-editor .cm-url {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.codemirror-editor .cm-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.codemirror-editor .cm-list {
+  color: var(--primary-color);
+}
+
+.codemirror-editor .cm-hr {
+  color: #6a737d;
+}
+
+.codemirror-editor .cm-comment {
+  color: #6a737d;
+}
+
+/* Code block styling */
+.codemirror-editor .cm-codeblock {
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+
+/* Tooltip styling for autocompletion */
+.cm-tooltip-autocomplete {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  box-shadow: var(--shadow-md) !important;
+  background-color: var(--bg-editor) !important;
+}
+
+.cm-tooltip-autocomplete ul li {
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: var(--primary-color) !important;
+}
