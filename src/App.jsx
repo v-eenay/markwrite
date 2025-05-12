@@ -94,29 +94,76 @@ function App() {
     // Calculate the scroll percentage
     const scrollPercentage = source.scrollTop / sourceScrollHeight;
 
-    // Apply the same percentage to the target
-    target.scrollTop = scrollPercentage * targetScrollHeight;
+    // Apply the same percentage to the target with a small delay to prevent scroll loops
+    // and ensure smooth scrolling
+    requestAnimationFrame(() => {
+      // Check if the target is still in the DOM
+      if (target.isConnected) {
+        target.scrollTop = scrollPercentage * targetScrollHeight;
+      }
+    });
   };
 
   // Set up scroll synchronization
   useEffect(() => {
-    // For CodeMirror, we need to find the .cm-scroller element
-    const editorElement = editorRef.current?.querySelector('.cm-scroller');
+    // Function to find the editor scroller element
+    const findEditorScroller = () => {
+      return editorRef.current?.querySelector('.cm-scroller');
+    };
+
     const previewElement = previewRef.current?.querySelector('.preview-content');
+    let editorElement = findEditorScroller();
 
-    if (!editorElement || !previewElement) return;
+    if (!editorElement || !previewElement) {
+      // If elements aren't available yet, try again after a short delay
+      const retryTimeout = setTimeout(() => {
+        editorElement = findEditorScroller();
+        if (editorElement && previewElement) {
+          setupScrollListeners(editorElement, previewElement);
+        }
+      }, 500);
 
-    const handleEditorScroll = () => syncScroll(editorElement, previewElement);
-    const handlePreviewScroll = () => syncScroll(previewElement, editorElement);
+      return () => clearTimeout(retryTimeout);
+    }
+
+    // Set up the scroll listeners
+    return setupScrollListeners(editorElement, previewElement);
+  }, []);
+
+  // Helper function to set up scroll listeners
+  const setupScrollListeners = (editorElement, previewElement) => {
+    if (!editorElement || !previewElement) return () => {};
+
+    // Use a flag to prevent scroll loops
+    let isScrolling = false;
+
+    const handleEditorScroll = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+        syncScroll(editorElement, previewElement);
+        setTimeout(() => { isScrolling = false; }, 50);
+      }
+    };
+
+    const handlePreviewScroll = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+        syncScroll(previewElement, editorElement);
+        setTimeout(() => { isScrolling = false; }, 50);
+      }
+    };
 
     editorElement.addEventListener('scroll', handleEditorScroll);
     previewElement.addEventListener('scroll', handlePreviewScroll);
+
+    // Initial sync
+    syncScroll(editorElement, previewElement);
 
     return () => {
       editorElement.removeEventListener('scroll', handleEditorScroll);
       previewElement.removeEventListener('scroll', handlePreviewScroll);
     };
-  }, []);
+  };
 
   const handleToolbarAction = (action) => {
     // Get the CodeMirror editor view

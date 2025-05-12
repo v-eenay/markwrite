@@ -26,7 +26,10 @@ function CodeMirrorEditor({ value, onChange }) {
     const codeBlockLanguage = detectCodeBlockLanguage(state, pos);
 
     // If we're in a code block, we'll let the language's own completions handle it
+    // but we won't return null as that would disable autocompletion entirely
     if (codeBlockLanguage) {
+      // We don't need to do anything special here, as the language extension
+      // will provide its own completions when active
       return null;
     }
 
@@ -147,8 +150,19 @@ function CodeMirrorEditor({ value, onChange }) {
 
       const langExtension = getLanguageExtension(detectedLanguage);
       if (langExtension) {
+        // Configure with the language extension and enable autocompletion for it
         view.dispatch({
-          effects: languageCompartment.reconfigure(langExtension)
+          effects: languageCompartment.reconfigure([
+            langExtension,
+            // Add language-specific autocompletion
+            autocompletion({
+              override: [], // Use the language's built-in completions
+              defaultKeymap: true,
+              maxRenderedOptions: 10,
+              activateOnTyping: true,
+              icons: true
+            })
+          ])
         });
       } else {
         view.dispatch({
@@ -163,7 +177,7 @@ function CodeMirrorEditor({ value, onChange }) {
       <div className="editor-header">
         <span>Markdown</span>
         {currentLanguage && (
-          <span className="language-indicator">
+          <span className="language-indicator" title={`Code block language: ${currentLanguage}`}>
             Language: {currentLanguage}
           </span>
         )}

@@ -38,11 +38,38 @@
 /* Override some CodeMirror styles */
 .codemirror-editor .cm-editor {
   height: 100%;
+  overflow: visible;
 }
 
 .codemirror-editor .cm-scroller {
   font-family: var(--font-mono);
   line-height: 1.6;
+  overflow: auto !important;
+  /* Ensure scrollbars are always visible */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+}
+
+/* Scrollbar styling for WebKit browsers */
+.codemirror-editor .cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.codemirror-editor .cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.codemirror-editor .cm-scroller::-webkit-scrollbar-thumb {
+  background-color: var(--border-hover);
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.codemirror-editor .cm-content {
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 /* Syntax highlighting for Markdown */
