@@ -54,7 +54,7 @@ function hello() {
 
 [Link text](https://github.com/v-eenay/markwrite.git)
 
-![Alt text](https://via.placeholder.com/150)
+![Alt text](/placeholder.svg)
 
 ### Blockquotes
 
@@ -141,17 +141,17 @@ function App() {
         <Toolbar onAction={handleToolbarAction} />
       </header>
       <main className="app-content">
-        <Split 
+        <Split
           className="split-pane"
-          sizes={[50, 50]} 
-          minSize={100} 
+          sizes={[50, 50]}
+          minSize={100}
           gutterSize={10}
           snapOffset={30}
         >
           <div className="editor-pane">
-            <MarkdownEditor 
-              value={markdown} 
-              onChange={handleMarkdownChange} 
+            <MarkdownEditor
+              value={markdown}
+              onChange={handleMarkdownChange}
             />
           </div>
           <div className="preview-pane">
@@ -161,7 +161,7 @@ function App() {
       </main>
       <footer className="app-footer">
         <p>
-          MarkWrite - A minimalist Markdown editor | 
+          MarkWrite - A minimalist Markdown editor |
           <a href="https://github.com/v-eenay/markwrite.git" target="_blank" rel="noopener noreferrer">GitHub</a>
         </p>
       </footer>
