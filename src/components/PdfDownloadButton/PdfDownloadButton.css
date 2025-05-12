@@ -1,0 +1,68 @@
+.pdf-download-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pdf-download-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pdf-download-button:hover {
+  background-color: var(--primary-hover);
+}
+
+.pdf-download-button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pdf-download-button.generating {
+  position: relative;
+}
+
+.pdf-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pdf-error-message {
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  background-color: #ef4444;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
+}

@@ -3,6 +3,7 @@ import Split from 'react-split';
 import MarkdownEditor from './components/MarkdownEditor/MarkdownEditor';
 import Preview from './components/Preview/Preview';
 import Toolbar from './components/Toolbar/Toolbar';
+import PdfDownloadButton from './components/PdfDownloadButton/PdfDownloadButton';
 import './App.css';
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
@@ -176,7 +177,10 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>MarkWrite</h1>
-        <Toolbar onAction={handleToolbarAction} />
+        <div className="header-actions">
+          <Toolbar onAction={handleToolbarAction} />
+          <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
+        </div>
       </header>
       <main className="app-content">
         <Split
