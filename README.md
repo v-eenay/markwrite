@@ -23,6 +23,7 @@
 - **Split-Pane View** — Edit Markdown on one side and see the rendered preview on the other
 - **Markdown Syntax Highlighting** — Visual cues for Markdown syntax
 - **Code Syntax Highlighting** — Support for multiple programming languages in code blocks
+- **Intelligent Code Autocompletion** — Language-specific autocompletion for code blocks
 - **Formatting Toolbar** — Quick access to common Markdown formatting options
 - **Real-Time Preview** — Instantly see how your Markdown will render
 
