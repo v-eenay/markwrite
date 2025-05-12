@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Split from 'react-split';
 import MarkdownEditor from './components/MarkdownEditor/MarkdownEditor';
 import Preview from './components/Preview/Preview';
@@ -73,10 +73,48 @@ Start writing your own content now!
 
 function App() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
+  const editorRef = useRef(null);
+  const previewRef = useRef(null);
 
   const handleMarkdownChange = (newMarkdown) => {
     setMarkdown(newMarkdown);
   };
+
+  // Function to synchronize scrolling between editor and preview
+  const syncScroll = (source, target) => {
+    if (!source || !target) return;
+
+    // Calculate relative scroll position
+    const sourceScrollHeight = source.scrollHeight - source.clientHeight;
+    const targetScrollHeight = target.scrollHeight - target.clientHeight;
+
+    if (sourceScrollHeight <= 0 || targetScrollHeight <= 0) return;
+
+    // Calculate the scroll percentage
+    const scrollPercentage = source.scrollTop / sourceScrollHeight;
+
+    // Apply the same percentage to the target
+    target.scrollTop = scrollPercentage * targetScrollHeight;
+  };
+
+  // Set up scroll synchronization
+  useEffect(() => {
+    const editorElement = editorRef.current?.querySelector('textarea');
+    const previewElement = previewRef.current?.querySelector('.preview-content');
+
+    if (!editorElement || !previewElement) return;
+
+    const handleEditorScroll = () => syncScroll(editorElement, previewElement);
+    const handlePreviewScroll = () => syncScroll(previewElement, editorElement);
+
+    editorElement.addEventListener('scroll', handleEditorScroll);
+    previewElement.addEventListener('scroll', handlePreviewScroll);
+
+    return () => {
+      editorElement.removeEventListener('scroll', handleEditorScroll);
+      previewElement.removeEventListener('scroll', handlePreviewScroll);
+    };
+  }, []);
 
   const handleToolbarAction = (action) => {
     let updatedMarkdown = markdown;
@@ -148,13 +186,13 @@ function App() {
           gutterSize={10}
           snapOffset={30}
         >
-          <div className="editor-pane">
+          <div className="editor-pane" ref={editorRef}>
             <MarkdownEditor
               value={markdown}
               onChange={handleMarkdownChange}
             />
           </div>
-          <div className="preview-pane">
+          <div className="preview-pane" ref={previewRef}>
             <Preview markdown={markdown} />
           </div>
         </Split>

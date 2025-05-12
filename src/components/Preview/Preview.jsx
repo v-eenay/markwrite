@@ -13,7 +13,9 @@ marked.setOptions({
     return hljs.highlightAuto(code).value;
   },
   breaks: true,
-  gfm: true
+  gfm: true,
+  headerIds: true,
+  mangle: false
 });
 
 function Preview({ markdown }) {
@@ -21,15 +23,24 @@ function Preview({ markdown }) {
 
   useEffect(() => {
     if (previewRef.current) {
-      // Convert markdown to HTML and render it
-      const html = marked.parse(markdown);
-      previewRef.current.innerHTML = html;
-      
-      // Add target="_blank" to all links
-      previewRef.current.querySelectorAll('a').forEach(link => {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener noreferrer');
-      });
+      try {
+        // Convert markdown to HTML and render it
+        const html = marked.parse(markdown);
+        previewRef.current.innerHTML = html;
+
+        // Add target="_blank" to all links
+        previewRef.current.querySelectorAll('a').forEach(link => {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        });
+
+        // Apply syntax highlighting to code blocks
+        previewRef.current.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block);
+        });
+      } catch (error) {
+        console.error('Error rendering markdown:', error);
+      }
     }
   }, [markdown]);
 
