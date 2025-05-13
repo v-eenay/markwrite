@@ -1,6 +1,7 @@
 // Collection of toolbar icons for the Markdown editor
 
-export function HeadingIcon({ level = 1, className = '', width = 20, height = 20 }) {
+export function HeadingIcon({ level = 1, className = '', width = 24, height = 24 }) {
+  const levelText = `H${level}`;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -8,18 +9,24 @@ export function HeadingIcon({ level = 1, className = '', width = 20, height = 20
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
     >
-      <line x1="3" y1="12" x2="21" y2="12"></line>
-      <line x1="3" y1="6" x2="21" y2="6"></line>
-      <line x1="3" y1="18" x2="21" y2="18"></line>
-      {level === 1 && <text x="6" y="10" fontSize="8" fill="currentColor">H1</text>}
-      {level === 2 && <text x="6" y="10" fontSize="8" fill="currentColor">H2</text>}
-      {level === 3 && <text x="6" y="10" fontSize="8" fill="currentColor">H3</text>}
+      {/* Heading level text */}
+      <text
+        x="12"
+        y="14"
+        textAnchor="middle"
+        fontSize="18"
+        fill="var(--icon-color)"
+        dominantBaseline="middle"
+        fontFamily="Arial, sans-serif"
+      >
+        {levelText}
+      </text>
     </svg>
   );
 }
@@ -32,7 +39,7 @@ export function BoldIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -52,7 +59,7 @@ export function ItalicIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -73,7 +80,7 @@ export function StrikethroughIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -93,7 +100,7 @@ export function CodeIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -113,7 +120,7 @@ export function CodeBlockIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -134,7 +141,7 @@ export function LinkIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -154,7 +161,7 @@ export function ImageIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -175,7 +182,7 @@ export function ListIcon({ ordered = false, className = '', width = 20, height =
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -186,9 +193,9 @@ export function ListIcon({ ordered = false, className = '', width = 20, height =
           <line x1="10" y1="6" x2="21" y2="6"></line>
           <line x1="10" y1="12" x2="21" y2="12"></line>
           <line x1="10" y1="18" x2="21" y2="18"></line>
-          <text x="4" y="8" fontSize="8" fill="currentColor">1</text>
-          <text x="4" y="14" fontSize="8" fill="currentColor">2</text>
-          <text x="4" y="20" fontSize="8" fill="currentColor">3</text>
+          <text x="2" y="8" fontSize="6" fill="currentColor">1</text>
+          <text x="2" y="14" fontSize="6" fill="currentColor">2</text>
+          <text x="2" y="20" fontSize="6" fill="currentColor">3</text>
         </>
       ) : (
         <>
@@ -212,7 +219,7 @@ export function BlockquoteIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -231,7 +238,7 @@ export function LogoIcon({ className = '', width = 24, height = 24 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
+      stroke="var(--icon-color)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"

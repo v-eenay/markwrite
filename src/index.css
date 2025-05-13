@@ -192,7 +192,7 @@ button {
 
 .theme-toggle-button {
   background: none;
-  border: 1px solid var(--border-color);
+  border: none;
   color: var(--text-color);
   padding: 0.5rem;
   border-radius: 4px;

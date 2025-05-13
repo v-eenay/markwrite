@@ -1,3 +1,95 @@
+:root {
+  /* Light Theme Variables - Pastel and Subtle */
+  --bg-primary-light: #fdfdfd;
+  --bg-secondary-light: #f0f4f8;
+  --bg-editor-light: #ffffff;
+  --text-primary-light: #2f3e46;
+  --text-secondary-light: #556872;
+  --text-light-light: #a1adb7;
+  --border-color-light: #dbe2ea;
+  --primary-color-light: #8ecae6;
+  --primary-hover-light: #76b8da;
+  --shadow-sm-light: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md-light: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --icon-color-light: #556872;
+  --icon-hover-light: #219ebc;
+  --scrollbar-track-light: rgba(223, 230, 237, 0.6);
+  --scrollbar-thumb-light: rgba(142, 202, 230, 0.8);
+  --scrollbar-thumb-hover-light: rgba(118, 184, 218, 0.9);
+  --link-color-light: #219ebc;
+  --link-hover-light: #126782;
+
+  /* Dark Theme Variables - Pastel and Subtle */
+  --bg-primary-dark: #1e1e24;
+  --bg-secondary-dark: #2b2d42;
+  --bg-editor-dark: #252733;
+  --text-primary-dark: #e0f2f1;
+  --text-secondary-dark: #cdd9e5;
+  --text-light-dark: #8896a5;
+  --border-color-dark: #3a3c53;
+  --primary-color-dark: #90e0ef;
+  --primary-hover-dark: #72cfdc;
+  --shadow-sm-dark: 0 1px 2px rgba(255, 255, 255, 0.03);
+  --shadow-md-dark: 0 4px 6px -1px rgba(255, 255, 255, 0.05), 0 2px 4px -1px rgba(255, 255, 255, 0.04);
+  --icon-color-dark: #dee2e6;
+  --icon-hover-dark: #90e0ef;
+  --scrollbar-track-dark: rgba(60, 65, 80, 0.5);
+  --scrollbar-thumb-dark: rgba(144, 224, 239, 0.8);
+  --scrollbar-thumb-hover-dark: rgba(114, 207, 220, 0.9);
+  --link-color-dark: #90e0ef;
+  --link-hover-dark: #72cfdc;
+}
+
+/* Default to Light Theme */
+body {
+  background-color: var(--bg-primary, var(--bg-primary-light));
+  color: var(--text-primary, var(--text-primary-light));
+}
+
+/* Apply Dark Theme when .dark-theme class is present on body */
+body.dark-theme {
+  --bg-primary: var(--bg-primary-dark);
+  --bg-secondary: var(--bg-secondary-dark);
+  --bg-editor: var(--bg-editor-dark);
+  --text-primary: var(--text-primary-dark);
+  --text-secondary: var(--text-secondary-dark);
+  --text-light: var(--text-light-dark);
+  --border-color: var(--border-color-dark);
+  --primary-color: var(--primary-color-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --shadow-sm: var(--shadow-sm-dark);
+  --shadow-md: var(--shadow-md-dark);
+  --icon-color: var(--icon-color-dark);
+  --icon-hover: var(--icon-hover-dark);
+  --scrollbar-track: var(--scrollbar-track-dark);
+  --scrollbar-thumb: var(--scrollbar-thumb-dark);
+  --scrollbar-thumb-hover: var(--scrollbar-thumb-hover-dark);
+  --link-color: var(--link-color-dark);
+  --link-hover: var(--link-hover-dark);
+}
+
+/* Apply Light Theme explicitly or by default */
+body:not(.dark-theme) {
+  --bg-primary: var(--bg-primary-light);
+  --bg-secondary: var(--bg-secondary-light);
+  --bg-editor: var(--bg-editor-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: var(--text-secondary-light);
+  --text-light: var(--text-light-light);
+  --border-color: var(--border-color-light);
+  --primary-color: var(--primary-color-light);
+  --primary-hover: var(--primary-hover-light);
+  --shadow-sm: var(--shadow-sm-light);
+  --shadow-md: var(--shadow-md-light);
+  --icon-color: var(--icon-color-light);
+  --icon-hover: var(--icon-hover-light);
+  --scrollbar-track: var(--scrollbar-track-light);
+  --scrollbar-thumb: var(--scrollbar-thumb-light);
+  --scrollbar-thumb-hover: var(--scrollbar-thumb-hover-light);
+  --link-color: var(--link-color-light);
+  --link-hover: var(--link-hover-light);
+}
+
 .app {
   display: flex;
   flex-direction: column;

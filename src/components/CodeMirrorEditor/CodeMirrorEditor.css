@@ -4,8 +4,8 @@
   flex-direction: column;
   border-radius: 6px;
   overflow: hidden;
-  background-color: var(--bg-editor);
-  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-editor, var(--bg-editor-light)); /* Fallback */
+  box-shadow: var(--shadow-sm, var(--shadow-sm-light)); /* Fallback */
 }
 
 .editor-header {
@@ -13,11 +13,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background-color: #f3f4f6;
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary, var(--bg-secondary-light)); /* Themed */
+  border-bottom: 1px solid var(--border-color, var(--border-color-light)); /* Fallback */
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-light);
+  color: var(--text-secondary, var(--text-secondary-light)); /* Fallback */
 }
 
 .language-indicator {
@@ -30,14 +30,14 @@
 
 /* Style for code language indicator */
 .language-code {
-  color: var(--primary-color);
-  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--primary-color, var(--primary-color-light)); /* Fallback */
+  background-color: rgba(59, 130, 246, 0.1); /* This might need a themed version if primary color changes significantly */
 }
 
 /* Style for markdown language indicator */
 .language-markdown {
-  color: #4b5563;
-  background-color: rgba(229, 231, 235, 0.5);
+  color: var(--text-secondary, var(--text-secondary-light)); /* Fallback */
+  background-color: var(--bg-secondary, var(--bg-secondary-light)); /* Themed */
 }
 
 .editor-container {
@@ -60,9 +60,11 @@
   line-height: 1.6;
   overflow: auto !important;
   overflow-y: scroll !important; /* Force vertical scrollbar to always be visible */
+  color: var(--text-primary, var(--text-primary-light)); /* Added themed text color */
+  background-color: var(--bg-editor, var(--bg-editor-light)); /* Added themed background color */
   /* Ensure scrollbars are always visible */
   scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.8) transparent;
+  scrollbar-color: var(--scrollbar-thumb, var(--scrollbar-thumb-light)) transparent; /* Themed scrollbar */
   /* Improve touch scrolling */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -81,21 +83,21 @@
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-track {
-  background: rgba(229, 231, 235, 0.5);
+  background: var(--scrollbar-track, var(--scrollbar-track-light)); /* Themed */
   border-radius: 8px;
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.8);
+  background-color: var(--scrollbar-thumb, var(--scrollbar-thumb-light)); /* Themed */
   border-radius: 8px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
+  border: 3px solid var(--bg-editor, var(--bg-editor-light)); /* Themed border to blend with editor background */
   /* Add a subtle shadow for better visibility */
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1); /* This shadow might need theme-specific version */
   min-height: 40px; /* Ensure the thumb has a minimum height */
 }
 
 .codemirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(75, 85, 99, 0.9);
+  background-color: var(--scrollbar-thumb-hover, var(--scrollbar-thumb-hover-light)); /* Themed */
 }
 
 /* Ensure scrollbar corner is styled properly */
@@ -117,7 +119,7 @@
 
 /* Syntax highlighting for Markdown */
 .codemirror-editor .cm-header {
-  color: var(--primary-color);
+  color: var(--primary-color, var(--primary-color-light)); /* Fallback */
   font-weight: bold;
 }
 
@@ -140,55 +142,57 @@
 }
 
 .codemirror-editor .cm-strong {
-  color: #000;
+  color: var(--text-primary, var(--text-primary-light)); /* Themed */
   font-weight: bold;
 }
 
 .codemirror-editor .cm-em {
-  color: #000;
+  color: var(--text-primary, var(--text-primary-light)); /* Themed */
   font-style: italic;
 }
 
 .codemirror-editor .cm-link {
-  color: #0366d6;
+  color: var(--link-color, var(--link-color-light)); /* Themed */
   text-decoration: none;
 }
 
 .codemirror-editor .cm-url {
-  color: #0366d6;
+  color: var(--link-color, var(--link-color-light)); /* Themed */
   text-decoration: none;
 }
 
 .codemirror-editor .cm-quote {
-  color: #6a737d;
+  color: var(--text-light, var(--text-light-light)); /* Themed */
   font-style: italic;
 }
 
 .codemirror-editor .cm-list {
-  color: var(--primary-color);
+  color: var(--primary-color, var(--primary-color-light)); /* Fallback */
 }
 
 .codemirror-editor .cm-hr {
-  color: #6a737d;
+  color: var(--border-color, var(--border-color-light)); /* Themed */
 }
 
 .codemirror-editor .cm-comment {
-  color: #6a737d;
+  color: var(--text-light, var(--text-light-light)); /* Themed */
 }
 
 /* Code block styling */
 .codemirror-editor .cm-codeblock {
-  background-color: #f6f8fa;
+  background-color: var(--bg-secondary, var(--bg-secondary-light)); /* Themed */
   border-radius: 3px;
   font-family: var(--font-mono);
+  color: var(--text-secondary, var(--text-secondary-light)); /* Ensure text is readable */
 }
 
 /* Tooltip styling for autocompletion */
 .cm-tooltip-autocomplete {
-  border: 1px solid var(--border-color) !important;
+  border: 1px solid var(--border-color, var(--border-color-light)) !important; /* Fallback */
   border-radius: 6px !important;
-  box-shadow: var(--shadow-md) !important;
-  background-color: var(--bg-editor) !important;
+  box-shadow: var(--shadow-md, var(--shadow-md-light)) !important; /* Fallback */
+  background-color: var(--bg-editor, var(--bg-editor-light)) !important; /* Fallback */
+  color: var(--text-primary, var(--text-primary-light)) !important; /* Ensure text is readable */
 }
 
 .cm-tooltip-autocomplete ul li {
@@ -197,6 +201,15 @@
 }
 
 .cm-tooltip-autocomplete ul li[aria-selected] {
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  color: var(--primary-color) !important;
+  background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.1) !important; /* Themed, assuming primary-color-rgb is defined or use a themed rgba value */
+  color: var(--primary-color, var(--primary-color-light)) !important; /* Fallback */
+}
+
+/* Add this if you don't have --primary-color-rgb, adjust light/dark values as needed */
+body:not(.dark-theme) .cm-tooltip-autocomplete ul li[aria-selected] {
+  background-color: rgba(0, 123, 255, 0.1) !important; /* Light theme primary selection */
+}
+
+body.dark-theme .cm-tooltip-autocomplete ul li[aria-selected] {
+  background-color: rgba(52, 152, 219, 0.15) !important; /* Dark theme primary selection */
 }
