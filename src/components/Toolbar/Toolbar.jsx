@@ -1,24 +1,36 @@
 import './Toolbar.css';
+import {
+  HeadingIcon,
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  CodeIcon,
+  CodeBlockIcon,
+  LinkIcon,
+  ImageIcon,
+  ListIcon,
+  BlockquoteIcon
+} from '../icons/ToolbarIcons';
 
 function Toolbar({ onAction }) {
   const tools = [
-    { id: 'heading1', label: 'H1', title: 'Heading 1' },
-    { id: 'heading2', label: 'H2', title: 'Heading 2' },
-    { id: 'heading3', label: 'H3', title: 'Heading 3' },
+    { id: 'heading1', icon: <HeadingIcon level={1} />, title: 'Heading 1' },
+    { id: 'heading2', icon: <HeadingIcon level={2} />, title: 'Heading 2' },
+    { id: 'heading3', icon: <HeadingIcon level={3} />, title: 'Heading 3' },
     { id: 'divider1', type: 'divider' },
-    { id: 'bold', label: 'B', title: 'Bold' },
-    { id: 'italic', label: 'I', title: 'Italic' },
-    { id: 'strikethrough', label: 'S', title: 'Strikethrough' },
+    { id: 'bold', icon: <BoldIcon />, title: 'Bold' },
+    { id: 'italic', icon: <ItalicIcon />, title: 'Italic' },
+    { id: 'strikethrough', icon: <StrikethroughIcon />, title: 'Strikethrough' },
     { id: 'divider2', type: 'divider' },
-    { id: 'code', label: '`', title: 'Inline Code' },
-    { id: 'codeblock', label: '```', title: 'Code Block' },
+    { id: 'code', icon: <CodeIcon />, title: 'Inline Code' },
+    { id: 'codeblock', icon: <CodeBlockIcon />, title: 'Code Block' },
     { id: 'divider3', type: 'divider' },
-    { id: 'link', label: '🔗', title: 'Link' },
-    { id: 'image', label: '🖼️', title: 'Image' },
+    { id: 'link', icon: <LinkIcon />, title: 'Link' },
+    { id: 'image', icon: <ImageIcon />, title: 'Image' },
     { id: 'divider4', type: 'divider' },
-    { id: 'unorderedList', label: '•', title: 'Unordered List' },
-    { id: 'orderedList', label: '1.', title: 'Ordered List' },
-    { id: 'blockquote', label: '>', title: 'Blockquote' },
+    { id: 'unorderedList', icon: <ListIcon ordered={false} />, title: 'Unordered List' },
+    { id: 'orderedList', icon: <ListIcon ordered={true} />, title: 'Ordered List' },
+    { id: 'blockquote', icon: <BlockquoteIcon />, title: 'Blockquote' },
   ];
 
   return (
@@ -33,7 +45,7 @@ function Toolbar({ onAction }) {
             title={tool.title}
             onClick={() => onAction(tool.id)}
           >
-            {tool.label}
+            {tool.icon}
           </button>
         )
       ))}

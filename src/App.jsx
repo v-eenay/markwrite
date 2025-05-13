@@ -5,6 +5,10 @@ import Preview from './components/Preview/Preview';
 import Toolbar from './components/Toolbar/Toolbar';
 import PdfDownloadButton from './components/PdfDownloadButton/PdfDownloadButton';
 import DocxDownloadButton from './components/DocxDownloadButton/DocxDownloadButton';
+import { LogoIcon } from './components/icons/ToolbarIcons';
+import GitHubIcon from './components/icons/GitHubIcon';
+import LinkedInIcon from './components/icons/LinkedInIcon';
+import EmailIcon from './components/icons/EmailIcon';
 import './App.css';
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
@@ -306,7 +310,10 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>MarkWrite</h1>
+        <div className="app-logo">
+          <LogoIcon width={32} height={32} />
+          <h1>MarkWrite</h1>
+        </div>
         <div className="header-actions">
           <Toolbar onAction={handleToolbarAction} />
           <div className="download-buttons">
@@ -346,10 +353,46 @@ function App() {
         </Split>
       </main>
       <footer className="app-footer">
-        <p>
-          MarkWrite - A minimalist Markdown editor |
-          <a href="https://github.com/v-eenay/markwrite.git" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </p>
+        <div className="footer-content">
+          <div className="footer-info">
+            <div className="footer-branding">
+              <LogoIcon width={24} height={24} />
+              <h2 className="footer-title">MarkWrite</h2>
+            </div>
+            <p className="footer-description">A minimalist Markdown editor with real-time preview</p>
+          </div>
+          <div className="footer-contact-info">
+            <div className="footer-personal">
+              <h3 className="footer-section-title">Binay Koirala</h3>
+              <div className="footer-contact">
+                <a href="mailto:koiralavinay@gmail.com" className="footer-link" title="Personal Email">
+                  <EmailIcon className="footer-icon" />
+                  <span>koiralavinay@gmail.com</span>
+                </a>
+                <a href="mailto:binaya.koirala@iic.edu.np" className="footer-link" title="Professional Email">
+                  <EmailIcon className="footer-icon" />
+                  <span>binaya.koirala@iic.edu.np</span>
+                </a>
+              </div>
+            </div>
+            <div className="footer-social">
+              <h3 className="footer-section-title">Connect</h3>
+              <div className="footer-social-links">
+                <a href="https://github.com/v-eenay" target="_blank" rel="noopener noreferrer" className="footer-link" title="GitHub Profile">
+                  <GitHubIcon className="footer-icon" />
+                  <span>v-eenay</span>
+                </a>
+                <a href="https://linkedin.com/in/veenay" target="_blank" rel="noopener noreferrer" className="footer-link" title="LinkedIn Profile">
+                  <LinkedInIcon className="footer-icon" />
+                  <span>veenay</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="footer-copyright">
+            <p>&copy; {new Date().getFullYear()} MarkWrite. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );

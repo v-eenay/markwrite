@@ -16,6 +16,16 @@
   z-index: 10;
 }
 
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-logo svg {
+  color: var(--primary-color);
+}
+
 .app-header h1 {
   font-size: 1.5rem;
   font-weight: 600;
@@ -67,22 +77,175 @@
 }
 
 .app-footer {
-  padding: 0.75rem 1.5rem;
+  padding: 1.5rem;
   background-color: var(--bg-editor);
   border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-secondary, var(--text-light)); /* Use a secondary text color variable or fallback */
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center; /* Center text for mobile */
+}
+
+.footer-info, .footer-contact-info, .footer-copyright {
+  width: 100%;
+}
+
+.footer-branding {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center branding on mobile */
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-title { /* Corresponds to h2 in App.jsx */
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.footer-description {
   font-size: 0.875rem;
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+
+.footer-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.footer-personal, .footer-social { /* These are containers for title + links */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content within these sections on mobile */
+  gap: 0.5rem;
+}
+
+.footer-section-title { /* Corresponds to h3 in App.jsx */
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.footer-contact { /* Container for email links */
+  display: flex;
+  flex-direction: column; /* Stack email links on mobile */
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-social-links { /* Container for GitHub/LinkedIn links */
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.footer-link:hover {
+  color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.footer-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.footer-copyright {
+  margin-top: 1rem;
+  font-size: 0.8rem;
   color: var(--text-light);
   text-align: center;
 }
 
-.app-footer a {
-  margin-left: 0.5rem;
-  color: var(--primary-color);
-  text-decoration: none;
+/* Desktop layout adjustments */
+@media (min-width: 768px) {
+  .footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to the top */
+    text-align: left; /* Align text to the left on desktop */
+    gap: 2rem;
+  }
+
+  .footer-info {
+    flex: 1;
+  }
+  
+  .footer-branding {
+    justify-content: flex-start;
+  }
+
+  .footer-contact-info {
+    flex: 1.5;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .footer-personal, .footer-social {
+    align-items: flex-start;
+    flex: 1;
+  }
+  
+  .footer-contact { /* Email links container */
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footer-social-links {
+    justify-content: flex-start;
+  }
+
+  .footer-copyright {
+    flex: 0.5;
+    text-align: right;
+    margin-top: 0;
+    align-self: flex-end; /* Aligns to the bottom of the tallest column in the row */
+  }
 }
 
-.app-footer a:hover {
-  text-decoration: underline;
+@media (min-width: 1024px) {
+  .footer-contact-info {
+     justify-content: space-evenly;
+     gap: 2rem;
+  }
+  .footer-info, .footer-contact-info {
+    padding-top: 0.5rem; 
+    padding-bottom: 0.5rem;
+  }
+  .footer-copyright {
+    align-self: stretch; /* Make copyright take full height of its flex item */
+    display: flex; 
+    align-items: flex-end; 
+    justify-content: flex-end; 
+    padding-top: 0.5rem; 
+    padding-bottom: 0.5rem;
+  }
+  .footer-copyright p {
+    margin-bottom: 0; 
+  }
 }
 
 .gutter {
