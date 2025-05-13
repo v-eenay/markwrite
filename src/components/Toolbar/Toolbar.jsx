@@ -1,4 +1,3 @@
-import './Toolbar.css';
 import {
   HeadingIcon,
   BoldIcon,
@@ -34,14 +33,14 @@ function Toolbar({ onAction }) {
   ];
 
   return (
-    <div className="markdown-toolbar">
+    <div className="flex items-center gap-1 bg-background-editor dark:bg-background-dark-editor rounded p-1 overflow-visible">
       {tools.map((tool) => (
         tool.type === 'divider' ? (
-          <span key={tool.id} className="toolbar-divider"></span>
+          <span key={tool.id} className="w-px h-6 bg-border-light dark:bg-border-dark mx-1 flex-shrink-0"></span>
         ) : (
           <button
             key={tool.id}
-            className="toolbar-button"
+            className="flex items-center justify-center w-8 h-8 text-xs font-medium text-text-secondary dark:text-text-dark-secondary bg-transparent hover:bg-background-secondary dark:hover:bg-background-dark-secondary hover:text-text-light dark:hover:text-text-dark rounded transition-colors duration-200 flex-shrink-0"
             title={tool.title}
             onClick={() => onAction(tool.id)}
           >

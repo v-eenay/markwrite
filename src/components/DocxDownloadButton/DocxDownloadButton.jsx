@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer } from 'docx';
 import { saveAs } from 'file-saver';
 import DocxIcon from '../icons/DocxIcon';
-import './DocxDownloadButton.css';
 
 function DocxDownloadButton({ previewRef, markdown }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -313,18 +312,20 @@ function DocxDownloadButton({ previewRef, markdown }) {
   };
 
   return (
-    <div className="docx-download-container">
+    <div className="relative">
       <button
-        className={`docx-download-button ${isGenerating ? 'generating' : ''}`}
+        className={`flex items-center gap-2 px-3 py-2 rounded-md bg-background-secondary dark:bg-background-dark-secondary text-text-light dark:text-text-dark border border-border-light dark:border-border-dark hover:bg-opacity-80 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed`}
         onClick={handleDownloadDocx}
         disabled={isGenerating}
         title="Download as DOCX"
       >
-        <DocxIcon className="docx-icon" />
+        <DocxIcon className="w-5 h-5" />
         <span>Download DOCX</span>
-        {isGenerating && <span className="loading-spinner"></span>}
+        {isGenerating && (
+          <span className="ml-1 h-4 w-4 rounded-full border-2 border-text-light dark:border-text-dark border-t-transparent animate-spin"></span>
+        )}
       </button>
-      {error && <div className="docx-error-message">{error}</div>}
+      {error && <div className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</div>}
     </div>
   );
 }

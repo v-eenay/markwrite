@@ -10,7 +10,7 @@ import { LogoIcon } from './components/icons/ToolbarIcons';
 import GitHubIcon from './components/icons/GitHubIcon';
 import LinkedInIcon from './components/icons/LinkedInIcon';
 import EmailIcon from './components/icons/EmailIcon';
-import './App.css';
+import { MoonIcon, SunIcon } from './components/icons/ThemeIcons';
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
 
@@ -139,6 +139,7 @@ function App() {
       return editorRef.current?.querySelector('.cm-scroller');
     };
 
+    // Updated selector to match the Tailwind class we're using now
     const previewElement = previewRef.current?.querySelector('.preview-content');
     let editorElement = findEditorScroller();
 
@@ -331,50 +332,66 @@ function App() {
   };
 
   return (
-    <div className="app" data-theme={theme}>
-      <header className="app-header">
-        <div className="app-logo">
-          <LogoIcon width={32} height={32} />
-          <h1>MarkWrite</h1>
+    <div className="flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+      <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-background-editor dark:bg-background-dark-editor border-b border-border-light dark:border-border-dark shadow-light-sm dark:shadow-dark-sm">
+        <div className="flex items-center gap-2">
+          <LogoIcon width={32} height={32} className="text-primary-light dark:text-primary-dark" />
+          <h1 className="text-xl font-semibold text-primary-light dark:text-primary-dark m-0">MarkWrite</h1>
         </div>
         {isMobileView && (
           <button 
-            className={`hamburger-button ${isMenuOpen ? 'open' : ''}`}
+            className={`flex flex-col justify-around w-7 h-6 bg-transparent border-none cursor-pointer z-[1001] p-0 ${isMenuOpen ? 'open' : ''}`}
             onClick={toggleMenu}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
             aria-controls="header-actions-nav"
           >
-            <span className="hamburger-icon">
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
+            <span className={`block w-full h-0.5 rounded-sm bg-text-light dark:bg-text-dark transition-all duration-300 ${isMenuOpen ? 'transform translate-y-[10px] rotate-45' : ''}`}></span>
+            <span className={`block w-full h-0.5 rounded-sm bg-text-light dark:bg-text-dark transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-full h-0.5 rounded-sm bg-text-light dark:bg-text-dark transition-all duration-300 ${isMenuOpen ? 'transform -translate-y-[10px] -rotate-45' : ''}`}></span>
           </button>
         )}
-        <div id="header-actions-nav" className={`header-actions ${isMobileView ? 'mobile-nav' : ''} ${isMobileView && isMenuOpen ? 'open' : ''}`}>
+        <div id="header-actions-nav" className={`flex items-center gap-3 ${isMobileView ? 'absolute top-full left-0 right-0 flex-col items-stretch bg-background-editor dark:bg-background-dark-editor border-t border-b border-border-light dark:border-border-dark p-4 shadow-light-md dark:shadow-dark-md z-[1000]' : ''} ${isMobileView && !isMenuOpen ? 'hidden' : ''}`}>
           <Toolbar onAction={handleToolbarAction} />
           {!isMobileView && (
-            <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-              {theme === 'light' ? '🌙' : '☀️'}
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-full hover:bg-background-secondary dark:hover:bg-background-dark-secondary transition-colors duration-200"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? <MoonIcon className="w-5 h-5 text-text-secondary dark:text-text-dark-secondary" /> : <SunIcon className="w-5 h-5 text-text-secondary dark:text-text-dark-secondary" />}
             </button>
           )}
-          <div className="download-buttons">
+          <div className={`flex ${isMobileView ? 'flex-col w-full gap-3' : 'items-center gap-2'}`}>
             <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
             <DocxDownloadButton previewRef={previewRef} markdown={markdown} />
           </div>
         </div>
         {isMobileView && isMenuOpen && (
-           <div className="mobile-menu-bottom-actions">
-              <button onClick={toggleTheme} className="theme-toggle-button mobile-theme-toggle" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-                {theme === 'light' ? 'Switch to Dark Mode 🌙' : 'Switch to Light Mode ☀️'}
+           <div className="absolute top-full left-0 right-0 flex flex-col p-4 bg-background-editor dark:bg-background-dark-editor border-t border-border-light dark:border-border-dark z-[999] shadow-light-sm dark:shadow-dark-sm mt-[1px]">
+              <button 
+                onClick={toggleTheme} 
+                className="w-full py-3 px-4 text-center bg-background-secondary dark:bg-background-dark-secondary border border-border-light dark:border-border-dark rounded-md flex items-center justify-center gap-2"
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? (
+                  <>
+                    <MoonIcon className="w-5 h-5" />
+                    <span>Switch to Dark Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <SunIcon className="w-5 h-5" />
+                    <span>Switch to Light Mode</span>
+                  </>
+                )}
               </button>
            </div>
         )}
       </header>
-      <main className="app-content">
+      <main className="flex-1 overflow-hidden flex flex-col">
         <Split
-          className="split-pane"
+          className="flex flex-1 h-full w-full overflow-hidden"
           sizes={[50, 50]}
           minSize={100}
           gutterSize={10}
@@ -389,58 +406,67 @@ function App() {
             'width': '10px',
             'cursor': 'col-resize',
             'touch-action': 'none',
+            'background-color': 'var(--border-color)',
+            'transition': 'background-color 0.2s ease'
           })}
         >
-          <div className="editor-pane" ref={editorRef}>
+          <div className="flex-1 h-full overflow-auto p-4 bg-background-editor dark:bg-background-dark-editor" ref={editorRef}>
             <CodeMirrorEditor
               value={markdown}
               onChange={handleMarkdownChange}
             />
           </div>
-          <div className="preview-pane" ref={previewRef}>
+          <div className="flex-1 h-full overflow-auto p-4 bg-background-editor dark:bg-background-dark-editor border-l border-border-light dark:border-border-dark" ref={previewRef}>
             <Preview markdown={markdown} />
           </div>
         </Split>
       </main>
-      <footer className="app-footer">
-        <div className="footer-content">
-          <div className="footer-info">
-            <div className="footer-branding">
-              <LogoIcon width={24} height={24} />
-              <h2 className="footer-title">MarkWrite</h2>
+      <footer className="py-6 px-6 bg-background-editor dark:bg-background-dark-editor border-t border-border-light dark:border-border-dark text-sm text-text-secondary dark:text-text-dark-secondary">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            {/* Logo and description */}
+            <div className="md:col-span-4 flex flex-col items-center md:items-start">
+              <div className="flex items-center gap-3 mb-3">
+                <LogoIcon width={24} height={24} className="text-primary-light dark:text-primary-dark" />
+                <h2 className="text-lg font-semibold text-text-light dark:text-text-dark m-0">MarkWrite</h2>
+              </div>
+              <p className="text-sm text-text-muted dark:text-text-dark-muted mb-4 text-center md:text-left">A minimalist Markdown editor with real-time preview</p>
             </div>
-            <p className="footer-description">A minimalist Markdown editor with real-time preview</p>
-          </div>
-          <div className="footer-contact-info">
-            <div className="footer-personal">
-              <h3 className="footer-section-title">Binay Koirala</h3>
-              <div className="footer-contact">
-                <a href="mailto:koiralavinay@gmail.com" className="footer-link" title="Personal Email">
-                  <EmailIcon className="footer-icon" />
+            
+            {/* Contact info */}
+            <div className="md:col-span-4 flex flex-col items-center md:items-start">
+              <h3 className="text-base font-medium text-text-light dark:text-text-dark mb-3">Binay Koirala</h3>
+              <div className="flex flex-col items-center md:items-start gap-2">
+                <a href="mailto:koiralavinay@gmail.com" className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-dark-hover transition-colors duration-200 no-underline text-sm" title="Personal Email">
+                  <EmailIcon className="w-5 h-5" />
                   <span>koiralavinay@gmail.com</span>
                 </a>
-                <a href="mailto:binaya.koirala@iic.edu.np" className="footer-link" title="Professional Email">
-                  <EmailIcon className="footer-icon" />
+                <a href="mailto:binaya.koirala@iic.edu.np" className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-dark-hover transition-colors duration-200 no-underline text-sm" title="Professional Email">
+                  <EmailIcon className="w-5 h-5" />
                   <span>binaya.koirala@iic.edu.np</span>
                 </a>
               </div>
             </div>
-            <div className="footer-social">
-              <h3 className="footer-section-title">Connect</h3>
-              <div className="footer-social-links">
-                <a href="https://github.com/v-eenay" target="_blank" rel="noopener noreferrer" className="footer-link" title="GitHub Profile">
-                  <GitHubIcon className="footer-icon" />
+            
+            {/* Social links */}
+            <div className="md:col-span-4 flex flex-col items-center md:items-start">
+              <h3 className="text-base font-medium text-text-light dark:text-text-dark mb-3">Connect</h3>
+              <div className="flex gap-5">
+                <a href="https://github.com/v-eenay" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-dark-hover transition-colors duration-200 no-underline text-sm" title="GitHub Profile">
+                  <GitHubIcon className="w-5 h-5" />
                   <span>v-eenay</span>
                 </a>
-                <a href="https://linkedin.com/in/veenay" target="_blank" rel="noopener noreferrer" className="footer-link" title="LinkedIn Profile">
-                  <LinkedInIcon className="footer-icon" />
+                <a href="https://linkedin.com/in/veenay" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-primary-light dark:text-primary-dark hover:text-primary-hover dark:hover:text-primary-dark-hover transition-colors duration-200 no-underline text-sm" title="LinkedIn Profile">
+                  <LinkedInIcon className="w-5 h-5" />
                   <span>veenay</span>
                 </a>
               </div>
             </div>
           </div>
-          <div className="footer-copyright">
-            <p>&copy; {new Date().getFullYear()} MarkWrite. All rights reserved.</p>
+          
+          {/* Copyright */}
+          <div className="mt-8 pt-4 border-t border-border-light dark:border-border-dark text-center">
+            <p className="text-xs text-text-muted dark:text-text-dark-muted">&copy; {new Date().getFullYear()} MarkWrite. All rights reserved.</p>
           </div>
         </div>
       </footer>

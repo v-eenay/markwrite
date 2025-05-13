@@ -9,7 +9,7 @@ export function HeadingIcon({ level = 1, className = '', width = 24, height = 24
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -21,7 +21,7 @@ export function HeadingIcon({ level = 1, className = '', width = 24, height = 24
         y="14"
         textAnchor="middle"
         fontSize="18"
-        fill="var(--icon-color)"
+        fill="currentColor"
         dominantBaseline="middle"
         fontFamily="Arial, sans-serif"
       >
@@ -39,7 +39,7 @@ export function BoldIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -59,7 +59,7 @@ export function ItalicIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -80,7 +80,7 @@ export function StrikethroughIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -100,7 +100,7 @@ export function CodeIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -120,7 +120,7 @@ export function CodeBlockIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -141,7 +141,7 @@ export function LinkIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -161,7 +161,7 @@ export function ImageIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -182,7 +182,7 @@ export function ListIcon({ ordered = false, className = '', width = 20, height =
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -219,7 +219,7 @@ export function BlockquoteIcon({ className = '', width = 20, height = 20 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -238,7 +238,7 @@ export function LogoIcon({ className = '', width = 24, height = 24 }) {
       height={height}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--icon-color)"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
