@@ -51,10 +51,12 @@ function Preview({ markdown }) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="py-2 px-4 bg-background-secondary dark:bg-background-dark-secondary border-b border-border-light dark:border-border-dark mb-4">
+      <div className="py-2 px-4 bg-background-secondary dark:bg-background-dark-secondary border-b border-border-light dark:border-border-dark">
         <span className="font-medium text-text-secondary dark:text-text-dark-secondary">Preview</span>
       </div>
-      <div className="preview-content prose dark:prose-invert max-w-none" ref={previewRef}></div>
+      <div className="flex-1 overflow-auto scrollbar-custom" id="preview-scroll-container">
+        <div className="preview-content prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none p-4" ref={previewRef}></div>
+      </div>
     </div>
   );
 }

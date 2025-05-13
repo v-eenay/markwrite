@@ -51,33 +51,62 @@ function PdfDownloadButton({ previewRef, markdown }) {
           margin-bottom: 0.8em;
           text-align: justify;
         }
-        pre, code {
-          background-color: #f5f5f5;
-          border-radius: 3px;
-          padding: 0.2em 0.4em;
+        /* Simplified inline code styling without background */
+        code, .inline-code {
           font-family: 'Courier New', monospace;
-          overflow-x: hidden;
-          white-space: pre-wrap;
+          font-size: 0.9em;
+          color: #d63384;
+          display: inline;
+          white-space: normal;
           word-wrap: break-word;
+          border-bottom: 1px dotted #d63384;
+          padding: 0 2px;
+          font-weight: 500;
+        }
+        /* Fix for code blocks */
+        pre {
+          background-color: #f5f5f5;
+          border-radius: 5px;
+          padding: 1em;
+          margin: 1em 0;
+          overflow-x: auto;
+          border: 1px solid #e5e7eb;
         }
         pre code {
-          padding: 1em;
+          padding: 0;
+          background-color: transparent;
+          border-radius: 0;
           display: block;
+          white-space: pre;
+          color: #333;
+          font-size: 0.9em;
+          border-bottom: none;
+          font-weight: normal;
         }
         img {
           max-width: 100%;
           height: auto;
         }
-        blockquote {
-          border-left: 4px solid #ddd;
-          padding-left: 1em;
-          margin-left: 0;
-          color: #666;
+        /* Fix for blockquotes */
+        blockquote, .pdf-blockquote {
+          border-left: 4px solid #6b7280;
+          padding: 0.5em 1em;
+          margin: 1em 0;
+          background-color: #f9fafb;
+          color: #4b5563;
+          font-style: italic;
+          display: block;
+          page-break-inside: avoid;
+        }
+        blockquote p, .blockquote-paragraph {
+          margin: 0.5em 0;
+          text-align: left;
         }
         table {
           border-collapse: collapse;
           width: 100%;
-          margin-bottom: 1em;
+          margin: 1em 0;
+          border: 1px solid #e5e7eb;
         }
         th, td {
           border: 1px solid #ddd;
@@ -93,8 +122,39 @@ function PdfDownloadButton({ previewRef, markdown }) {
       `;
       clonedContent.appendChild(styleElement);
       
-      // Process page breaks
-      const content = clonedContent.innerHTML;
+      // Process page breaks and fix formatting issues
+      let content = clonedContent.innerHTML;
+      
+      // Fix inline code display
+      const inlineCodeElements = clonedContent.querySelectorAll('code:not(pre code)');
+      inlineCodeElements.forEach(codeElement => {
+        // Add a special class to inline code elements
+        codeElement.classList.add('inline-code');
+        
+        // Process the content to ensure proper display
+        let codeContent = codeElement.innerHTML;
+        
+        // Remove backticks that might be showing in the rendered output
+        codeContent = codeContent.replace(/`/g, '');
+        
+        // Replace HTML entities that might be causing display issues
+        codeContent = codeContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        
+        // Set the processed content back
+        codeElement.innerHTML = codeContent;
+      });
+      
+      // Fix blockquote styling
+      const blockquoteElements = clonedContent.querySelectorAll('blockquote');
+      blockquoteElements.forEach(blockquote => {
+        blockquote.classList.add('pdf-blockquote');
+        // Make sure nested paragraphs are properly styled
+        const paragraphs = blockquote.querySelectorAll('p');
+        paragraphs.forEach(p => p.classList.add('blockquote-paragraph'));
+      });
+      
+      // Replace page breaks
+      content = clonedContent.innerHTML;
       clonedContent.innerHTML = content.replace(/---pagebreak---/g, '<div class="pagebreak"></div>');
       
       // Configure html2pdf options with improved settings

@@ -119,17 +119,16 @@ function App() {
     const setupScrollSync = () => {
       // Get the editor scroller element - this is the element that actually scrolls in CodeMirror
       const editorScroller = editorRef.current?.querySelector('.cm-scroller');
-      // Get the preview content element
-      const previewContent = previewRef.current?.querySelector('.preview-content');
+      // Get the preview container element (the div with scrollbar-custom class)
+      const previewContainer = previewRef.current?.querySelector('.scrollbar-custom');
       
-      if (!editorScroller || !previewContent) return false;
+      if (!editorScroller || !previewContainer) return false;
       
-      // Function to sync scroll positions with debouncing and better calculation
+      // Function to sync scroll positions - optimized for performance
       const syncScroll = (source, target) => {
         if (scrolling) return;
         
         scrolling = true;
-        clearTimeout(scrollTimeout);
         
         // Calculate scroll heights accurately
         const sourceScrollHeight = Math.max(1, source.scrollHeight - source.clientHeight);
@@ -138,45 +137,44 @@ function App() {
         // Calculate scroll percentage with bounds checking
         const scrollPercentage = Math.min(1, Math.max(0, source.scrollTop / sourceScrollHeight));
         
-        // Use requestAnimationFrame for smoother scrolling
-        requestAnimationFrame(() => {
-          if (target.isConnected) {
-            target.scrollTop = scrollPercentage * targetScrollHeight;
-          }
-          
-          // Reset scrolling flag after a delay
-          scrollTimeout = setTimeout(() => {
-            scrolling = false;
-          }, 150); // Slightly longer timeout for better debouncing
-        });
+        // Direct update for immediate response
+        if (target.isConnected) {
+          target.scrollTop = scrollPercentage * targetScrollHeight;
+        }
+        
+        // Reset scrolling flag immediately for better responsiveness
+        // Use a very short timeout to prevent scroll event loops
+        scrollTimeout = setTimeout(() => {
+          scrolling = false;
+        }, 10);
       };
       
       // Event handlers for scroll events with proper binding
-      const handleEditorScroll = () => syncScroll(editorScroller, previewContent);
-      const handlePreviewScroll = () => syncScroll(previewContent, editorScroller);
+      const handleEditorScroll = () => syncScroll(editorScroller, previewContainer);
+      const handlePreviewScroll = () => syncScroll(previewContainer, editorScroller);
       
       // Add event listeners with passive option for better performance
       editorScroller.addEventListener('scroll', handleEditorScroll, { passive: true });
-      previewContent.addEventListener('scroll', handlePreviewScroll, { passive: true });
+      previewContainer.addEventListener('scroll', handlePreviewScroll, { passive: true });
       
       // Create a ResizeObserver to handle content size changes
       resizeObserver = new ResizeObserver(() => {
         // When content size changes, sync the scroll positions
         if (!scrolling) {
-          syncScroll(editorScroller, previewContent);
+          syncScroll(editorScroller, previewContainer);
         }
       });
       
       // Observe both elements for size changes
       resizeObserver.observe(editorScroller);
-      resizeObserver.observe(previewContent);
+      resizeObserver.observe(previewContainer);
       
       // Initial sync with multiple attempts to ensure it works
       const initialSyncAttempts = [100, 300, 600, 1000];
       initialSyncAttempts.forEach(delay => {
         setTimeout(() => {
           if (!scrolling) {
-            syncScroll(editorScroller, previewContent);
+            syncScroll(editorScroller, previewContainer);
           }
         }, delay);
       });
@@ -184,7 +182,7 @@ function App() {
       // Return cleanup function
       cleanup = () => {
         editorScroller.removeEventListener('scroll', handleEditorScroll);
-        previewContent.removeEventListener('scroll', handlePreviewScroll);
+        previewContainer.removeEventListener('scroll', handlePreviewScroll);
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
@@ -457,7 +455,7 @@ function App() {
         {isMobileView ? (
           /* Simplified footer for mobile */
           <div className="w-full flex justify-between items-center">
-            <p className="text-xs">&copy; {new Date().getFullYear()} MarkWrite</p>
+            <p className="text-xs">&copy; {new Date().getFullYear()} MarkWrite - Binay Koirala. All Rights Reserved.</p>
             <div className="flex items-center gap-3">
               <a href="https://github.com/v-eenay/markwrite" target="_blank" rel="noopener noreferrer" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="GitHub Repository">
                 <GitHubIcon className="w-4 h-4" />
@@ -465,7 +463,7 @@ function App() {
               <a href="https://linkedin.com/in/v-eenay" target="_blank" rel="noopener noreferrer" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="LinkedIn Profile">
                 <LinkedInIcon className="w-4 h-4" />
               </a>
-              <a href="mailto:koiralavinay@gmail.com" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="Email Contact">
+              <a href="mailto:binaya.koirala@iic.edu.np" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="Professional Email Contact">
                 <EmailIcon className="w-4 h-4" />
               </a>
             </div>
@@ -475,18 +473,23 @@ function App() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
             <div className="text-center sm:text-left">
               <p className="mb-1">MarkWrite - A minimalist Markdown editor</p>
-              <p className="text-xs">Built with React and Tailwind CSS</p>
+              <p className="text-xs">&copy; {new Date().getFullYear()} Binay Koirala. All Rights Reserved.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <a href="https://github.com/v-eenay/markwrite" target="_blank" rel="noopener noreferrer" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="GitHub Repository">
                 <GitHubIcon className="w-5 h-5" />
               </a>
               <a href="https://linkedin.com/in/v-eenay" target="_blank" rel="noopener noreferrer" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="LinkedIn Profile">
                 <LinkedInIcon className="w-5 h-5" />
               </a>
-              <a href="mailto:koiralavinay@gmail.com" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="Email Contact">
-                <EmailIcon className="w-5 h-5" />
-              </a>
+              <div className="flex flex-col items-end text-xs">
+                <a href="mailto:koiralavinay@gmail.com" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="Personal Email Contact">
+                  <span>koiralavinay@gmail.com</span>
+                </a>
+                <a href="mailto:binaya.koirala@iic.edu.np" className="hover:text-primary-light dark:hover:text-primary-dark transition-colors" aria-label="Professional Email Contact">
+                  <span>binaya.koirala@iic.edu.np</span>
+                </a>
+              </div>
             </div>
           </div>
         )}
