@@ -8,7 +8,8 @@ import {
   LinkIcon,
   ImageIcon,
   ListIcon,
-  BlockquoteIcon
+  BlockquoteIcon,
+  PageBreakIcon
 } from '../icons/ToolbarIcons';
 
 function Toolbar({ onAction }) {
@@ -26,6 +27,7 @@ function Toolbar({ onAction }) {
     { id: 'divider3', type: 'divider' },
     { id: 'link', icon: <LinkIcon />, title: 'Link' },
     { id: 'image', icon: <ImageIcon />, title: 'Image' },
+    { id: 'pageBreak', icon: <PageBreakIcon />, title: 'Page Break' },
     { id: 'divider4', type: 'divider' },
     { id: 'unorderedList', icon: <ListIcon ordered={false} />, title: 'Unordered List' },
     { id: 'orderedList', icon: <ListIcon ordered={true} />, title: 'Ordered List' },
