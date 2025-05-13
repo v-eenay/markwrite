@@ -1,3 +1,84 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom scrollbar styling */
+@layer utilities {
+  /* For Webkit browsers (Chrome, Safari) */
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-border-light/70 dark:bg-border-dark/70 rounded-full transition-colors;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-light/60 dark:bg-primary-dark/60;
+  }
+
+  /* Scrollbar styling for Firefox */
+  .scrollbar-custom {
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.border.light') transparent;
+  }
+
+  .dark .scrollbar-custom {
+    scrollbar-color: theme('colors.border.dark') transparent;
+  }
+}
+
+/* Hide scrollbar when not hovering */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-show-on-hover::-webkit-scrollbar {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .scrollbar-show-on-hover:hover::-webkit-scrollbar {
+    opacity: 1;
+  }
+}
+
+/* Page break styling */
+.page-break {
+  border-top: 2px dashed #ccc;
+  margin: 2rem 0;
+  position: relative;
+}
+
+.dark .page-break {
+  border-top-color: #555;
+}
+
+.page-break::before {
+  content: 'Page Break';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--tw-prose-body);
+  padding: 0 10px;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.dark .page-break::before {
+  background-color: var(--tw-prose-invert-body);
+  color: #777;
+}

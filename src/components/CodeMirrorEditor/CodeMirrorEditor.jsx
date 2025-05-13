@@ -244,11 +244,12 @@ function CodeMirrorEditor({ value, onChange }) {
             view.dom.addEventListener('keyup', () => handleCursorActivity(view));
             view.dom.addEventListener('click', () => handleCursorActivity(view));
 
-            // Force scrollbar visibility
+            // Force scrollbar visibility and apply custom styling
             const scroller = view.scrollDOM;
             if (scroller) {
               scroller.style.overflow = 'auto';
               scroller.style.overflowY = 'scroll';
+              scroller.classList.add('scrollbar-custom');
             }
           }}
           placeholder="Write your markdown here..."

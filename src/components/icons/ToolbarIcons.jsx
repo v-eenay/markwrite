@@ -251,3 +251,30 @@ export function LogoIcon({ className = '', width = 24, height = 24 }) {
     </svg>
   );
 }
+
+export function PageBreakIcon({ className = '', width = 24, height = 24 }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Horizontal dashed line representing the page break */}
+      <line x1="3" y1="12" x2="21" y2="12" strokeDasharray="4" />
+      {/* Scissors icon */}
+      <circle cx="7" cy="9" r="1" />
+      <circle cx="11" cy="9" r="1" />
+      <path d="M9 6l2 3-2 3-2-3z" />
+      {/* Arrow indicators */}
+      <polyline points="16,8 19,5 22,8" />
+      <polyline points="16,16 19,19 22,16" />
+    </svg>
+  );
+}
