@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from './contexts/ThemeContext';
 import Split from 'react-split';
 import CodeMirrorEditor from './components/CodeMirrorEditor/CodeMirrorEditor';
 import Preview from './components/Preview/Preview';
@@ -78,6 +79,7 @@ Start writing your own content now!
 `;
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const editorRef = useRef(null);
   const previewRef = useRef(null);
@@ -308,7 +310,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className="app" data-theme={theme}>
       <header className="app-header">
         <div className="app-logo">
           <LogoIcon width={32} height={32} />
@@ -316,6 +318,9 @@ function App() {
         </div>
         <div className="header-actions">
           <Toolbar onAction={handleToolbarAction} />
+          <button onClick={toggleTheme} className="theme-toggle-button">
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
           <div className="download-buttons">
             <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
             <DocxDownloadButton previewRef={previewRef} markdown={markdown} />

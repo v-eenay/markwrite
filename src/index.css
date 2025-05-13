@@ -1,17 +1,75 @@
 :root {
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
-  --text-color: #1f2937;
-  --text-light: #6b7280;
-  --bg-color: #fafafa;
-  --bg-editor: #ffffff;
-  --border-color: #e5e7eb;
-  --border-hover: #d1d5db;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Light Theme (Default) */
+  --primary-color-light: #3b82f6;
+  --primary-hover-light: #2563eb;
+  --text-color-light: #1f2937;
+  --text-light-light: #6b7280;
+  --text-secondary-light: #4b5563; /* Added for more granular control */
+  --bg-color-light: #fafafa;
+  --bg-editor-light: #ffffff;
+  --bg-alt-light: #f3f4f6; /* For elements like code blocks, input fields */
+  --border-color-light: #e5e7eb;
+  --border-hover-light: #d1d5db;
+  --shadow-sm-light: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --icon-color-light: #4b5563; /* For icons */
+  --link-color-light: var(--primary-color-light);
+
+  /* Dark Theme */
+  --primary-color-dark: #60a5fa; /* Lighter blue for dark mode */
+  --primary-hover-dark: #3b82f6;
+  --text-color-dark: #f3f4f6;    /* Light text for dark backgrounds */
+  --text-light-dark: #9ca3af;   /* Slightly dimmer light text */
+  --text-secondary-dark: #d1d5db; 
+  --bg-color-dark: #111827;      /* Dark background */
+  --bg-editor-dark: #1f2937;    /* Slightly lighter dark for editor */
+  --bg-alt-dark: #374151;       /* For elements like code blocks in dark mode */
+  --border-color-dark: #374151;  /* Darker border */
+  --border-hover-dark: #4b5563;
+  --shadow-sm-dark: 0 1px 2px 0 rgba(255, 255, 255, 0.05); /* Lighter shadow for dark mode */
+  --shadow-md-dark: 0 4px 6px -1px rgba(255, 255, 255, 0.03), 0 2px 4px -1px rgba(255, 255, 255, 0.02);
+  --icon-color-dark: #9ca3af;
+  --link-color-dark: var(--primary-color-dark);
+
+  /* Default to Light Theme Variables */
+  --primary-color: var(--primary-color-light);
+  --primary-hover: var(--primary-hover-light);
+  --text-color: var(--text-color-light);
+  --text-light: var(--text-light-light);
+  --text-secondary: var(--text-secondary-light);
+  --bg-color: var(--bg-color-light);
+  --bg-editor: var(--bg-editor-light);
+  --bg-alt: var(--bg-alt-light);
+  --border-color: var(--border-color-light);
+  --border-hover: var(--border-hover-light);
+  --shadow-sm: var(--shadow-sm-light);
+  --shadow-md: var(--shadow-md-light);
+  --icon-color: var(--icon-color-light);
+  --link-color: var(--link-color-light);
+
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-heading: 'Manrope', sans-serif;
+}
+
+[data-theme='dark'] {
+  --primary-color: var(--primary-color-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --text-color: var(--text-color-dark);
+  --text-light: var(--text-light-dark);
+  --text-secondary: var(--text-secondary-dark);
+  --bg-color: var(--bg-color-dark);
+  --bg-editor: var(--bg-editor-dark);
+  --bg-alt: var(--bg-alt-dark);
+  --border-color: var(--border-color-dark);
+  --border-hover: var(--border-hover-dark);
+  --shadow-sm: var(--shadow-sm-dark);
+  --shadow-md: var(--shadow-md-dark);
+  --icon-color: var(--icon-color-dark);
+  --link-color: var(--link-color-dark);
+}
+
+:root {
 }
 
 * {
@@ -47,25 +105,25 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(229, 231, 235, 0.5);
+  background: var(--bg-alt);
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.8);
+  background-color: var(--text-light);
   border-radius: 8px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
+  border: 3px solid var(--bg-editor);
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(75, 85, 99, 0.9);
+  background-color: var(--text-color);
 }
 
 /* Ensure scrollbars are visible in Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.8) transparent;
+  scrollbar-color: var(--text-light) var(--bg-alt);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -92,7 +150,7 @@ h4 {
 }
 
 a {
-  color: var(--primary-color);
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -103,29 +161,54 @@ a:hover {
 code {
   font-family: var(--font-mono);
   font-size: 0.9em;
-  background-color: #f3f4f6;
+  background-color: var(--bg-alt);
+  color: var(--text-color); /* Ensure code text color contrasts with bg-alt */
   padding: 0.2em 0.4em;
   border-radius: 3px;
+  border: 1px solid var(--border-color); /* Add subtle border */
 }
 
 pre {
-  background-color: #1e293b;
-  color: #f8fafc;
+  background-color: var(--bg-alt);
+  color: var(--text-color); /* Ensure pre text color contrasts */
   padding: 1rem;
   border-radius: 6px;
   overflow-x: auto;
   margin: 1rem 0;
+  border: 1px solid var(--border-color);
 }
 
 pre code {
   background-color: transparent;
   padding: 0;
   color: inherit;
+  border: none; /* Remove border from code inside pre */
 }
 
 button {
   cursor: pointer;
   font-family: var(--font-sans);
+}
+
+.theme-toggle-button {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2rem; /* Adjust size as needed */
+  margin-left: 0.5rem; /* Add some spacing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; /* Fixed width */
+  height: 40px; /* Fixed height */
+}
+
+.theme-toggle-button:hover {
+  background-color: var(--bg-alt);
+  border-color: var(--border-hover);
 }
 
 .container {
