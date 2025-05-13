@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import html2pdf from 'html2pdf.js';
 import PdfIcon from '../icons/PdfIcon';
-import './PdfDownloadButton.css';
 
 function PdfDownloadButton({ previewRef, markdown }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -58,18 +57,20 @@ function PdfDownloadButton({ previewRef, markdown }) {
   };
 
   return (
-    <div className="pdf-download-container">
+    <div className="relative">
       <button 
-        className={`pdf-download-button ${isGenerating ? 'generating' : ''}`}
+        className={`flex items-center gap-2 px-3 py-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-hover dark:hover:bg-primary-dark-hover transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed`}
         onClick={handleDownloadPdf}
         disabled={isGenerating}
         title="Download as PDF"
       >
-        <PdfIcon className="pdf-icon" />
+        <PdfIcon className="w-5 h-5" />
         <span>Download PDF</span>
-        {isGenerating && <span className="loading-spinner"></span>}
+        {isGenerating && (
+          <span className="ml-1 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+        )}
       </button>
-      {error && <div className="pdf-error-message">{error}</div>}
+      {error && <div className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</div>}
     </div>
   );
 }

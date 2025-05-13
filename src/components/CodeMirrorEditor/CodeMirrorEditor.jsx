@@ -8,13 +8,14 @@ import { keymap } from '@codemirror/view';
 import { Compartment } from '@codemirror/state';
 import { markdownCompletions } from './autocomplete/markdownCompletions';
 import { detectCodeBlockLanguage, getLanguageExtension } from './autocomplete/languageDetection';
-import './CodeMirrorEditor.css';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Create compartments for dynamic extensions
 const languageCompartment = new Compartment();
 const autocompletionCompartment = new Compartment();
 
 function CodeMirrorEditor({ value, onChange }) {
+  const { theme } = useTheme();
   const editorRef = useRef(null);
   const [currentLanguage, setCurrentLanguage] = useState("markdown");
 
@@ -96,38 +97,43 @@ function CodeMirrorEditor({ value, onChange }) {
       },
       // Styling for autocompletion
       ".cm-tooltip": {
-        border: "1px solid var(--border-color)",
-        backgroundColor: "var(--bg-editor)",
+        border: theme === 'light' ? "1px solid #dbe2ea" : "1px solid #3a3c53",
+        backgroundColor: theme === 'light' ? "#ffffff" : "#252733",
         borderRadius: "6px",
-        boxShadow: "var(--shadow-md)",
+        boxShadow: theme === 'light' 
+          ? "0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)" 
+          : "0 4px 6px -1px rgba(255, 255, 255, 0.05), 0 2px 4px -1px rgba(255, 255, 255, 0.04)",
         overflow: "hidden"
       },
       ".cm-tooltip.cm-tooltip-autocomplete": {
         "& > ul": {
-          fontFamily: "var(--font-sans)",
+          fontFamily: "system-ui, -apple-system, sans-serif",
           maxHeight: "300px",
           maxWidth: "400px"
         },
         "& > ul > li": {
-          padding: "4px 8px"
+          padding: "4px 8px",
+          color: theme === 'light' ? "#2f3e46" : "#e0f2f1",
+          backgroundColor: theme === 'light' ? "#ffffff" : "#252733",
         },
         "& > ul > li[aria-selected]": {
-          backgroundColor: "rgba(59, 130, 246, 0.1)"
+          backgroundColor: theme === 'light' ? "rgba(142, 202, 230, 0.2)" : "rgba(144, 224, 239, 0.2)",
+          color: theme === 'light' ? "#2f3e46" : "#e0f2f1",
         }
       },
       ".cm-completionIcon": {
         marginRight: "8px",
-        color: "var(--primary-color)"
+        color: theme === 'light' ? "#8ecae6" : "#90e0ef"
       },
       ".cm-completionLabel": {
-        color: "var(--text-color)"
+        color: theme === 'light' ? "#2f3e46" : "#e0f2f1"
       },
       ".cm-completionDetail": {
-        color: "var(--text-light)",
+        color: theme === 'light' ? "#556872" : "#cdd9e5",
         fontStyle: "italic"
       },
       ".cm-completionMatchedText": {
-        color: "var(--primary-color)",
+        color: theme === 'light' ? "#219ebc" : "#90e0ef",
         textDecoration: "none",
         fontWeight: "bold"
       }
@@ -202,11 +208,11 @@ function CodeMirrorEditor({ value, onChange }) {
   };
 
   return (
-    <div className="codemirror-editor">
-      <div className="editor-header">
-        <span>Markdown</span>
+    <div className="h-full flex flex-col">
+      <div className="py-2 px-4 bg-background-secondary dark:bg-background-dark-secondary border-b border-border-light dark:border-border-dark flex justify-between items-center">
+        <span className="font-medium text-text-secondary dark:text-text-dark-secondary">Markdown</span>
         <span
-          className={`language-indicator ${currentLanguage === 'markdown' ? 'language-markdown' : 'language-code'}`}
+          className={`text-xs px-2 py-1 rounded ${currentLanguage === 'markdown' ? 'bg-primary-light/20 dark:bg-primary-dark/20 text-primary-hover dark:text-primary-dark' : 'bg-background-secondary dark:bg-background-dark-secondary text-text-secondary dark:text-text-dark-secondary'}`}
           title={currentLanguage === 'markdown'
             ? 'Currently editing Markdown text'
             : `Code block language: ${currentLanguage}`}
@@ -214,7 +220,7 @@ function CodeMirrorEditor({ value, onChange }) {
           Language: {currentLanguage}
         </span>
       </div>
-      <div className="editor-container">
+      <div className="flex-1 overflow-auto">
         <ReactCodeMirror
           ref={editorRef}
           value={value}
@@ -248,6 +254,7 @@ function CodeMirrorEditor({ value, onChange }) {
           placeholder="Write your markdown here..."
           height="100%"
           style={{ overflow: 'auto', height: '100%' }}
+          theme={theme}
         />
       </div>
     </div>

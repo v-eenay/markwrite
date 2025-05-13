@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
-import './Preview.css';
 
 // Configure marked with highlight.js for code syntax highlighting
 marked.setOptions({
@@ -45,11 +44,11 @@ function Preview({ markdown }) {
   }, [markdown]);
 
   return (
-    <div className="markdown-preview">
-      <div className="preview-header">
-        <span>Preview</span>
+    <div className="h-full flex flex-col">
+      <div className="py-2 px-4 bg-background-secondary dark:bg-background-dark-secondary border-b border-border-light dark:border-border-dark mb-4">
+        <span className="font-medium text-text-secondary dark:text-text-dark-secondary">Preview</span>
       </div>
-      <div className="preview-content" ref={previewRef}></div>
+      <div className="preview-content prose dark:prose-invert max-w-none" ref={previewRef}></div>
     </div>
   );
 }

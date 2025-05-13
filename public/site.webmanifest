@@ -1,0 +1,53 @@
+{
+  "name": "MarkWrite",
+  "short_name": "MarkWrite",
+  "description": "A minimalist Markdown editor with real-time preview",
+  "icons": [
+    {
+      "src": "./favicon-16x16.svg",
+      "sizes": "16x16",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./favicon-32x32.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./android-chrome-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./android-chrome-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./safari-pinned-tab.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "monochrome"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Document",
+      "url": "./",
+      "description": "Create a new markdown document"
+    }
+  ]
+}
