@@ -9,17 +9,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 1.5rem; /* Increased padding for better spacing */
   background-color: var(--bg-editor);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   z-index: 10;
+  position: sticky; /* Make header sticky */
+  top: 0;
 }
 
 .app-logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem; /* Slightly reduced gap for a tighter look */
 }
 
 .app-logo svg {
@@ -27,16 +29,17 @@
 }
 
 .app-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.375rem; /* Slightly smaller for balance */
   font-weight: 600;
   color: var(--primary-color);
   margin: 0;
+  line-height: 1; /* Ensure consistent line height */
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem; /* Reduced gap for a more compact feel */
 }
 
 .download-buttons {
@@ -77,17 +80,17 @@
 }
 
 .app-footer {
-  padding: 1.5rem;
+  padding: 2rem 1.5rem; /* Increased padding */
   background-color: var(--bg-editor);
   border-top: 1px solid var(--border-color);
-  font-size: 0.9rem;
-  color: var(--text-secondary, var(--text-light)); /* Use a secondary text color variable or fallback */
+  font-size: 0.875rem; /* Slightly adjusted font size */
+  color: var(--text-secondary, var(--text-light));
 }
 
 .footer-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem; /* Increased gap for better separation */
   max-width: 1200px;
   margin: 0 auto;
   text-align: center; /* Center text for mobile */
@@ -101,12 +104,12 @@
   display: flex;
   align-items: center;
   justify-content: center; /* Center branding on mobile */
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.75rem; /* Increased gap */
+  margin-bottom: 1rem; /* Increased bottom margin */
 }
 
 .footer-title { /* Corresponds to h2 in App.jsx */
-  font-size: 1.25rem;
+  font-size: 1.125rem; /* Slightly smaller for balance */
   font-weight: 600;
   color: var(--text-color);
   margin: 0;
@@ -121,7 +124,7 @@
 .footer-contact-info {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem; /* Reduced gap for a more compact mobile view */
 }
 
 .footer-personal, .footer-social { /* These are containers for title + links */
@@ -185,7 +188,7 @@
     justify-content: space-between;
     align-items: flex-start; /* Align items to the top */
     text-align: left; /* Align text to the left on desktop */
-    gap: 2rem;
+    gap: 3rem; /* Increased gap for desktop */
   }
 
   .footer-info {
@@ -201,7 +204,7 @@
     flex-direction: row;
     justify-content: space-around;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 1.5rem; /* Increased gap */
   }
 
   .footer-personal, .footer-social {

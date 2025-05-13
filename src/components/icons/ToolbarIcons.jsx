@@ -229,29 +229,18 @@ export function LogoIcon({ className = '', width = 24, height = 24 }) {
       xmlns="http://www.w3.org/2000/svg"
       width={width}
       height={height}
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
-      <rect width="32" height="32" rx="8" fill="white"/>
-      <rect x="1" y="1" width="30" height="30" rx="7" fill="#f8fafc" stroke="url(#gradient)" strokeWidth="0.8"/>
-      <path d="M7 8L12 20L16 12L20 20L25 8" stroke="url(#blue-gradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M7 24H25" stroke="url(#purple-gradient)" strokeWidth="1.8" strokeLinecap="round"/>
-      <path d="M10 27H22" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.6"/>
-      <defs>
-        <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#0ea5e9"/>
-          <stop offset="1" stopColor="#8b5cf6"/>
-        </linearGradient>
-        <linearGradient id="blue-gradient" x1="7" y1="14" x2="25" y2="14" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#0ea5e9"/>
-          <stop offset="1" stopColor="#38bdf8"/>
-        </linearGradient>
-        <linearGradient id="purple-gradient" x1="7" y1="24" x2="25" y2="24" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#8b5cf6"/>
-          <stop offset="1" stopColor="#a78bfa"/>
-        </linearGradient>
-      </defs>
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      <path d="M12 22V12"></path>
+      <path d="M20 12L12 17"></path>
+      <path d="M4 12l8 5"></path>
     </svg>
   );
 }
