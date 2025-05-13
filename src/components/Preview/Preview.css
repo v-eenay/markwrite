@@ -18,6 +18,7 @@
 }
 
 .preview-content {
+  font-size: 1rem; /* Base font size for preview content, 16px if html font-size is 16px */
   flex: 1;
   padding: 1rem;
   overflow: auto;
@@ -69,10 +70,36 @@
 .preview-content h4,
 .preview-content h5,
 .preview-content h6 {
+  /* Responsive headings using clamp() */
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   font-weight: 600;
   line-height: 1.25;
+}
+
+.preview-content h1 {
+  font-size: clamp(1.75rem, 1.5rem + 1vw, 2.5rem); /* Scales from ~28px to 40px */
+}
+
+.preview-content h2 {
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem); /* Scales from ~24px to 32px */
+}
+
+.preview-content h3 {
+  font-size: clamp(1.25rem, 1.1rem + 0.75vw, 1.75rem); /* Scales from ~20px to 28px */
+}
+
+.preview-content h4 {
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.5rem); /* Scales from ~17.6px to 24px */
+}
+
+.preview-content h5 {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem); /* Scales from ~16px to 20px */
+}
+
+.preview-content h6 {
+  font-size: clamp(0.9rem, 0.8rem + 0.5vw, 1.1rem); /* Scales from ~14.4px to 17.6px */
+  color: var(--text-light);
 }
 
 .preview-content h1:first-child,
@@ -82,6 +109,8 @@
 }
 
 .preview-content p {
+  font-size: 1rem; /* Ensures body text is at least 16px on mobile */
+  line-height: 1.7; /* Improved readability for paragraphs */
   margin-bottom: 1em;
 }
 
@@ -129,6 +158,70 @@
 
 .preview-content tr:nth-child(even) {
   background-color: #f8fafc;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 767px) {
+  .preview-content {
+    padding: 0.75rem; /* Reduced padding on smaller screens */
+    padding-right: 12px; /* Adjust for scrollbar */
+    line-height: 1.65;
+  }
+
+  .preview-content h1 {
+    font-size: clamp(1.5rem, 1.25rem + 1.5vw, 2rem);
+  }
+
+  .preview-content h2 {
+    font-size: clamp(1.3rem, 1.1rem + 1.5vw, 1.75rem);
+  }
+
+  .preview-content h3 {
+    font-size: clamp(1.15rem, 1rem + 1vw, 1.5rem);
+  }
+
+  .preview-content p {
+    line-height: 1.6;
+  }
+
+  .preview-content ul,
+  .preview-content ol {
+    padding-left: 1.5em;
+  }
+
+  .preview-content blockquote {
+    padding: 0.5em 0.75em;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .preview-content table {
+    font-size: 0.875rem; /* Slightly smaller font for tables on small screens */
+  }
+
+  .preview-content th,
+  .preview-content td {
+    padding: 0.4em;
+  }
+}
+
+@media (max-width: 479px) {
+  .preview-content {
+    padding: 0.5rem;
+    padding-right: 10px; /* Adjust for scrollbar */
+  }
+  .preview-content h1 {
+    font-size: clamp(1.3rem, 1.1rem + 2vw, 1.75rem);
+  }
+  .preview-content h2 {
+    font-size: clamp(1.15rem, 1rem + 1.5vw, 1.5rem);
+  }
+  .preview-content h3 {
+    font-size: clamp(1.05rem, 0.9rem + 1vw, 1.3rem);
+  }
+  .preview-content p {
+    font-size: 0.9375rem; /* ~15px, still readable but slightly smaller for very small screens */
+  }
 }
 
 .preview-content hr {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from './contexts/ThemeContext';
 import Split from 'react-split';
 import CodeMirrorEditor from './components/CodeMirrorEditor/CodeMirrorEditor';
@@ -79,7 +79,28 @@ Start writing your own content now!
 `;
 
 function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
   const { theme, toggleTheme } = useTheme();
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobileView(mobile);
+      if (!mobile) {
+        setIsMenuOpen(false); // Close menu when switching to desktop view
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const editorRef = useRef(null);
   const previewRef = useRef(null);
@@ -316,16 +337,40 @@ function App() {
           <LogoIcon width={32} height={32} />
           <h1>MarkWrite</h1>
         </div>
-        <div className="header-actions">
-          <Toolbar onAction={handleToolbarAction} />
-          <button onClick={toggleTheme} className="theme-toggle-button">
-            {theme === 'light' ? '🌙' : '☀️'}
+        {isMobileView && (
+          <button 
+            className={`hamburger-button ${isMenuOpen ? 'open' : ''}`}
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="header-actions-nav"
+          >
+            <span className="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
           </button>
+        )}
+        <div id="header-actions-nav" className={`header-actions ${isMobileView ? 'mobile-nav' : ''} ${isMobileView && isMenuOpen ? 'open' : ''}`}>
+          <Toolbar onAction={handleToolbarAction} />
+          {!isMobileView && (
+            <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+          )}
           <div className="download-buttons">
             <PdfDownloadButton previewRef={previewRef} markdown={markdown} />
             <DocxDownloadButton previewRef={previewRef} markdown={markdown} />
           </div>
         </div>
+        {isMobileView && isMenuOpen && (
+           <div className="mobile-menu-bottom-actions">
+              <button onClick={toggleTheme} className="theme-toggle-button mobile-theme-toggle" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+                {theme === 'light' ? 'Switch to Dark Mode 🌙' : 'Switch to Light Mode ☀️'}
+              </button>
+           </div>
+        )}
       </header>
       <main className="app-content">
         <Split
