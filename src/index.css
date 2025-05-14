@@ -60,6 +60,10 @@
   border-top: 2px dashed #ccc;
   margin: 2rem 0;
   position: relative;
+  display: block;
+  width: 100%;
+  height: 2px;
+  clear: both;
 }
 
 .dark .page-break {
@@ -72,13 +76,48 @@
   top: -10px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--tw-prose-body);
+  background-color: #fff;
   padding: 0 10px;
   font-size: 0.75rem;
   color: #999;
+  z-index: 1;
 }
 
 .dark .page-break::before {
-  background-color: var(--tw-prose-invert-body);
+  background-color: #1e1e24;
   color: #777;
+}
+
+/* PDF export page break */
+.pagebreak {
+  page-break-after: always;
+  break-after: page;
+  height: 0;
+  display: block;
+}
+
+/* Prose styling for strikethrough and inline code */
+.prose del, .prose s, .pdf-strikethrough {
+  text-decoration: line-through;
+  position: relative;
+  color: #666;
+}
+
+.prose code:not(pre code), .pdf-inline-code {
+  display: inline-block;
+  position: relative;
+  vertical-align: baseline;
+  line-height: normal;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+  color: #d63384;
+  background-color: rgba(214, 51, 132, 0.05);
+  border-radius: 3px;
+  border: 1px solid rgba(214, 51, 132, 0.1);
+  padding: 0.1em 0.4em;
+}
+
+/* Dark mode styling for strikethrough */
+.dark .prose del, .dark .prose s, .dark .pdf-strikethrough {
+  color: #999;
 }

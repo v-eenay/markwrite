@@ -1,10 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
+import { useTheme } from '../../contexts/ThemeContext';
+// Import both light and dark themes
+import 'highlight.js/styles/github.css'; // Light theme
+import './syntax-dark.css'; // We'll create this custom dark theme
 
 function Preview({ markdown }) {
   const previewRef = useRef(null);
+  const { theme } = useTheme();
 
   // Configure marked with syntax highlighting
   marked.setOptions({
@@ -18,20 +22,41 @@ function Preview({ markdown }) {
     },
     breaks: true,
     gfm: true,
+    headerIds: true,
+    mangle: false,
+    sanitize: false, // Allow HTML in the markdown
+    smartLists: true,
+    smartypants: true,
   });
+
+  // Add custom renderers for strikethrough text and inline code
+  const renderer = new marked.Renderer();
+
+  // Custom renderer for strikethrough text
+  renderer.del = function(text) {
+    return '<del class="pdf-strikethrough">' + text + '</del>';
+  };
+
+  // Custom renderer for inline code
+  renderer.codespan = function(code) {
+    return '<code class="pdf-inline-code">' + code + '</code>';
+  };
+
+  marked.use({ renderer });
 
   useEffect(() => {
     if (!previewRef.current) return;
 
     // Process page breaks before parsing markdown
-    const processedMarkdown = markdown.replace(/---pagebreak---/g, '<div class="page-break"></div>');
-    
+    // Use a more specific replacement that ensures the page break is properly rendered
+    const processedMarkdown = markdown.replace(/---pagebreak---/g, '\n\n<div class="page-break"></div>\n\n');
+
     // Parse markdown to HTML
     const html = marked.parse(processedMarkdown);
-    
+
     // Set the HTML content
     previewRef.current.innerHTML = html;
-    
+
     // Make links open in a new tab
     const links = previewRef.current.querySelectorAll('a');
     links.forEach(link => {
@@ -40,14 +65,28 @@ function Preview({ markdown }) {
         link.setAttribute('rel', 'noopener noreferrer');
       }
     });
-    
+
     // Page breaks are now styled via CSS in index.css
-    
+
     // Apply syntax highlighting to code blocks
     previewRef.current.querySelectorAll('pre code').forEach((block) => {
+      // Add language-specific classes for better styling
+      const language = block.className.match(/language-(\w+)/)?.[1];
+      if (language) {
+        block.parentElement.classList.add(`language-${language}`);
+      }
+
       hljs.highlightElement(block);
     });
-  }, [markdown]);
+
+    // Add a class to the preview container to indicate the current theme
+    // This helps with applying the correct syntax highlighting theme
+    if (theme === 'dark') {
+      previewRef.current.classList.add('dark-preview');
+    } else {
+      previewRef.current.classList.remove('dark-preview');
+    }
+  }, [markdown, theme]);
 
   return (
     <div className="h-full flex flex-col">
