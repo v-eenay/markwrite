@@ -583,31 +583,24 @@ function PdfDownloadButton({ previewRef, markdown }) {
       content = clonedContent.innerHTML;
       clonedContent.innerHTML = content.replace(/---pagebreak---/g, '<div class="pagebreak"></div>');
 
-      // Create a temporary container for the PDF content with proper styling
-      const tempContainer = document.createElement('div');
-      tempContainer.className = 'pdf-export-container';
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '-9999px';
-      tempContainer.style.width = '210mm'; // A4 width
-      tempContainer.style.minHeight = '297mm'; // A4 height
-      tempContainer.style.padding = '15mm'; // Margins
-      tempContainer.style.backgroundColor = '#ffffff';
-      tempContainer.style.color = '#333333';
-      tempContainer.style.fontFamily = 'Arial, Helvetica, sans-serif';
-      tempContainer.style.fontSize = '11pt';
-      tempContainer.style.lineHeight = '1.6';
-      tempContainer.style.overflow = 'visible';
-      tempContainer.style.zIndex = '-1000';
+      // Instead of creating a temporary container, we'll use the cloned content directly
+      // This avoids issues with the iframe not finding elements
 
-      // Append the cloned content to the temporary container
-      tempContainer.appendChild(clonedContent);
+      // Apply necessary styling directly to the cloned content
+      clonedContent.style.width = '210mm'; // A4 width
+      clonedContent.style.minHeight = '297mm'; // A4 height
+      clonedContent.style.padding = '15mm'; // Margins
+      clonedContent.style.backgroundColor = '#ffffff';
+      clonedContent.style.color = '#333333';
+      clonedContent.style.fontFamily = 'Arial, Helvetica, sans-serif';
+      clonedContent.style.fontSize = '11pt';
+      clonedContent.style.lineHeight = '1.6';
 
-      // Append the temporary container to the document body
-      document.body.appendChild(tempContainer);
+      // Add a class for identification
+      clonedContent.classList.add('pdf-export-content');
 
-      // Log the temporary container to help with debugging
-      console.log('Temporary container created:', tempContainer);
+      // Log the cloned content to help with debugging
+      console.log('Prepared content for PDF export:', clonedContent);
 
       // Configure html2pdf options with enhanced settings for better quality
       const options = {
@@ -615,13 +608,17 @@ function PdfDownloadButton({ previewRef, markdown }) {
         filename: filename,
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: {
+          // Basic settings
           scale: 2, // Balance between quality and performance
           useCORS: true, // Allow cross-origin images
           logging: true, // Enable logging for debugging
           letterRendering: true, // Improve text rendering
           allowTaint: true, // Allow tainted canvas
           backgroundColor: '#ffffff', // Force white background
+
+          // Fix for iframe issues
           removeContainer: false, // Don't remove the container automatically
+          container: document.body, // Use document.body as the container
 
           // Improve image handling
           imageTimeout: 15000, // 15 seconds timeout for images
@@ -664,8 +661,14 @@ function PdfDownloadButton({ previewRef, markdown }) {
           // Additional options for better rendering
           async: true, // Use async rendering
           allowTaint: true, // Allow tainted canvas
-          removeContainer: false, // Don't remove the container automatically
-          scale: 2, // Balance between quality and performance
+
+          // Fix for iframe issues
+          x: 0,
+          y: 0,
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: window.innerWidth,
+          windowHeight: window.innerHeight
           // Improve text rendering
           onclone: (clonedDoc) => {
             console.log('onclone callback executing');
@@ -1078,75 +1081,67 @@ function PdfDownloadButton({ previewRef, markdown }) {
           }
         },
         jsPDF: {
+          // Basic settings
           unit: 'mm', // Use millimeters as the unit
           format: 'a4', // Use A4 paper size
           orientation: 'portrait', // Use portrait orientation
 
-          // Disable compression for better quality
+          // Simplify options to avoid conflicts
           compress: false,
-          compressPdf: false,
 
           // Improve precision for better rendering
           precision: 16,
-          floatPrecision: 16,
 
-          // Apply hotfixes for better rendering
-          hotfixes: ["px_scaling", "px_scaling_2"],
+          // Apply only essential hotfixes
+          hotfixes: ["px_scaling"],
 
-          // Improve font rendering
+          // Basic font rendering
           putTotalPages: true,
-          userUnit: 1.0,
 
-          // Improve color rendering
+          // Basic color rendering
           colorSpace: 'srgb', // Use sRGB color space for better color accuracy
 
-          // Improve image quality
+          // Basic image quality
           imageQuality: 1.0,
 
-          // Enable font embedding for better text rendering
-          fontFaces: true,
-
-          // Additional options for better rendering
-          enableLinks: true, // Enable links in the PDF
-          pagesplit: true, // Enable page splitting
-          autoPaging: true, // Enable automatic paging
-
-          // Set proper margins
-          margins: {
-            top: 15,
-            right: 15,
-            bottom: 15,
-            left: 15
-          }
+          // Simplified margins
+          margin: [15, 15, 15, 15] // Top, right, bottom, left margins in mm
         }
       };
 
-      // Generate PDF from the temporary container (not just the cloned content)
+      // Generate PDF using a more direct approach
       try {
-        console.log('Starting PDF generation with options:', options);
+        console.log('Starting PDF generation with simplified approach');
 
-        // Use the temporary container as the source for PDF generation
-        await html2pdf()
-          .from(tempContainer)
-          .set(options)
-          .toPdf() // Convert to PDF first
-          .get('pdf') // Get the PDF object
-          .then(pdf => {
-            console.log('PDF object created successfully');
-            return pdf;
-          })
-          .save(filename); // Save with the filename
+        // Append the cloned content to the document body temporarily
+        document.body.appendChild(clonedContent);
+
+        // Use a simpler approach with html2pdf
+        const element = document.querySelector('.pdf-export-content');
+        if (!element) {
+          throw new Error('PDF content element not found');
+        }
+
+        console.log('Using element for PDF generation:', element);
+
+        // Generate the PDF with a simpler configuration
+        await html2pdf(element, options);
 
         console.log('PDF generated and saved successfully');
+
+        // Remove the element from the document body
+        if (document.body.contains(clonedContent)) {
+          document.body.removeChild(clonedContent);
+        }
       } catch (pdfError) {
         console.error('Error during PDF generation:', pdfError);
-        throw pdfError;
-      } finally {
-        // Always clean up the temporary container
-        if (document.body.contains(tempContainer)) {
-          document.body.removeChild(tempContainer);
-          console.log('Temporary container removed');
+
+        // Remove the element from the document body if an error occurs
+        if (document.body.contains(clonedContent)) {
+          document.body.removeChild(clonedContent);
         }
+
+        throw pdfError;
       }
     } catch (err) {
       console.error('Error generating PDF:', err);
@@ -1154,7 +1149,16 @@ function PdfDownloadButton({ previewRef, markdown }) {
       // Provide more detailed error messages to the user
       let errorMessage = 'Failed to generate PDF. ';
 
-      if (err.message) {
+      if (err.message && err.message.includes('Unable to find element in cloned iframe')) {
+        // Handle the specific iframe error
+        errorMessage += 'Unable to process the document structure. Try using a simpler document or fewer images.';
+
+        // Log additional information for debugging
+        console.log('Iframe error details:', {
+          previewContent: previewRef.current?.querySelector('.preview-content'),
+          clonedContent: clonedContent
+        });
+      } else if (err.message) {
         // Add specific error message if available
         errorMessage += err.message;
       } else if (err.name === 'SecurityError') {
@@ -1172,14 +1176,33 @@ function PdfDownloadButton({ previewRef, markdown }) {
 
       setError(errorMessage);
 
-      // Try to clean up any temporary elements that might have been created
+      // Clean up any temporary elements created by html2pdf
       try {
-        const tempElements = document.querySelectorAll('.pdf-export-container');
+        // Remove any iframes created by html2pdf
+        const iframes = document.querySelectorAll('iframe[style*="-9999px"]');
+        iframes.forEach(iframe => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        });
+
+        // Remove any canvases created by html2pdf
+        const canvases = document.querySelectorAll('canvas[style*="-9999px"]');
+        canvases.forEach(canvas => {
+          if (document.body.contains(canvas)) {
+            document.body.removeChild(canvas);
+          }
+        });
+
+        // Remove any other temporary elements
+        const tempElements = document.querySelectorAll('.pdf-export-content, .html2pdf__container');
         tempElements.forEach(el => {
           if (document.body.contains(el)) {
             document.body.removeChild(el);
           }
         });
+
+        console.log('Cleanup completed successfully');
       } catch (cleanupErr) {
         console.error('Error during cleanup:', cleanupErr);
       }
