@@ -668,7 +668,7 @@ function PdfDownloadButton({ previewRef, markdown }) {
           scrollY: 0,
           scrollX: 0,
           windowWidth: window.innerWidth,
-          windowHeight: window.innerHeight
+          windowHeight: window.innerHeight,
           // Improve text rendering
           onclone: (clonedDoc) => {
             console.log('onclone callback executing');
