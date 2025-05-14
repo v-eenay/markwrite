@@ -294,8 +294,42 @@ function PdfDownloadButton({ previewRef, markdown }) {
         // Add a special class to inline code elements instead of direct style manipulation
         codeElement.classList.add('pdf-inline-code');
 
-        // Process the content to ensure proper display
-        let codeContent = codeElement.textContent || codeElement.innerHTML;
+        // Check for JSON-like content that might indicate a token object
+        const textContent = codeElement.textContent || codeElement.innerHTML || '';
+        const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
+
+        let codeContent = textContent;
+
+        if (jsonPattern.test(textContent)) {
+          try {
+            // Try to parse as JSON
+            const jsonObj = JSON.parse(textContent);
+            if (jsonObj.text) {
+              codeContent = jsonObj.text;
+            } else if (jsonObj.raw) {
+              // Remove the backticks if present
+              codeContent = jsonObj.raw.replace(/^`|`$/g, '');
+            } else if (Array.isArray(jsonObj.tokens)) {
+              // Extract text from tokens
+              codeContent = jsonObj.tokens.map(token => {
+                return token.text || token.raw || '';
+              }).join('');
+            } else {
+              // Fallback: remove the JSON structure
+              codeContent = textContent.replace(/\{.*\}/g, '').trim();
+            }
+          } catch (e) {
+            // If JSON parsing fails, just clean up the text
+            codeContent = textContent
+              .replace(/\[object Object\]/g, '')
+              .replace(/\{.*\}/g, '')
+              .replace(/["{}]/g, '')
+              .trim();
+          }
+        } else if (textContent.includes('[object Object]')) {
+          // Handle [object Object] contamination
+          codeContent = textContent.replace(/\[object Object\]/g, '').trim();
+        }
 
         // Remove backticks that might be showing in the rendered output
         codeContent = codeContent.replace(/`/g, '');
@@ -313,35 +347,43 @@ function PdfDownloadButton({ previewRef, markdown }) {
         // Use class-based styling instead of direct style manipulation
         element.classList.add('pdf-strikethrough');
 
-        // Ensure the content is preserved
-        const textContent = element.textContent;
-        if (textContent) {
-          // Clear any potential [object Object] content
-          if (textContent.includes('[object Object]')) {
-            // Try to extract the actual text if possible
-            try {
-              // Check for different patterns of [object Object] contamination
-              const match = textContent.match(/\[object Object\](.*)/);
-              const matchPrefix = textContent.match(/(.*?)\[object Object\](.*)/);
-              const matchMiddle = textContent.match(/(.*?)\[object Object\](.*)/);
+        // Check for JSON-like content that might indicate a token object
+        const textContent = element.textContent || '';
+        const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
 
-              if (match && match[1]) {
-                // [object Object] is at the beginning
-                element.innerHTML = match[1].trim();
-              } else if (matchPrefix && matchPrefix[1] && matchPrefix[2]) {
-                // [object Object] is in the middle
-                element.innerHTML = (matchPrefix[1] + matchPrefix[2]).trim();
-              } else {
-                // Just remove all instances of [object Object]
-                element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
-              }
-            } catch (e) {
-              // If extraction fails, just use the text content without [object Object]
-              element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+        if (jsonPattern.test(textContent)) {
+          try {
+            // Try to parse as JSON
+            const jsonObj = JSON.parse(textContent);
+            if (jsonObj.text) {
+              element.innerHTML = jsonObj.text;
+            } else if (jsonObj.raw) {
+              // Remove the ~~ markers if present
+              element.innerHTML = jsonObj.raw.replace(/^~~|~~$/g, '');
+            } else if (Array.isArray(jsonObj.tokens)) {
+              // Extract text from tokens
+              const extractedText = jsonObj.tokens.map(token => {
+                return token.text || token.raw || '';
+              }).join('');
+              element.innerHTML = extractedText;
+            } else {
+              // Fallback: remove the JSON structure
+              element.innerHTML = textContent.replace(/\{.*\}/g, '').trim();
             }
-          } else {
-            element.innerHTML = textContent;
+          } catch (e) {
+            // If JSON parsing fails, just clean up the text
+            element.innerHTML = textContent
+              .replace(/\[object Object\]/g, '')
+              .replace(/\{.*\}/g, '')
+              .replace(/["{}]/g, '')
+              .trim();
           }
+        } else if (textContent.includes('[object Object]')) {
+          // Handle [object Object] contamination
+          element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+        } else {
+          // Just use the text content as is
+          element.innerHTML = textContent;
         }
       });
 
@@ -525,16 +567,43 @@ function PdfDownloadButton({ previewRef, markdown }) {
               // Add class instead of direct style manipulation
               el.classList.add('pdf-strikethrough');
 
-              // Ensure the content is preserved
-              const textContent = el.textContent;
-              if (textContent) {
-                // Clear any potential [object Object] content
-                if (textContent.includes('[object Object]')) {
-                  // Remove all instances of [object Object]
-                  el.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
-                } else {
-                  el.innerHTML = textContent;
+              // Check for JSON-like content that might indicate a token object
+              const textContent = el.textContent || '';
+              const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
+
+              if (jsonPattern.test(textContent)) {
+                try {
+                  // Try to parse as JSON
+                  const jsonObj = JSON.parse(textContent);
+                  if (jsonObj.text) {
+                    el.innerHTML = jsonObj.text;
+                  } else if (jsonObj.raw) {
+                    // Remove the ~~ markers if present
+                    el.innerHTML = jsonObj.raw.replace(/^~~|~~$/g, '');
+                  } else if (Array.isArray(jsonObj.tokens)) {
+                    // Extract text from tokens
+                    const extractedText = jsonObj.tokens.map(token => {
+                      return token.text || token.raw || '';
+                    }).join('');
+                    el.innerHTML = extractedText;
+                  } else {
+                    // Fallback: remove the JSON structure
+                    el.innerHTML = textContent.replace(/\{.*\}/g, '').trim();
+                  }
+                } catch (e) {
+                  // If JSON parsing fails, just clean up the text
+                  el.innerHTML = textContent
+                    .replace(/\[object Object\]/g, '')
+                    .replace(/\{.*\}/g, '')
+                    .replace(/["{}]/g, '')
+                    .trim();
                 }
+              } else if (textContent.includes('[object Object]')) {
+                // Handle [object Object] contamination
+                el.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+              } else if (textContent) {
+                // Just use the text content as is
+                el.innerHTML = textContent;
               }
             });
 
@@ -544,20 +613,50 @@ function PdfDownloadButton({ previewRef, markdown }) {
               // Add class instead of direct style manipulation
               el.classList.add('pdf-inline-code');
 
-              // Ensure the content is preserved
-              const textContent = el.textContent || el.innerHTML;
-              if (textContent) {
-                // Clean up the content
-                let cleanContent = textContent.replace(/`/g, '');
-                cleanContent = cleanContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+              // Check for JSON-like content that might indicate a token object
+              const textContent = el.textContent || el.innerHTML || '';
+              const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
 
-                // Clear any potential [object Object] content
-                if (cleanContent.includes('[object Object]')) {
-                  cleanContent = cleanContent.replace(/\[object Object\]/g, '').trim();
+              let cleanContent = textContent;
+
+              if (jsonPattern.test(textContent)) {
+                try {
+                  // Try to parse as JSON
+                  const jsonObj = JSON.parse(textContent);
+                  if (jsonObj.text) {
+                    cleanContent = jsonObj.text;
+                  } else if (jsonObj.raw) {
+                    // Remove the backticks if present
+                    cleanContent = jsonObj.raw.replace(/^`|`$/g, '');
+                  } else if (Array.isArray(jsonObj.tokens)) {
+                    // Extract text from tokens
+                    cleanContent = jsonObj.tokens.map(token => {
+                      return token.text || token.raw || '';
+                    }).join('');
+                  } else {
+                    // Fallback: remove the JSON structure
+                    cleanContent = textContent.replace(/\{.*\}/g, '').trim();
+                  }
+                } catch (e) {
+                  // If JSON parsing fails, just clean up the text
+                  cleanContent = textContent
+                    .replace(/\[object Object\]/g, '')
+                    .replace(/\{.*\}/g, '')
+                    .replace(/["{}]/g, '')
+                    .trim();
                 }
-
-                el.innerHTML = cleanContent;
+              } else if (textContent.includes('[object Object]')) {
+                // Handle [object Object] contamination
+                cleanContent = textContent.replace(/\[object Object\]/g, '').trim();
               }
+
+              // Remove backticks that might be showing in the rendered output
+              cleanContent = cleanContent.replace(/`/g, '');
+
+              // Replace HTML entities that might be causing display issues
+              cleanContent = cleanContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+
+              el.innerHTML = cleanContent;
             });
           }
         },
