@@ -25,11 +25,16 @@ function PdfDownloadButton({ previewRef, markdown }) {
     setError(null);
 
     try {
+      // Get the actual preview content - this is the div with the rendered markdown
       const previewContent = previewRef.current.querySelector('.preview-content');
 
       if (!previewContent) {
+        console.error('Preview content element not found');
         throw new Error('Preview content not found');
       }
+
+      // Log the preview content to help with debugging
+      console.log('Preview content found:', previewContent);
 
       const filename = getFilename();
 
@@ -578,13 +583,31 @@ function PdfDownloadButton({ previewRef, markdown }) {
       content = clonedContent.innerHTML;
       clonedContent.innerHTML = content.replace(/---pagebreak---/g, '<div class="pagebreak"></div>');
 
-      // Create a temporary container for the PDF content
+      // Create a temporary container for the PDF content with proper styling
       const tempContainer = document.createElement('div');
-      tempContainer.appendChild(clonedContent);
-      document.body.appendChild(tempContainer);
+      tempContainer.className = 'pdf-export-container';
       tempContainer.style.position = 'absolute';
       tempContainer.style.left = '-9999px';
       tempContainer.style.top = '-9999px';
+      tempContainer.style.width = '210mm'; // A4 width
+      tempContainer.style.minHeight = '297mm'; // A4 height
+      tempContainer.style.padding = '15mm'; // Margins
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.color = '#333333';
+      tempContainer.style.fontFamily = 'Arial, Helvetica, sans-serif';
+      tempContainer.style.fontSize = '11pt';
+      tempContainer.style.lineHeight = '1.6';
+      tempContainer.style.overflow = 'visible';
+      tempContainer.style.zIndex = '-1000';
+
+      // Append the cloned content to the temporary container
+      tempContainer.appendChild(clonedContent);
+
+      // Append the temporary container to the document body
+      document.body.appendChild(tempContainer);
+
+      // Log the temporary container to help with debugging
+      console.log('Temporary container created:', tempContainer);
 
       // Configure html2pdf options with enhanced settings for better quality
       const options = {
@@ -592,76 +615,143 @@ function PdfDownloadButton({ previewRef, markdown }) {
         filename: filename,
         image: { type: 'jpeg', quality: 1.0 },
         html2canvas: {
-          scale: 4, // Higher scale for better quality and sharper text
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          allowTaint: true,
+          scale: 2, // Balance between quality and performance
+          useCORS: true, // Allow cross-origin images
+          logging: true, // Enable logging for debugging
+          letterRendering: true, // Improve text rendering
+          allowTaint: true, // Allow tainted canvas
           backgroundColor: '#ffffff', // Force white background
-          removeContainer: true,
-          // Improve color rendering
-          imageTimeout: 0, // No timeout for images
+          removeContainer: false, // Don't remove the container automatically
+
+          // Improve image handling
+          imageTimeout: 15000, // 15 seconds timeout for images
+
+          // Don't ignore any elements to ensure all content is captured
           ignoreElements: (element) => {
-            // Ignore elements with dark mode specific classes
-            return element.classList &&
-                  (element.classList.contains('dark') ||
-                   Array.from(element.classList).some(cls => cls.startsWith('dark:')));
+            // Only ignore elements that are explicitly hidden
+            return element.style &&
+                  (element.style.display === 'none' ||
+                   element.style.visibility === 'hidden' ||
+                   element.style.opacity === '0');
           },
-          // Improve text rendering
+
+          // Improve text rendering with proper font loading
           fontFaces: [
             {
               family: 'Arial',
-              source: 'local("Arial"), local("Helvetica")'
+              source: 'local("Arial"), local("Helvetica"), local("sans-serif")'
             },
             {
               family: 'Courier New',
-              source: 'local("Courier New"), local("Courier")'
+              source: 'local("Courier New"), local("Courier"), local("monospace")'
             }
           ],
+
+          // Set proper canvas dimensions
+          width: 794, // A4 width in pixels at 96 DPI
+          height: 1123, // A4 height in pixels at 96 DPI
+
           // Improve rendering quality
           windowWidth: 1200,
           windowHeight: 1600,
           scrollX: 0,
           scrollY: 0,
-          // Improve color rendering
-          foreignObjectRendering: false, // Better color consistency
+
+          // Use standard rendering for better compatibility
+          foreignObjectRendering: false,
           colorSpace: 'srgb', // Use sRGB color space for better color accuracy
+
+          // Additional options for better rendering
+          async: true, // Use async rendering
+          allowTaint: true, // Allow tainted canvas
+          removeContainer: false, // Don't remove the container automatically
+          scale: 2, // Balance between quality and performance
           // Improve text rendering
           onclone: (clonedDoc) => {
+            console.log('onclone callback executing');
+
             // Apply additional styling to ensure proper rendering
             const style = clonedDoc.createElement('style');
             style.textContent = `
+              /* Global styles for better PDF rendering */
               * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                color-adjust: exact !important;
               }
-              pre, code, table, blockquote {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
+
+              /* Base text styling */
+              body {
+                font-family: 'Arial', 'Helvetica', sans-serif !important;
+                line-height: 1.6 !important;
+                color: #333333 !important;
+                background-color: #ffffff !important;
+                font-size: 11pt !important;
+                margin: 0 !important;
+                padding: 0 !important;
               }
+
+              /* Headings */
               h1, h2, h3, h4, h5, h6 {
+                margin-top: 1.2em !important;
+                margin-bottom: 0.6em !important;
                 page-break-after: avoid !important;
                 break-after: avoid !important;
+                color: #2f3e46 !important;
+                font-weight: 600 !important;
+                line-height: 1.3 !important;
               }
-              img {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
+
+              h1 {
+                font-size: 2em !important;
+                border-bottom: 1px solid #eaecef !important;
+                padding-bottom: 0.3em !important;
               }
+
+              h2 {
+                font-size: 1.5em !important;
+                border-bottom: 1px solid #eaecef !important;
+                padding-bottom: 0.3em !important;
+              }
+
+              h3 { font-size: 1.25em !important; }
+              h4 { font-size: 1em !important; }
+
+              /* Paragraphs */
+              p {
+                margin-bottom: 0.8em !important;
+                margin-top: 0 !important;
+                color: #333333 !important;
+                line-height: 1.6 !important;
+              }
+
+              /* Text formatting */
+              strong, b {
+                font-weight: 600 !important;
+                color: #24292e !important;
+              }
+
+              em, i {
+                font-style: italic !important;
+              }
+
               /* Enhanced fix for strikethrough text */
               del, s, .pdf-strikethrough {
                 text-decoration: line-through !important;
                 position: relative !important;
-                color: #666 !important;
+                color: #666666 !important;
                 display: inline-block !important;
               }
+
               .pdf-strikethrough-text {
                 text-decoration: line-through !important;
                 text-decoration-thickness: 1px !important;
-                text-decoration-color: #666 !important;
-                color: #666 !important;
+                text-decoration-color: #666666 !important;
+                color: #666666 !important;
                 position: relative !important;
                 display: inline !important;
               }
+
               /* Enhanced fix for inline code */
               code:not(pre code), .inline-code, .pdf-inline-code {
                 display: inline-block !important;
@@ -674,7 +764,9 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 border: 1px solid rgba(214, 51, 132, 0.1) !important;
                 font-family: 'Courier New', Courier, monospace !important;
                 color: #d63384 !important;
+                font-size: 0.9em !important;
               }
+
               .pdf-inline-code-text {
                 font-family: 'Courier New', Courier, monospace !important;
                 font-size: 0.9em !important;
@@ -690,6 +782,157 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 position: relative !important;
                 line-height: normal !important;
                 vertical-align: baseline !important;
+              }
+
+              /* Code blocks */
+              pre {
+                background-color: #f8f9fa !important;
+                border-radius: 6px !important;
+                padding: 1em !important;
+                margin: 1em 0 !important;
+                overflow-x: auto !important;
+                border: 1px solid #e9ecef !important;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+
+              pre code {
+                padding: 0 !important;
+                background-color: transparent !important;
+                border-radius: 0 !important;
+                display: block !important;
+                white-space: pre !important;
+                color: #333333 !important;
+                font-size: 0.9em !important;
+                border: none !important;
+                font-weight: normal !important;
+                font-family: 'Courier New', Courier, monospace !important;
+                line-height: 1.5 !important;
+              }
+
+              /* Lists */
+              ul, ol {
+                padding-left: 2em !important;
+                margin: 1em 0 !important;
+              }
+
+              li {
+                margin-bottom: 0.5em !important;
+              }
+
+              li > ul, li > ol {
+                margin: 0.5em 0 !important;
+              }
+
+              /* Tables */
+              table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+                margin: 1em 0 !important;
+                border: 1px solid #e5e7eb !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                table-layout: fixed !important;
+              }
+
+              th, td {
+                border: 1px solid #dddddd !important;
+                padding: 8px !important;
+                text-align: left !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+              }
+
+              th {
+                background-color: #f2f2f2 !important;
+                font-weight: 600 !important;
+              }
+
+              tr:nth-child(even) {
+                background-color: #f9fafb !important;
+              }
+
+              /* Blockquotes */
+              blockquote, .pdf-blockquote {
+                border-left: 4px solid #6b7280 !important;
+                padding: 0.5em 1em !important;
+                margin: 1em 0 !important;
+                background-color: #f9fafb !important;
+                color: #4b5563 !important;
+                font-style: italic !important;
+                display: block !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+
+              blockquote p, .blockquote-paragraph {
+                margin: 0.5em 0 !important;
+                text-align: left !important;
+              }
+
+              /* Images */
+              img {
+                max-width: 100% !important;
+                height: auto !important;
+                display: block !important;
+                margin: 1em auto !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+
+              /* Links */
+              a {
+                color: #0366d6 !important;
+                text-decoration: underline !important;
+              }
+
+              /* Page breaks */
+              .pagebreak {
+                page-break-after: always !important;
+                break-after: page !important;
+                height: 0 !important;
+                display: block !important;
+                visibility: hidden !important;
+              }
+
+              /* Horizontal rule */
+              hr {
+                border: 0 !important;
+                border-top: 1px solid #eaecef !important;
+                margin: 1.5em 0 !important;
+                height: 0 !important;
+              }
+
+              /* Syntax highlighting for code blocks */
+              .hljs-keyword, .hljs-selector-tag, .hljs-addition {
+                color: #0550ae !important;
+                font-weight: bold !important;
+              }
+
+              .hljs-number, .hljs-string, .hljs-meta .hljs-meta-string, .hljs-literal, .hljs-doctag, .hljs-regexp {
+                color: #2e7d32 !important;
+              }
+
+              .hljs-title, .hljs-section, .hljs-name, .hljs-selector-id, .hljs-selector-class {
+                color: #d32f2f !important;
+              }
+
+              .hljs-attribute, .hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-class .hljs-title, .hljs-type {
+                color: #e65100 !important;
+              }
+
+              .hljs-symbol, .hljs-bullet, .hljs-subst, .hljs-meta, .hljs-meta .hljs-keyword, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-link {
+                color: #7b1fa2 !important;
+              }
+
+              .hljs-built_in, .hljs-deletion {
+                color: #0277bd !important;
+              }
+
+              .hljs-comment, .hljs-quote {
+                color: #5d6c79 !important;
+                font-style: italic !important;
               }
             `;
             clonedDoc.head.appendChild(style);
@@ -835,34 +1078,111 @@ function PdfDownloadButton({ previewRef, markdown }) {
           }
         },
         jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true,
+          unit: 'mm', // Use millimeters as the unit
+          format: 'a4', // Use A4 paper size
+          orientation: 'portrait', // Use portrait orientation
+
+          // Disable compression for better quality
+          compress: false,
+          compressPdf: false,
+
+          // Improve precision for better rendering
           precision: 16,
           floatPrecision: 16,
-          hotfixes: ["px_scaling"],
+
+          // Apply hotfixes for better rendering
+          hotfixes: ["px_scaling", "px_scaling_2"],
+
           // Improve font rendering
           putTotalPages: true,
           userUnit: 1.0,
+
           // Improve color rendering
           colorSpace: 'srgb', // Use sRGB color space for better color accuracy
-          compressPdf: false, // Avoid color compression artifacts
+
           // Improve image quality
-          imageQuality: 1.0
+          imageQuality: 1.0,
+
+          // Enable font embedding for better text rendering
+          fontFaces: true,
+
+          // Additional options for better rendering
+          enableLinks: true, // Enable links in the PDF
+          pagesplit: true, // Enable page splitting
+          autoPaging: true, // Enable automatic paging
+
+          // Set proper margins
+          margins: {
+            top: 15,
+            right: 15,
+            bottom: 15,
+            left: 15
+          }
         }
       };
 
-      // Generate PDF from the cloned and styled content
-      await html2pdf().from(clonedContent).set(options).save();
+      // Generate PDF from the temporary container (not just the cloned content)
+      try {
+        console.log('Starting PDF generation with options:', options);
 
-      // Clean up the temporary container
-      document.body.removeChild(tempContainer);
+        // Use the temporary container as the source for PDF generation
+        await html2pdf()
+          .from(tempContainer)
+          .set(options)
+          .toPdf() // Convert to PDF first
+          .get('pdf') // Get the PDF object
+          .then(pdf => {
+            console.log('PDF object created successfully');
+            return pdf;
+          })
+          .save(filename); // Save with the filename
 
-      console.log('PDF generated successfully');
+        console.log('PDF generated and saved successfully');
+      } catch (pdfError) {
+        console.error('Error during PDF generation:', pdfError);
+        throw pdfError;
+      } finally {
+        // Always clean up the temporary container
+        if (document.body.contains(tempContainer)) {
+          document.body.removeChild(tempContainer);
+          console.log('Temporary container removed');
+        }
+      }
     } catch (err) {
       console.error('Error generating PDF:', err);
-      setError('Failed to generate PDF. Please try again.');
+
+      // Provide more detailed error messages to the user
+      let errorMessage = 'Failed to generate PDF. ';
+
+      if (err.message) {
+        // Add specific error message if available
+        errorMessage += err.message;
+      } else if (err.name === 'SecurityError') {
+        errorMessage += 'Security restrictions prevented PDF generation. Try again in a different browser.';
+      } else if (err.name === 'NetworkError') {
+        errorMessage += 'Network error occurred. Please check your connection and try again.';
+      } else if (err.name === 'AbortError') {
+        errorMessage += 'PDF generation was aborted. Please try again.';
+      } else if (err.name === 'TimeoutError' || err.message?.includes('timeout')) {
+        errorMessage += 'PDF generation timed out. Try with a smaller document or fewer images.';
+      } else {
+        // Generic error message
+        errorMessage += 'Please try again or try with a smaller document.';
+      }
+
+      setError(errorMessage);
+
+      // Try to clean up any temporary elements that might have been created
+      try {
+        const tempElements = document.querySelectorAll('.pdf-export-container');
+        tempElements.forEach(el => {
+          if (document.body.contains(el)) {
+            document.body.removeChild(el);
+          }
+        });
+      } catch (cleanupErr) {
+        console.error('Error during cleanup:', cleanupErr);
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -874,15 +1194,40 @@ function PdfDownloadButton({ previewRef, markdown }) {
         className="group flex items-center gap-2 p-2 rounded-md bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-hover dark:hover:bg-primary-dark-hover transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden"
         onClick={handleDownloadPdf}
         disabled={isGenerating}
-        title="Download as PDF"
+        title={isGenerating ? "Generating PDF..." : "Download as PDF"}
+        aria-busy={isGenerating}
+        aria-disabled={isGenerating}
       >
         <PdfIcon className="w-5 h-5 flex-shrink-0" />
-        <span className="w-0 group-hover:w-auto overflow-hidden whitespace-nowrap transition-all duration-300 group-hover:ml-1">Download PDF</span>
+        <span className={`${isGenerating ? 'w-auto ml-1' : 'w-0 group-hover:w-auto group-hover:ml-1'} overflow-hidden whitespace-nowrap transition-all duration-300`}>
+          {isGenerating ? 'Generating PDF...' : 'Download PDF'}
+        </span>
         {isGenerating && (
-          <span className="ml-1 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+          <span className="ml-1 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"
+                aria-hidden="true"></span>
         )}
       </button>
-      {error && <div className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</div>}
+
+      {error && (
+        <div className="absolute top-full left-0 right-0 mt-2 p-2 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400 shadow-sm">
+          <div className="flex items-start gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 flex-shrink-0 text-red-500 dark:text-red-400 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <p className="font-medium">Error</p>
+              <p>{error}</p>
+            </div>
+          </div>
+          <button
+            className="mt-2 text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline"
+            onClick={() => setError(null)}
+            aria-label="Dismiss error message"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   );
 }
