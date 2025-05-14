@@ -317,7 +317,31 @@ function PdfDownloadButton({ previewRef, markdown }) {
         const textContent = element.textContent;
         if (textContent) {
           // Clear any potential [object Object] content
-          element.innerHTML = textContent;
+          if (textContent.includes('[object Object]')) {
+            // Try to extract the actual text if possible
+            try {
+              // Check for different patterns of [object Object] contamination
+              const match = textContent.match(/\[object Object\](.*)/);
+              const matchPrefix = textContent.match(/(.*?)\[object Object\](.*)/);
+              const matchMiddle = textContent.match(/(.*?)\[object Object\](.*)/);
+
+              if (match && match[1]) {
+                // [object Object] is at the beginning
+                element.innerHTML = match[1].trim();
+              } else if (matchPrefix && matchPrefix[1] && matchPrefix[2]) {
+                // [object Object] is in the middle
+                element.innerHTML = (matchPrefix[1] + matchPrefix[2]).trim();
+              } else {
+                // Just remove all instances of [object Object]
+                element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+              }
+            } catch (e) {
+              // If extraction fails, just use the text content without [object Object]
+              element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+            }
+          } else {
+            element.innerHTML = textContent;
+          }
         }
       });
 
@@ -505,7 +529,12 @@ function PdfDownloadButton({ previewRef, markdown }) {
               const textContent = el.textContent;
               if (textContent) {
                 // Clear any potential [object Object] content
-                el.innerHTML = textContent;
+                if (textContent.includes('[object Object]')) {
+                  // Remove all instances of [object Object]
+                  el.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+                } else {
+                  el.innerHTML = textContent;
+                }
               }
             });
 
@@ -523,6 +552,10 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 cleanContent = cleanContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
                 // Clear any potential [object Object] content
+                if (cleanContent.includes('[object Object]')) {
+                  cleanContent = cleanContent.replace(/\[object Object\]/g, '').trim();
+                }
+
                 el.innerHTML = cleanContent;
               }
             });

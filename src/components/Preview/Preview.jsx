@@ -34,12 +34,28 @@ function Preview({ markdown }) {
 
   // Custom renderer for strikethrough text
   renderer.del = function(text) {
-    return '<del class="pdf-strikethrough">' + text + '</del>';
+    // Ensure text is a string to prevent [object Object] issues
+    const safeText = typeof text === 'object' ?
+      (text.toString() === '[object Object]' ? JSON.stringify(text) : text.toString()) :
+      String(text);
+
+    // Clean up any potential [object Object] prefix
+    const cleanText = safeText.replace(/^\[object Object\]/, '');
+
+    return '<del class="pdf-strikethrough">' + cleanText + '</del>';
   };
 
   // Custom renderer for inline code
   renderer.codespan = function(code) {
-    return '<code class="pdf-inline-code">' + code + '</code>';
+    // Ensure code is a string to prevent [object Object] issues
+    const safeCode = typeof code === 'object' ?
+      (code.toString() === '[object Object]' ? JSON.stringify(code) : code.toString()) :
+      String(code);
+
+    // Clean up any potential [object Object] prefix
+    const cleanCode = safeCode.replace(/^\[object Object\]/, '');
+
+    return '<code class="pdf-inline-code">' + cleanCode + '</code>';
   };
 
   marked.use({ renderer });
