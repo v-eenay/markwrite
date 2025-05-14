@@ -36,15 +36,47 @@ function PdfDownloadButton({ previewRef, markdown }) {
       // Clone the preview content to modify it for PDF generation
       const clonedContent = previewContent.cloneNode(true);
 
-      // Force light mode styling for PDF export regardless of current theme
+      // Create a consistent light theme for PDF export regardless of current theme
       // This ensures better readability and consistent rendering
-      clonedContent.classList.remove('dark');
+      const isDarkMode = theme === 'dark';
 
-      // Remove any dark mode specific classes that might affect rendering
-      const darkElements = clonedContent.querySelectorAll('.dark');
-      darkElements.forEach(el => {
-        el.classList.remove('dark');
-      });
+      // If in dark mode, we need to transform colors properly
+      if (isDarkMode) {
+        // Remove dark mode classes but preserve the content
+        clonedContent.classList.remove('dark');
+
+        // Remove any dark mode specific classes that might affect rendering
+        const darkElements = clonedContent.querySelectorAll('.dark');
+        darkElements.forEach(el => {
+          el.classList.remove('dark');
+        });
+
+        // Transform dark mode specific colors to light mode equivalents
+        // This ensures proper color rendering in the PDF
+        const darkModeElements = clonedContent.querySelectorAll('[class*="dark:"]');
+        darkModeElements.forEach(el => {
+          // Remove dark mode specific classes
+          Array.from(el.classList).forEach(className => {
+            if (className.startsWith('dark:')) {
+              el.classList.remove(className);
+            }
+          });
+        });
+
+        // Fix code blocks with dark theme syntax highlighting
+        const codeBlocks = clonedContent.querySelectorAll('pre code');
+        codeBlocks.forEach(codeBlock => {
+          // Remove dark theme classes
+          codeBlock.classList.remove('dark-theme');
+
+          // Reset background color to light theme
+          if (codeBlock.parentElement) {
+            codeBlock.parentElement.style.backgroundColor = '#f8f9fa';
+            codeBlock.parentElement.style.color = '#333';
+            codeBlock.parentElement.style.border = '1px solid #e9ecef';
+          }
+        });
+      }
 
       // Add PDF-specific styling with enhanced code block styling
       const styleElement = document.createElement('style');
@@ -100,13 +132,22 @@ function PdfDownloadButton({ previewRef, markdown }) {
         em {
           font-style: italic;
         }
-        /* Strikethrough styling */
+        /* Enhanced strikethrough styling */
         del, s, .pdf-strikethrough {
           text-decoration: line-through;
           color: #666;
           position: relative;
+          display: inline-block;
         }
-        /* Improved inline code styling */
+        .pdf-strikethrough-text {
+          text-decoration: line-through !important;
+          text-decoration-thickness: 1px !important;
+          text-decoration-color: #666 !important;
+          color: #666 !important;
+          position: relative !important;
+          display: inline !important;
+        }
+        /* Enhanced inline code styling */
         code:not(pre code), .inline-code, .pdf-inline-code {
           font-family: 'Courier New', Courier, monospace;
           font-size: 0.9em;
@@ -122,6 +163,22 @@ function PdfDownloadButton({ previewRef, markdown }) {
           position: relative;
           line-height: normal;
           vertical-align: baseline;
+        }
+        .pdf-inline-code-text {
+          font-family: 'Courier New', Courier, monospace !important;
+          font-size: 0.9em !important;
+          color: #d63384 !important;
+          display: inline-block !important;
+          white-space: normal !important;
+          word-wrap: break-word !important;
+          padding: 0.1em 0.4em !important;
+          font-weight: 500 !important;
+          background-color: rgba(214, 51, 132, 0.05) !important;
+          border-radius: 3px !important;
+          border: 1px solid rgba(214, 51, 132, 0.1) !important;
+          position: relative !important;
+          line-height: normal !important;
+          vertical-align: baseline !important;
         }
         /* Enhanced code blocks styling */
         pre {
@@ -288,11 +345,15 @@ function PdfDownloadButton({ previewRef, markdown }) {
       // Process page breaks and fix formatting issues
       let content = clonedContent.innerHTML;
 
-      // Fix inline code display
+      // Fix inline code display with enhanced rendering
       const inlineCodeElements = clonedContent.querySelectorAll('code:not(pre code)');
       inlineCodeElements.forEach(codeElement => {
         // Add a special class to inline code elements instead of direct style manipulation
         codeElement.classList.add('pdf-inline-code');
+
+        // Create a new span element for better styling control
+        const styledSpan = document.createElement('span');
+        styledSpan.classList.add('pdf-inline-code-text');
 
         // Check for JSON-like content that might indicate a token object
         const textContent = codeElement.textContent || codeElement.innerHTML || '';
@@ -337,42 +398,64 @@ function PdfDownloadButton({ previewRef, markdown }) {
         // Replace HTML entities that might be causing display issues
         codeContent = codeContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-        // Set the processed content back
-        codeElement.innerHTML = codeContent;
+        // Set the processed content to the styled span
+        styledSpan.textContent = codeContent;
+
+        // Apply explicit styling to ensure proper rendering
+        styledSpan.style.fontFamily = 'Courier New, Courier, monospace';
+        styledSpan.style.fontSize = '0.9em';
+        styledSpan.style.color = '#d63384';
+        styledSpan.style.backgroundColor = 'rgba(214, 51, 132, 0.05)';
+        styledSpan.style.borderRadius = '3px';
+        styledSpan.style.border = '1px solid rgba(214, 51, 132, 0.1)';
+        styledSpan.style.padding = '0.1em 0.4em';
+        styledSpan.style.display = 'inline-block';
+        styledSpan.style.position = 'relative';
+        styledSpan.style.verticalAlign = 'baseline';
+        styledSpan.style.lineHeight = 'normal';
+
+        // Clear the element and append the styled span
+        codeElement.innerHTML = '';
+        codeElement.appendChild(styledSpan);
       });
 
-      // Fix strikethrough text
+      // Fix strikethrough text with enhanced rendering
       const strikethroughElements = clonedContent.querySelectorAll('del, s');
       strikethroughElements.forEach(element => {
         // Use class-based styling instead of direct style manipulation
         element.classList.add('pdf-strikethrough');
 
+        // Create a new span element for better styling control
+        const styledSpan = document.createElement('span');
+        styledSpan.classList.add('pdf-strikethrough-text');
+
         // Check for JSON-like content that might indicate a token object
         const textContent = element.textContent || '';
         const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
+
+        let cleanedText = '';
 
         if (jsonPattern.test(textContent)) {
           try {
             // Try to parse as JSON
             const jsonObj = JSON.parse(textContent);
             if (jsonObj.text) {
-              element.innerHTML = jsonObj.text;
+              cleanedText = jsonObj.text;
             } else if (jsonObj.raw) {
               // Remove the ~~ markers if present
-              element.innerHTML = jsonObj.raw.replace(/^~~|~~$/g, '');
+              cleanedText = jsonObj.raw.replace(/^~~|~~$/g, '');
             } else if (Array.isArray(jsonObj.tokens)) {
               // Extract text from tokens
-              const extractedText = jsonObj.tokens.map(token => {
+              cleanedText = jsonObj.tokens.map(token => {
                 return token.text || token.raw || '';
               }).join('');
-              element.innerHTML = extractedText;
             } else {
               // Fallback: remove the JSON structure
-              element.innerHTML = textContent.replace(/\{.*\}/g, '').trim();
+              cleanedText = textContent.replace(/\{.*\}/g, '').trim();
             }
           } catch (e) {
             // If JSON parsing fails, just clean up the text
-            element.innerHTML = textContent
+            cleanedText = textContent
               .replace(/\[object Object\]/g, '')
               .replace(/\{.*\}/g, '')
               .replace(/["{}]/g, '')
@@ -380,11 +463,25 @@ function PdfDownloadButton({ previewRef, markdown }) {
           }
         } else if (textContent.includes('[object Object]')) {
           // Handle [object Object] contamination
-          element.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
+          cleanedText = textContent.replace(/\[object Object\]/g, '').trim();
         } else {
           // Just use the text content as is
-          element.innerHTML = textContent;
+          cleanedText = textContent;
         }
+
+        // Set the cleaned text to the styled span
+        styledSpan.textContent = cleanedText;
+
+        // Apply explicit styling to ensure proper rendering
+        styledSpan.style.textDecoration = 'line-through';
+        styledSpan.style.textDecorationThickness = '1px';
+        styledSpan.style.textDecorationColor = '#666';
+        styledSpan.style.color = '#666';
+        styledSpan.style.position = 'relative';
+
+        // Clear the element and append the styled span
+        element.innerHTML = '';
+        element.appendChild(styledSpan);
       });
 
       // Fix code block styling and ensure syntax highlighting is preserved
@@ -502,6 +599,14 @@ function PdfDownloadButton({ previewRef, markdown }) {
           allowTaint: true,
           backgroundColor: '#ffffff', // Force white background
           removeContainer: true,
+          // Improve color rendering
+          imageTimeout: 0, // No timeout for images
+          ignoreElements: (element) => {
+            // Ignore elements with dark mode specific classes
+            return element.classList &&
+                  (element.classList.contains('dark') ||
+                   Array.from(element.classList).some(cls => cls.startsWith('dark:')));
+          },
           // Improve text rendering
           fontFaces: [
             {
@@ -518,6 +623,9 @@ function PdfDownloadButton({ previewRef, markdown }) {
           windowHeight: 1600,
           scrollX: 0,
           scrollY: 0,
+          // Improve color rendering
+          foreignObjectRendering: false, // Better color consistency
+          colorSpace: 'srgb', // Use sRGB color space for better color accuracy
           // Improve text rendering
           onclone: (clonedDoc) => {
             // Apply additional styling to ensure proper rendering
@@ -539,13 +647,22 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
               }
-              /* Fix for strikethrough text */
+              /* Enhanced fix for strikethrough text */
               del, s, .pdf-strikethrough {
                 text-decoration: line-through !important;
                 position: relative !important;
                 color: #666 !important;
+                display: inline-block !important;
               }
-              /* Fix for inline code */
+              .pdf-strikethrough-text {
+                text-decoration: line-through !important;
+                text-decoration-thickness: 1px !important;
+                text-decoration-color: #666 !important;
+                color: #666 !important;
+                position: relative !important;
+                display: inline !important;
+              }
+              /* Enhanced fix for inline code */
               code:not(pre code), .inline-code, .pdf-inline-code {
                 display: inline-block !important;
                 position: relative !important;
@@ -558,41 +675,62 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 font-family: 'Courier New', Courier, monospace !important;
                 color: #d63384 !important;
               }
+              .pdf-inline-code-text {
+                font-family: 'Courier New', Courier, monospace !important;
+                font-size: 0.9em !important;
+                color: #d63384 !important;
+                display: inline-block !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                padding: 0.1em 0.4em !important;
+                font-weight: 500 !important;
+                background-color: rgba(214, 51, 132, 0.05) !important;
+                border-radius: 3px !important;
+                border: 1px solid rgba(214, 51, 132, 0.1) !important;
+                position: relative !important;
+                line-height: normal !important;
+                vertical-align: baseline !important;
+              }
             `;
             clonedDoc.head.appendChild(style);
 
-            // Additional processing for strikethrough elements
+            // Enhanced processing for strikethrough elements
             const strikethroughElements = clonedDoc.querySelectorAll('del, s');
             strikethroughElements.forEach(el => {
               // Add class instead of direct style manipulation
               el.classList.add('pdf-strikethrough');
 
+              // Create a new span element for better styling control
+              const styledSpan = document.createElement('span');
+              styledSpan.classList.add('pdf-strikethrough-text');
+
               // Check for JSON-like content that might indicate a token object
               const textContent = el.textContent || '';
               const jsonPattern = /^\s*\{\s*"(type|raw|text|tokens)":/;
+
+              let cleanedText = '';
 
               if (jsonPattern.test(textContent)) {
                 try {
                   // Try to parse as JSON
                   const jsonObj = JSON.parse(textContent);
                   if (jsonObj.text) {
-                    el.innerHTML = jsonObj.text;
+                    cleanedText = jsonObj.text;
                   } else if (jsonObj.raw) {
                     // Remove the ~~ markers if present
-                    el.innerHTML = jsonObj.raw.replace(/^~~|~~$/g, '');
+                    cleanedText = jsonObj.raw.replace(/^~~|~~$/g, '');
                   } else if (Array.isArray(jsonObj.tokens)) {
                     // Extract text from tokens
-                    const extractedText = jsonObj.tokens.map(token => {
+                    cleanedText = jsonObj.tokens.map(token => {
                       return token.text || token.raw || '';
                     }).join('');
-                    el.innerHTML = extractedText;
                   } else {
                     // Fallback: remove the JSON structure
-                    el.innerHTML = textContent.replace(/\{.*\}/g, '').trim();
+                    cleanedText = textContent.replace(/\{.*\}/g, '').trim();
                   }
                 } catch (e) {
                   // If JSON parsing fails, just clean up the text
-                  el.innerHTML = textContent
+                  cleanedText = textContent
                     .replace(/\[object Object\]/g, '')
                     .replace(/\{.*\}/g, '')
                     .replace(/["{}]/g, '')
@@ -600,18 +738,36 @@ function PdfDownloadButton({ previewRef, markdown }) {
                 }
               } else if (textContent.includes('[object Object]')) {
                 // Handle [object Object] contamination
-                el.innerHTML = textContent.replace(/\[object Object\]/g, '').trim();
-              } else if (textContent) {
+                cleanedText = textContent.replace(/\[object Object\]/g, '').trim();
+              } else {
                 // Just use the text content as is
-                el.innerHTML = textContent;
+                cleanedText = textContent;
               }
+
+              // Set the cleaned text to the styled span
+              styledSpan.textContent = cleanedText;
+
+              // Apply explicit styling to ensure proper rendering
+              styledSpan.style.textDecoration = 'line-through';
+              styledSpan.style.textDecorationThickness = '1px';
+              styledSpan.style.textDecorationColor = '#666';
+              styledSpan.style.color = '#666';
+              styledSpan.style.position = 'relative';
+
+              // Clear the element and append the styled span
+              el.innerHTML = '';
+              el.appendChild(styledSpan);
             });
 
-            // Additional processing for inline code elements
+            // Enhanced processing for inline code elements
             const inlineCodeElements = clonedDoc.querySelectorAll('code:not(pre code), .inline-code');
             inlineCodeElements.forEach(el => {
               // Add class instead of direct style manipulation
               el.classList.add('pdf-inline-code');
+
+              // Create a new span element for better styling control
+              const styledSpan = document.createElement('span');
+              styledSpan.classList.add('pdf-inline-code-text');
 
               // Check for JSON-like content that might indicate a token object
               const textContent = el.textContent || el.innerHTML || '';
@@ -656,7 +812,25 @@ function PdfDownloadButton({ previewRef, markdown }) {
               // Replace HTML entities that might be causing display issues
               cleanContent = cleanContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-              el.innerHTML = cleanContent;
+              // Set the cleaned content to the styled span
+              styledSpan.textContent = cleanContent;
+
+              // Apply explicit styling to ensure proper rendering
+              styledSpan.style.fontFamily = 'Courier New, Courier, monospace';
+              styledSpan.style.fontSize = '0.9em';
+              styledSpan.style.color = '#d63384';
+              styledSpan.style.backgroundColor = 'rgba(214, 51, 132, 0.05)';
+              styledSpan.style.borderRadius = '3px';
+              styledSpan.style.border = '1px solid rgba(214, 51, 132, 0.1)';
+              styledSpan.style.padding = '0.1em 0.4em';
+              styledSpan.style.display = 'inline-block';
+              styledSpan.style.position = 'relative';
+              styledSpan.style.verticalAlign = 'baseline';
+              styledSpan.style.lineHeight = 'normal';
+
+              // Clear the element and append the styled span
+              el.innerHTML = '';
+              el.appendChild(styledSpan);
             });
           }
         },
@@ -670,7 +844,12 @@ function PdfDownloadButton({ previewRef, markdown }) {
           hotfixes: ["px_scaling"],
           // Improve font rendering
           putTotalPages: true,
-          userUnit: 1.0
+          userUnit: 1.0,
+          // Improve color rendering
+          colorSpace: 'srgb', // Use sRGB color space for better color accuracy
+          compressPdf: false, // Avoid color compression artifacts
+          // Improve image quality
+          imageQuality: 1.0
         }
       };
 
