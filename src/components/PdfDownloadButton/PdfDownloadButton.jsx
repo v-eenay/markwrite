@@ -797,12 +797,10 @@ function PdfDownloadButton({ markdown, previewRef }) {
       /* Strikethrough */
       .pdf-del, del, s {
         text-decoration: line-through;
-        text-decoration-thickness: 1px;
-        text-decoration-color: #666;
         color: #666;
-        position: relative;
-        display: inline-block;
-        vertical-align: middle;
+        /* Fix for strikethrough alignment */
+        text-decoration-thickness: 0.5px;
+        text-decoration-skip-ink: none;
       }
 
       /* Inline code */
@@ -816,11 +814,10 @@ function PdfDownloadButton({ markdown, previewRef }) {
         padding: 0.1em 0.4em;
         white-space: normal;
         word-wrap: break-word;
+        /* Fix for inline code alignment */
         display: inline-block;
-        vertical-align: middle;
-        line-height: normal;
-        position: relative;
-        top: -0.05em;
+        line-height: 1.2;
+        vertical-align: baseline;
       }
 
       /* Code blocks */
@@ -880,28 +877,20 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-list-item, li {
         margin-bottom: 0.5em;
         line-height: 1.6;
-        position: relative;
+        /* Fix for list item alignment */
+        padding-left: 0.5em;
       }
       .pdf-list-item > .pdf-list, li > ul, li > ol {
         margin: 0.5em 0;
       }
-
-      /* Fix for list item markers alignment */
-      .pdf-list-item::marker, li::marker {
-        vertical-align: middle;
-        line-height: inherit;
-      }
-
-      /* Ensure content aligns with markers */
-      .pdf-list-item > *, li > * {
-        vertical-align: middle;
-        display: inline-block;
+      /* Fix for list marker alignment */
+      li::marker {
+        vertical-align: baseline;
       }
 
       /* Unordered lists */
       ul {
         list-style-type: disc;
-        list-style-position: outside;
       }
       ul ul {
         list-style-type: circle;
@@ -913,7 +902,6 @@ function PdfDownloadButton({ markdown, previewRef }) {
       /* Ordered lists */
       ol {
         list-style-type: decimal;
-        list-style-position: outside;
       }
       ol ol {
         list-style-type: lower-alpha;
@@ -933,20 +921,14 @@ function PdfDownloadButton({ markdown, previewRef }) {
         display: block;
         page-break-inside: avoid;
         break-inside: avoid;
-        position: relative;
+        /* Fix for blockquote alignment */
         box-sizing: border-box;
-        line-height: 1.6;
       }
       .pdf-blockquote p, blockquote p {
         margin: 0.5em 0;
         text-align: left;
-        vertical-align: middle;
+        /* Fix for paragraph alignment in blockquotes */
         line-height: 1.6;
-      }
-      /* Ensure proper alignment of blockquote content */
-      .pdf-blockquote > *, blockquote > * {
-        position: relative;
-        vertical-align: middle;
       }
 
       /* Tables */
@@ -1003,12 +985,10 @@ function PdfDownloadButton({ markdown, previewRef }) {
         border-top: 1px solid #eaecef;
         margin: 1.5em 0;
         height: 1px;
-        background-color: #eaecef;
+        /* Fix for horizontal rule alignment */
         display: block;
-        position: relative;
         clear: both;
-        width: 100%;
-        box-sizing: content-box;
+        background-color: #eaecef;
       }
 
       /* Links */
@@ -1388,17 +1368,9 @@ function PdfDownloadButton({ markdown, previewRef }) {
           list.querySelectorAll('li').forEach(item => {
             item.classList.add('pdf-list-item');
 
-            // Ensure proper vertical alignment of list item content
-            Array.from(item.childNodes).forEach(node => {
-              if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                // Wrap text nodes in a span for better alignment
-                const span = document.createElement('span');
-                span.textContent = node.textContent;
-                span.style.verticalAlign = 'middle';
-                span.style.display = 'inline-block';
-                node.parentNode.replaceChild(span, node);
-              }
-            });
+            // Fix for list item alignment
+            item.style.paddingLeft = '0.5em';
+            item.style.lineHeight = '1.6';
           });
         });
 
@@ -1446,36 +1418,14 @@ function PdfDownloadButton({ markdown, previewRef }) {
           });
         });
 
-        // Process inline code for proper alignment
+        // Process inline code
         tempContainer.querySelectorAll('code:not(pre code)').forEach(code => {
           code.classList.add('pdf-inline-code');
-          code.style.verticalAlign = 'middle';
-          code.style.display = 'inline-block';
-          code.style.position = 'relative';
-          code.style.top = '-0.05em';
         });
 
-        // Process blockquotes for proper alignment
+        // Process blockquotes
         tempContainer.querySelectorAll('blockquote').forEach(blockquote => {
           blockquote.classList.add('pdf-blockquote');
-
-          // Process paragraphs within blockquotes
-          blockquote.querySelectorAll('p').forEach(p => {
-            p.style.verticalAlign = 'middle';
-            p.style.lineHeight = '1.6';
-
-            // Ensure proper vertical alignment of paragraph content
-            Array.from(p.childNodes).forEach(node => {
-              if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                // Wrap text nodes in a span for better alignment
-                const span = document.createElement('span');
-                span.textContent = node.textContent;
-                span.style.verticalAlign = 'middle';
-                span.style.display = 'inline-block';
-                node.parentNode.replaceChild(span, node);
-              }
-            });
-          });
         });
 
         // Process footnotes
