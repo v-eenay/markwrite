@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom CSS Variables */
+:root {
+  --pattern-size: 20px;
+  --pattern-dot-size: 2px;
+  --animation-duration: 0.3s;
+}
+
+/* Playful UI Elements */
+@layer components {
+  /* Gradient text for headings */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-light to-accent-light dark:from-primary-dark dark:to-accent-dark;
+  }
+
+  /* Animated button hover effect */
+  .btn-animated {
+    @apply relative overflow-hidden transition-all duration-300 ease-in-out;
+  }
+
+  .btn-animated::after {
+    content: '';
+    @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300 ease-in-out;
+  }
+
+  .btn-animated:hover::after {
+    @apply opacity-10;
+  }
+
+  /* Decorative background pattern for light mode */
+  .pattern-dots-light {
+    background-image: radial-gradient(var(--pattern-dot-size) var(--pattern-dot-size) at var(--pattern-size) var(--pattern-size), rgba(76, 201, 240, 0.1), transparent 50%);
+    background-size: calc(var(--pattern-size) * 2) calc(var(--pattern-size) * 2);
+  }
+
+  /* Decorative background pattern for dark mode */
+  .pattern-dots-dark {
+    background-image: radial-gradient(var(--pattern-dot-size) var(--pattern-dot-size) at var(--pattern-size) var(--pattern-size), rgba(86, 207, 225, 0.15), transparent 50%);
+    background-size: calc(var(--pattern-size) * 2) calc(var(--pattern-size) * 2);
+  }
+
+  /* Playful card with hover effect */
+  .playful-card {
+    @apply relative rounded-lg overflow-hidden transition-all duration-300 ease-in-out;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .playful-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Compact header and footer */
+  .compact-header {
+    @apply py-2 px-4 flex items-center justify-between;
+  }
+
+  .compact-footer {
+    @apply py-2 px-4 flex items-center justify-between;
+  }
+}
+
 /* Custom scrollbar styling */
 @layer utilities {
   /* For Webkit browsers (Chrome, Safari) */
@@ -19,7 +80,7 @@
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-light/60 dark:bg-primary-dark/60;
+    @apply bg-accent-light/60 dark:bg-accent-dark/60;
   }
 
   /* Scrollbar styling for Firefox */
@@ -55,19 +116,37 @@
   }
 }
 
-/* Page break styling */
+/* Page break styling - more playful */
 .page-break {
-  border-top: 2px dashed #ccc;
+  border-top: 2px dashed #4cc9f0;
   margin: 2rem 0;
   position: relative;
   display: block;
   width: 100%;
   height: 2px;
   clear: both;
+  animation: rainbow-border 8s linear infinite;
+}
+
+@keyframes rainbow-border {
+  0% { border-top-color: #4cc9f0; }
+  25% { border-top-color: #f72585; }
+  50% { border-top-color: #ffd166; }
+  75% { border-top-color: #06d6a0; }
+  100% { border-top-color: #4cc9f0; }
 }
 
 .dark .page-break {
-  border-top-color: #555;
+  border-top-color: #56cfe1;
+  animation: rainbow-border-dark 8s linear infinite;
+}
+
+@keyframes rainbow-border-dark {
+  0% { border-top-color: #56cfe1; }
+  25% { border-top-color: #ff6b6b; }
+  50% { border-top-color: #ff9e64; }
+  75% { border-top-color: #c77dff; }
+  100% { border-top-color: #56cfe1; }
 }
 
 .page-break::before {
@@ -79,13 +158,29 @@
   background-color: #fff;
   padding: 0 10px;
   font-size: 0.75rem;
-  color: #999;
+  color: #4cc9f0;
   z-index: 1;
+  font-weight: 500;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.page-break:hover::before {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: #f72585;
 }
 
 .dark .page-break::before {
-  background-color: #1e1e24;
-  color: #777;
+  background-color: #1a1a2e;
+  color: #56cfe1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark .page-break:hover::before {
+  color: #ff6b6b;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* PDF export page break */
@@ -110,11 +205,19 @@
   line-height: normal;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9em;
-  color: #d63384;
-  background-color: rgba(214, 51, 132, 0.05);
-  border-radius: 3px;
-  border: 1px solid rgba(214, 51, 132, 0.1);
+  color: #f72585; /* Vibrant pink from our accent color */
+  background-color: rgba(247, 37, 133, 0.08);
+  border-radius: 4px;
+  border: 1px solid rgba(247, 37, 133, 0.15);
   padding: 0.1em 0.4em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.prose code:not(pre code):hover, .pdf-inline-code:hover {
+  background-color: rgba(247, 37, 133, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Dark mode styling for strikethrough */
@@ -122,35 +225,120 @@
   color: #999;
 }
 
-/* Standardized download buttons styling */
+/* Dark mode styling for inline code */
+.dark .prose code:not(pre code), .dark .pdf-inline-code {
+  color: #ff6b6b; /* Coral red from our accent-dark */
+  background-color: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dark .prose code:not(pre code):hover, .dark .pdf-inline-code:hover {
+  background-color: rgba(255, 107, 107, 0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* Playful animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.1) 50%,
+    rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.05) 50%,
+    rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Enhanced download buttons styling */
 .download-button {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: linear-gradient(135deg, #4cc9f0 0%, #4895ef 100%);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+.download-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  transition: all 0.6s ease;
 }
 
 .download-button:hover {
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #4895ef 0%, #4cc9f0 100%);
+}
+
+.download-button:hover::before {
+  left: 100%;
 }
 
 .download-button:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
 }
 
 .download-button:focus {
-  outline: 2px solid rgba(142, 202, 230, 0.5);
+  outline: 2px solid rgba(76, 201, 240, 0.5);
   outline-offset: 2px;
 }
 
-.dark .download-button:focus {
-  outline-color: rgba(144, 224, 239, 0.5);
+/* Dark mode button styling */
+.dark .download-button {
+  background: linear-gradient(135deg, #56cfe1 0%, #5e60ce 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Ensure high contrast for accessibility */
-.download-button {
-  font-weight: 500;
-  letter-spacing: 0.01em;
+.dark .download-button:hover {
+  background: linear-gradient(135deg, #5e60ce 0%, #56cfe1 100%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark .download-button:focus {
+  outline-color: rgba(86, 207, 225, 0.5);
 }

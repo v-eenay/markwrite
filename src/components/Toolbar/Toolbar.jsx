@@ -4,7 +4,6 @@ import {
   ItalicIcon,
   StrikethroughIcon,
   CodeIcon,
-  CodeBlockIcon,
   LinkIcon,
   ImageIcon,
   ListIcon,
@@ -23,7 +22,7 @@ function Toolbar({ onAction }) {
     { id: 'strikethrough', icon: <StrikethroughIcon />, title: 'Strikethrough' },
     { id: 'divider2', type: 'divider' },
     { id: 'code', icon: <CodeIcon />, title: 'Inline Code' },
-    { id: 'codeblock', icon: <CodeBlockIcon />, title: 'Code Block' },
+    { id: 'codeblock', icon: <CodeIcon />, title: 'Code Block' },
     { id: 'divider3', type: 'divider' },
     { id: 'link', icon: <LinkIcon />, title: 'Link' },
     { id: 'image', icon: <ImageIcon />, title: 'Image' },
@@ -35,14 +34,14 @@ function Toolbar({ onAction }) {
   ];
 
   return (
-    <div className="flex items-center gap-1 bg-background-editor dark:bg-background-dark-editor rounded p-1 overflow-visible">
+    <div className="flex items-center gap-1 bg-gradient-to-r from-primary-light/5 to-accent-light/5 dark:from-primary-dark/10 dark:to-accent-dark/10 rounded-lg p-1 overflow-visible shadow-sm border border-border-light/50 dark:border-border-dark/50">
       {tools.map((tool) => (
         tool.type === 'divider' ? (
-          <span key={tool.id} className="w-px h-6 bg-border-light dark:bg-border-dark mx-1 flex-shrink-0"></span>
+          <span key={tool.id} className="w-px h-6 bg-gradient-to-b from-primary-light/20 to-accent-light/20 dark:from-primary-dark/20 dark:to-accent-dark/20 mx-1 flex-shrink-0 rounded-full"></span>
         ) : (
           <button
             key={tool.id}
-            className="flex items-center justify-center w-8 h-8 text-xs font-medium text-text-secondary dark:text-text-dark-secondary bg-transparent hover:bg-background-secondary dark:hover:bg-background-dark-secondary hover:text-text-light dark:hover:text-text-dark rounded transition-colors duration-200 flex-shrink-0"
+            className="flex items-center justify-center w-8 h-8 text-xs font-medium text-text-secondary dark:text-text-dark-secondary bg-transparent hover:bg-primary-light/10 dark:hover:bg-primary-dark/20 hover:text-accent-light dark:hover:text-accent-dark rounded-md transition-all duration-200 flex-shrink-0 transform hover:scale-110 btn-animated"
             title={tool.title}
             onClick={() => onAction(tool.id)}
           >
