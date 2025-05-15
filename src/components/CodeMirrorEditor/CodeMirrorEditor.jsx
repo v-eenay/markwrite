@@ -41,11 +41,15 @@ function CodeMirrorEditor({ value, onChange }) {
 
   // Editor extensions
   const extensions = [
-    // Basic markdown support
+    // Enhanced markdown support with proper strikethrough handling
     markdown({
       base: markdownLanguage,
       codeLanguages: languages,
-      addKeymap: true
+      addKeymap: true,
+      extensions: [],
+      // Ensure proper handling of strikethrough and other formatting
+      defaultCodeLanguage: null,
+      completeHTMLTags: true
     }),
 
     // Custom autocompletion (in a compartment so it can be reconfigured)
@@ -95,13 +99,29 @@ function CodeMirrorEditor({ value, onChange }) {
       ".cm-gutterElement": {
         padding: "0 8px 0 4px"
       },
+      // Custom styling for markdown formatting
+      ".cm-strikethrough": {
+        textDecoration: "line-through",
+        color: theme === 'light' ? "#666" : "#999"
+      },
+      ".cm-strong": {
+        fontWeight: "bold",
+        color: theme === 'light' ? "#24292e" : "#e0f2f1"
+      },
+      ".cm-em": {
+        fontStyle: "italic"
+      },
+      ".cm-formatting-strikethrough": {
+        color: theme === 'light' ? "#666" : "#999",
+        opacity: 0.7
+      },
       // Styling for autocompletion
       ".cm-tooltip": {
         border: theme === 'light' ? "1px solid #dbe2ea" : "1px solid #3a3c53",
         backgroundColor: theme === 'light' ? "#ffffff" : "#252733",
         borderRadius: "6px",
-        boxShadow: theme === 'light' 
-          ? "0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)" 
+        boxShadow: theme === 'light'
+          ? "0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)"
           : "0 4px 6px -1px rgba(255, 255, 255, 0.05), 0 2px 4px -1px rgba(255, 255, 255, 0.04)",
         overflow: "hidden"
       },
