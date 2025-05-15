@@ -121,3 +121,36 @@
 .dark .prose del, .dark .prose s, .dark .pdf-strikethrough {
   color: #999;
 }
+
+/* Standardized download buttons styling */
+.download-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.download-button:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.download-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.download-button:focus {
+  outline: 2px solid rgba(142, 202, 230, 0.5);
+  outline-offset: 2px;
+}
+
+.dark .download-button:focus {
+  outline-color: rgba(144, 224, 239, 0.5);
+}
+
+/* Ensure high contrast for accessibility */
+.download-button {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
