@@ -980,38 +980,79 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .task-list-item {
         list-style-type: none;
         margin-left: -1.5em;
+        position: relative;
       }
       .task-list-item input[type="checkbox"] {
         margin-right: 0.5em;
       }
+      .pdf-checkbox {
+        display: inline-block;
+        width: 1.2em;
+        height: 1.2em;
+        margin-right: 0.5em;
+        font-family: sans-serif;
+        font-size: 1.1em;
+        line-height: 1;
+        vertical-align: middle;
+        color: #333;
+      }
+      .pdf-checkbox-checked {
+        color: #2563eb;
+      }
+      .pdf-checkbox-unchecked {
+        color: #6b7280;
+      }
 
       /* Definition lists */
-      dl {
+      dl, .pdf-dl {
         margin: 1em 0;
+        padding: 0.5em;
+        border-left: 3px solid #e5e7eb;
+        background-color: #f9fafb;
       }
-      dt {
+      dt, .pdf-dt {
         font-weight: bold;
         margin-top: 0.5em;
+        color: #2f3e46;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 0.2em;
       }
-      dd {
+      dd, .pdf-dd {
         margin-left: 2em;
-        margin-bottom: 0.5em;
+        margin-bottom: 0.8em;
+        padding-left: 0.5em;
+        color: #4b5563;
       }
 
       /* Footnotes */
-      .footnote {
+      .footnote, .pdf-footnote-ref {
         font-size: 0.8em;
         color: #666;
         vertical-align: super;
+        text-decoration: none;
       }
-      .footnotes {
+      .pdf-footnote-sup {
+        vertical-align: super;
+        font-size: 0.8em;
+        color: #2563eb;
+        font-weight: bold;
+      }
+      .footnotes, .pdf-footnotes {
         border-top: 1px solid #eaecef;
         margin-top: 2em;
         padding-top: 1em;
+        background-color: #f9fafb;
+        padding: 1em;
+        border-radius: 4px;
       }
-      .footnotes ol {
+      .footnotes ol, .pdf-footnote-list {
         font-size: 0.9em;
         color: #666;
+        padding-left: 1.5em;
+      }
+      .pdf-footnote-item {
+        margin-bottom: 0.5em;
+        line-height: 1.4;
       }
 
       /* Code block language label */
@@ -1216,7 +1257,11 @@ function PdfDownloadButton({ markdown, previewRef }) {
           // Add language-specific classes for better styling
           const language = block.className.match(/language-(\w+)/)?.[1];
           if (language) {
-            block.parentElement.classList.add(`language-${language}`);
+            const pre = block.parentElement;
+            pre.classList.add(`language-${language}`);
+
+            // Add language label
+            pre.setAttribute('data-language', language);
           }
 
           try {
@@ -1303,6 +1348,102 @@ function PdfDownloadButton({ markdown, previewRef }) {
             item.classList.add('pdf-list-item');
           });
         });
+
+        // Process task lists (checkboxes)
+        tempContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+          // Create a custom checkbox that will render in PDF
+          const customCheckbox = document.createElement('span');
+          customCheckbox.classList.add('pdf-checkbox');
+
+          if (checkbox.checked) {
+            customCheckbox.innerHTML = '☑';
+            customCheckbox.classList.add('pdf-checkbox-checked');
+          } else {
+            customCheckbox.innerHTML = '☐';
+            customCheckbox.classList.add('pdf-checkbox-unchecked');
+          }
+
+          // Replace the checkbox with our custom one
+          checkbox.parentNode.insertBefore(customCheckbox, checkbox);
+          checkbox.parentNode.removeChild(checkbox);
+
+          // Add task-list-item class to parent li
+          let parent = customCheckbox.parentNode;
+          while (parent && parent.tagName !== 'LI') {
+            parent = parent.parentNode;
+          }
+
+          if (parent) {
+            parent.classList.add('task-list-item');
+          }
+        });
+
+        // Process definition lists
+        tempContainer.querySelectorAll('dl').forEach(dl => {
+          dl.classList.add('pdf-dl');
+
+          // Process definition terms
+          dl.querySelectorAll('dt').forEach(dt => {
+            dt.classList.add('pdf-dt');
+          });
+
+          // Process definition descriptions
+          dl.querySelectorAll('dd').forEach(dd => {
+            dd.classList.add('pdf-dd');
+          });
+        });
+
+        // Process footnotes
+        const footnoteRefs = tempContainer.querySelectorAll('a[href^="#fn"], a.footnote-ref');
+        if (footnoteRefs.length > 0) {
+          footnoteRefs.forEach(ref => {
+            ref.classList.add('pdf-footnote-ref');
+
+            // Extract the footnote number
+            const fnNum = ref.textContent.replace(/[^\d]/g, '');
+            if (fnNum) {
+              // Create a superscript element
+              const sup = document.createElement('sup');
+              sup.textContent = fnNum;
+              sup.classList.add('pdf-footnote-sup');
+
+              // Replace the reference with the superscript
+              ref.innerHTML = '';
+              ref.appendChild(sup);
+            }
+          });
+
+          // Style the footnotes section
+          const footnoteSection = tempContainer.querySelector('.footnotes');
+          if (footnoteSection) {
+            footnoteSection.classList.add('pdf-footnotes');
+
+            // Add a heading if not present
+            if (!footnoteSection.querySelector('h2, h3, h4')) {
+              const heading = document.createElement('h3');
+              heading.textContent = 'Footnotes';
+              heading.classList.add('pdf-heading', 'pdf-heading-3');
+              footnoteSection.insertBefore(heading, footnoteSection.firstChild);
+            }
+
+            // Style the footnote list
+            const footnoteList = footnoteSection.querySelector('ol');
+            if (footnoteList) {
+              footnoteList.classList.add('pdf-footnote-list');
+
+              // Style each footnote
+              footnoteList.querySelectorAll('li').forEach(li => {
+                li.classList.add('pdf-footnote-item');
+
+                // Remove the return links as they don't work well in PDFs
+                const returnLinks = li.querySelectorAll('a[href^="#fnref"]');
+                returnLinks.forEach(link => {
+                  link.parentNode.removeChild(link);
+                });
+              });
+            }
+          }
+        }
 
         // Add styles
         const styleElement = document.createElement('style');
@@ -1468,7 +1609,11 @@ function PdfDownloadButton({ markdown, previewRef }) {
             // Add language-specific classes for better styling
             const language = block.className.match(/language-(\w+)/)?.[1];
             if (language) {
-              block.parentElement.classList.add(`language-${language}`);
+              const pre = block.parentElement;
+              pre.classList.add(`language-${language}`);
+
+              // Add language label
+              pre.setAttribute('data-language', language);
             }
 
             try {
@@ -1489,6 +1634,35 @@ function PdfDownloadButton({ markdown, previewRef }) {
               errorText.style.fontStyle = 'italic';
               this.parentNode.insertBefore(errorText, this);
             };
+          });
+
+          // Process task lists (checkboxes)
+          fallbackContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            // Create a custom checkbox that will render in PDF
+            const customCheckbox = document.createElement('span');
+            customCheckbox.classList.add('pdf-checkbox');
+
+            if (checkbox.checked) {
+              customCheckbox.innerHTML = '☑';
+              customCheckbox.classList.add('pdf-checkbox-checked');
+            } else {
+              customCheckbox.innerHTML = '☐';
+              customCheckbox.classList.add('pdf-checkbox-unchecked');
+            }
+
+            // Replace the checkbox with our custom one
+            checkbox.parentNode.insertBefore(customCheckbox, checkbox);
+            checkbox.parentNode.removeChild(checkbox);
+
+            // Add task-list-item class to parent li
+            let parent = customCheckbox.parentNode;
+            while (parent && parent.tagName !== 'LI') {
+              parent = parent.parentNode;
+            }
+
+            if (parent) {
+              parent.classList.add('task-list-item');
+            }
           });
 
           // Add to document
