@@ -466,7 +466,7 @@ function App() {
       {/* Modern, professional footer with improved design */}
       <footer className="py-4 px-5 sm:px-6 bg-gradient-to-r from-background-editor to-background-secondary dark:from-background-dark-editor dark:to-background-dark-secondary border-t border-border-light dark:border-border-dark text-text-secondary dark:text-text-dark-secondary text-xs sm:text-sm shadow-inner">
         {isMobileView ? (
-          /* Enhanced mobile footer */
+          /* Enhanced mobile footer with GitHub star CTA */
           <div className="w-full flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <p className="text-xs font-medium">&copy; {new Date().getFullYear()} <span className="text-primary-light dark:text-primary-dark">MarkWrite</span></p>
@@ -498,57 +498,94 @@ function App() {
                 </a>
               </div>
             </div>
+
+            {/* GitHub Star Call-to-Action */}
+            <div className="w-full py-2 px-3 bg-background-secondary/60 dark:bg-background-dark-secondary/60 rounded-md border border-border-light dark:border-border-dark flex items-center justify-center gap-2">
+              <GitHubIcon className="w-4 h-4 text-primary-light dark:text-primary-dark" />
+              <p className="text-xs">
+                If you enjoy using MarkWrite, please
+                <a
+                  href="https://github.com/v-eenay/markwrite/stargazers"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mx-1 text-primary-light dark:text-primary-dark font-medium hover:underline"
+                >
+                  star our project
+                </a>
+                on GitHub!
+              </p>
+            </div>
+
             <div className="w-full h-px bg-gradient-to-r from-transparent via-border-light dark:via-border-dark to-transparent opacity-50"></div>
             <p className="text-xs text-center text-text-muted dark:text-text-dark-muted">Designed & Developed by Binay Koirala</p>
           </div>
         ) : (
-          /* Enhanced desktop footer */
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-center sm:text-left">
-              <div className="flex items-center gap-2 mb-2">
-                <LogoIcon width={20} height={20} className="text-primary-light dark:text-primary-dark" />
-                <p className="font-medium text-sm">MarkWrite - A minimalist Markdown editor</p>
+          /* Enhanced desktop footer with GitHub star CTA */
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-4">
+              <div className="text-center sm:text-left">
+                <div className="flex items-center gap-2 mb-2">
+                  <LogoIcon width={20} height={20} className="text-primary-light dark:text-primary-dark" />
+                  <p className="font-medium text-sm">MarkWrite - A minimalist Markdown editor</p>
+                </div>
+                <p className="text-xs text-text-muted dark:text-text-dark-muted">&copy; {new Date().getFullYear()} Binay Koirala. All Rights Reserved.</p>
               </div>
-              <p className="text-xs text-text-muted dark:text-text-dark-muted">&copy; {new Date().getFullYear()} Binay Koirala. All Rights Reserved.</p>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
+                  <a
+                    href="https://github.com/v-eenay/markwrite"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300 transform hover:scale-110"
+                    aria-label="GitHub Repository"
+                  >
+                    <GitHubIcon className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="https://linkedin.com/in/v-eenay"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300 transform hover:scale-110"
+                    aria-label="LinkedIn Profile"
+                  >
+                    <LinkedInIcon className="w-5 h-5" />
+                  </a>
+                </div>
+                <div className="h-10 w-px bg-border-light dark:bg-border-dark opacity-50"></div>
+                <div className="flex flex-col items-end text-xs">
+                  <a
+                    href="mailto:koiralavinay@gmail.com"
+                    className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300"
+                    aria-label="Personal Email Contact"
+                  >
+                    <span>koiralavinay@gmail.com</span>
+                  </a>
+                  <a
+                    href="mailto:binaya.koirala@iic.edu.np"
+                    className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300"
+                    aria-label="Professional Email Contact"
+                  >
+                    <span>binaya.koirala@iic.edu.np</span>
+                  </a>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-4">
+
+            {/* GitHub Star Call-to-Action */}
+            <div className="py-2 px-4 bg-background-secondary/60 dark:bg-background-dark-secondary/60 rounded-md border border-border-light dark:border-border-dark flex items-center justify-center gap-2 max-w-md">
+              <GitHubIcon className="w-5 h-5 text-primary-light dark:text-primary-dark" />
+              <p className="text-sm">
+                If you enjoy using MarkWrite, please
                 <a
-                  href="https://github.com/v-eenay/markwrite"
+                  href="https://github.com/v-eenay/markwrite/stargazers"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300 transform hover:scale-110"
-                  aria-label="GitHub Repository"
+                  className="mx-1 text-primary-light dark:text-primary-dark font-medium hover:underline"
                 >
-                  <GitHubIcon className="w-5 h-5" />
+                  star our project
                 </a>
-                <a
-                  href="https://linkedin.com/in/v-eenay"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300 transform hover:scale-110"
-                  aria-label="LinkedIn Profile"
-                >
-                  <LinkedInIcon className="w-5 h-5" />
-                </a>
-              </div>
-              <div className="h-10 w-px bg-border-light dark:bg-border-dark opacity-50"></div>
-              <div className="flex flex-col items-end text-xs">
-                <a
-                  href="mailto:koiralavinay@gmail.com"
-                  className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300"
-                  aria-label="Personal Email Contact"
-                >
-                  <span>koiralavinay@gmail.com</span>
-                </a>
-                <a
-                  href="mailto:binaya.koirala@iic.edu.np"
-                  className="hover:text-primary-light dark:hover:text-primary-dark transition-all duration-300"
-                  aria-label="Professional Email Contact"
-                >
-                  <span>binaya.koirala@iic.edu.np</span>
-                </a>
-              </div>
+                on GitHub!
+              </p>
             </div>
           </div>
         )}
