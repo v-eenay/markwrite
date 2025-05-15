@@ -1685,20 +1685,101 @@ function PdfDownloadButton({ markdown, previewRef }) {
           // Create PDF with minimal options
           const pdf = new jsPDF('p', 'mm', 'a4');
 
-          // Render to canvas with minimal options
-          const canvas = await html2canvas(fallbackContainer, {
-            scale: 1.5,
-            backgroundColor: '#ffffff',
-            logging: true,
-            allowTaint: true,
-            useCORS: true
-          });
+          // Get the height of the content
+          const containerHeight = fallbackContainer.scrollHeight;
+          const containerWidth = fallbackContainer.scrollWidth;
 
-          // Add to PDF
-          const imgWidth = 210;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
-          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          // Calculate dimensions for pagination
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm (A4)
+          const marginTop = 15; // Top margin in mm
+          const marginBottom = 15; // Bottom margin in mm
+          const contentHeight = pageHeight - marginTop - marginBottom; // Available content height per page
+          const contentHeightPx = contentHeight * 3.779527559; // Convert mm to px (approximate)
+
+          // Check if content needs pagination
+          if (containerHeight > contentHeightPx) {
+            console.log('Fallback content requires pagination, splitting into multiple pages');
+
+            // Calculate how many pages we need
+            const totalPages = Math.ceil(containerHeight / contentHeightPx);
+            console.log(`Estimated total pages for fallback: ${totalPages}`);
+
+            // Create a wrapper for positioning
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'absolute';
+            wrapper.style.top = '0';
+            wrapper.style.left = '0';
+            wrapper.style.width = `${containerWidth}px`;
+            wrapper.style.backgroundColor = '#ffffff';
+            document.body.appendChild(wrapper);
+
+            // Process each page
+            for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+              console.log(`Processing fallback page ${pageNum + 1} of ${totalPages}`);
+
+              // Create a container for this page's content
+              const pageContainer = fallbackContainer.cloneNode(true);
+              pageContainer.style.height = `${containerHeight}px`;
+              pageContainer.style.width = `${containerWidth}px`;
+
+              // Position the container to show only the current page's content
+              pageContainer.style.position = 'absolute';
+              pageContainer.style.top = `-${pageNum * contentHeightPx}px`;
+              pageContainer.style.clip = `rect(${pageNum * contentHeightPx}px, ${containerWidth}px, ${(pageNum + 1) * contentHeightPx}px, 0)`;
+
+              // Add to wrapper
+              wrapper.innerHTML = '';
+              wrapper.appendChild(pageContainer);
+
+              // Use html2canvas to render this page
+              const canvas = await html2canvas(wrapper, {
+                scale: 1.5,
+                useCORS: true,
+                logging: true,
+                backgroundColor: '#ffffff',
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                windowHeight: contentHeightPx,
+                height: contentHeightPx
+              });
+
+              // Add a new page for all but the first page
+              if (pageNum > 0) {
+                pdf.addPage();
+              }
+
+              // Calculate image height maintaining aspect ratio
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+              // Add the canvas as an image to the PDF
+              const imgData = canvas.toDataURL('image/jpeg', 0.95);
+              pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+            }
+
+            // Clean up the wrapper
+            if (wrapper && wrapper.parentNode) {
+              wrapper.parentNode.removeChild(wrapper);
+            }
+          } else {
+            // Content fits on a single page, render it directly
+            console.log('Fallback content fits on a single page, rendering directly');
+
+            // Render to canvas with minimal options
+            const canvas = await html2canvas(fallbackContainer, {
+              scale: 1.5,
+              backgroundColor: '#ffffff',
+              logging: true,
+              allowTaint: true,
+              useCORS: true
+            });
+
+            // Add to PDF
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          }
 
           // Save PDF
           pdf.save(getFilename());
@@ -1754,17 +1835,95 @@ function PdfDownloadButton({ markdown, previewRef }) {
           // Create PDF
           const pdf = new jsPDF('p', 'mm', 'a4');
 
-          // Render to canvas
-          const canvas = await html2canvas(ultraFallbackContainer, {
-            scale: 1.5,
-            backgroundColor: '#ffffff'
-          });
+          // Get the height of the content
+          const containerHeight = ultraFallbackContainer.scrollHeight;
+          const containerWidth = ultraFallbackContainer.scrollWidth;
 
-          // Add to PDF
-          const imgWidth = 210;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
-          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          // Calculate dimensions for pagination
+          const imgWidth = 210; // A4 width in mm
+          const pageHeight = 297; // A4 height in mm (A4)
+          const marginTop = 15; // Top margin in mm
+          const marginBottom = 15; // Bottom margin in mm
+          const contentHeight = pageHeight - marginTop - marginBottom; // Available content height per page
+          const contentHeightPx = contentHeight * 3.779527559; // Convert mm to px (approximate)
+
+          // Check if content needs pagination
+          if (containerHeight > contentHeightPx) {
+            console.log('Ultra-fallback content requires pagination, splitting into multiple pages');
+
+            // Calculate how many pages we need
+            const totalPages = Math.ceil(containerHeight / contentHeightPx);
+            console.log(`Estimated total pages for ultra-fallback: ${totalPages}`);
+
+            // Create a wrapper for positioning
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'absolute';
+            wrapper.style.top = '0';
+            wrapper.style.left = '0';
+            wrapper.style.width = `${containerWidth}px`;
+            wrapper.style.backgroundColor = '#ffffff';
+            document.body.appendChild(wrapper);
+
+            // Process each page
+            for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+              console.log(`Processing ultra-fallback page ${pageNum + 1} of ${totalPages}`);
+
+              // Create a container for this page's content
+              const pageContainer = ultraFallbackContainer.cloneNode(true);
+              pageContainer.style.height = `${containerHeight}px`;
+              pageContainer.style.width = `${containerWidth}px`;
+
+              // Position the container to show only the current page's content
+              pageContainer.style.position = 'absolute';
+              pageContainer.style.top = `-${pageNum * contentHeightPx}px`;
+              pageContainer.style.clip = `rect(${pageNum * contentHeightPx}px, ${containerWidth}px, ${(pageNum + 1) * contentHeightPx}px, 0)`;
+
+              // Add to wrapper
+              wrapper.innerHTML = '';
+              wrapper.appendChild(pageContainer);
+
+              // Use html2canvas to render this page
+              const canvas = await html2canvas(wrapper, {
+                scale: 1.5,
+                backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: 0,
+                windowHeight: contentHeightPx,
+                height: contentHeightPx
+              });
+
+              // Add a new page for all but the first page
+              if (pageNum > 0) {
+                pdf.addPage();
+              }
+
+              // Calculate image height maintaining aspect ratio
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+              // Add the canvas as an image to the PDF
+              const imgData = canvas.toDataURL('image/jpeg', 0.95);
+              pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+            }
+
+            // Clean up the wrapper
+            if (wrapper && wrapper.parentNode) {
+              wrapper.parentNode.removeChild(wrapper);
+            }
+          } else {
+            // Content fits on a single page, render it directly
+            console.log('Ultra-fallback content fits on a single page, rendering directly');
+
+            // Render to canvas
+            const canvas = await html2canvas(ultraFallbackContainer, {
+              scale: 1.5,
+              backgroundColor: '#ffffff'
+            });
+
+            // Add to PDF
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          }
 
           // Save PDF
           pdf.save(getFilename());
@@ -1845,38 +2004,132 @@ function PdfDownloadButton({ markdown, previewRef }) {
   };
 
   /**
-   * Generates a single-page PDF from the given container
+   * Generates a PDF from the given container, automatically handling pagination for long content
    * @param {HTMLElement} container - The container with the content
    */
   const generateSinglePagePDF = async (container) => {
-    console.log('Generating single-page PDF');
+    console.log('Generating PDF with automatic pagination');
 
-    // Use html2canvas to render the container to a canvas
-    const canvas = await html2canvas(container, {
-      scale: 2, // Higher scale for better quality
-      useCORS: true,
-      logging: true,
-      backgroundColor: '#ffffff',
-      allowTaint: true,
-      letterRendering: true,
-      scrollX: 0,
-      scrollY: 0
-    });
+    // Create a clone of the container to work with
+    const containerClone = container.cloneNode(true);
+    document.body.appendChild(containerClone);
 
-    // Calculate dimensions
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    try {
+      // Get the computed height of the content
+      const containerHeight = containerClone.scrollHeight;
+      const containerWidth = containerClone.scrollWidth;
 
-    // Create PDF
-    const pdf = new jsPDF('p', 'mm', 'a4');
+      // Calculate dimensions
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm (A4)
+      const pageHeightPx = pageHeight * 3.779527559; // Convert mm to px (approximate)
+      const marginTop = 15; // Top margin in mm
+      const marginBottom = 15; // Bottom margin in mm
+      const contentHeight = pageHeight - marginTop - marginBottom; // Available content height per page
+      const contentHeightPx = contentHeight * 3.779527559; // Convert mm to px (approximate)
 
-    // Add the canvas as an image to the PDF
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
-    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      // Create PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
 
-    // Save the PDF
-    pdf.save(getFilename());
+      // If content fits on a single page, render it directly
+      if (containerHeight <= contentHeightPx) {
+        console.log('Content fits on a single page, rendering directly');
+
+        // Use html2canvas to render the container to a canvas
+        const canvas = await html2canvas(containerClone, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true,
+          logging: true,
+          backgroundColor: '#ffffff',
+          allowTaint: true,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0
+        });
+
+        // Calculate image height maintaining aspect ratio
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Add the canvas as an image to the PDF
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      } else {
+        // Content is too long for a single page, split it into multiple pages
+        console.log('Content requires multiple pages, implementing automatic pagination');
+
+        // Calculate how many pages we need
+        const totalPages = Math.ceil(containerHeight / contentHeightPx);
+        console.log(`Estimated total pages: ${totalPages}`);
+
+        // Create a wrapper for positioning
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.top = '0';
+        wrapper.style.left = '0';
+        wrapper.style.width = `${containerWidth}px`;
+        wrapper.style.backgroundColor = '#ffffff';
+        document.body.appendChild(wrapper);
+
+        // Process each page
+        for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+          console.log(`Processing page ${pageNum + 1} of ${totalPages}`);
+
+          // Create a container for this page's content
+          const pageContainer = containerClone.cloneNode(true);
+          pageContainer.style.height = `${containerHeight}px`;
+          pageContainer.style.width = `${containerWidth}px`;
+
+          // Position the container to show only the current page's content
+          pageContainer.style.position = 'absolute';
+          pageContainer.style.top = `-${pageNum * contentHeightPx}px`;
+          pageContainer.style.clip = `rect(${pageNum * contentHeightPx}px, ${containerWidth}px, ${(pageNum + 1) * contentHeightPx}px, 0)`;
+
+          // Add to wrapper
+          wrapper.innerHTML = '';
+          wrapper.appendChild(pageContainer);
+
+          // Use html2canvas to render this page
+          const canvas = await html2canvas(wrapper, {
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            backgroundColor: '#ffffff',
+            allowTaint: true,
+            letterRendering: true,
+            scrollX: 0,
+            scrollY: 0,
+            windowHeight: contentHeightPx,
+            height: contentHeightPx
+          });
+
+          // Add a new page for all but the first page
+          if (pageNum > 0) {
+            pdf.addPage();
+          }
+
+          // Calculate image height maintaining aspect ratio
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+          // Add the canvas as an image to the PDF
+          const imgData = canvas.toDataURL('image/jpeg', 1.0);
+          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+        }
+
+        // Clean up the wrapper
+        if (wrapper && wrapper.parentNode) {
+          wrapper.parentNode.removeChild(wrapper);
+        }
+      }
+
+      // Save the PDF
+      pdf.save(getFilename());
+
+    } finally {
+      // Clean up the clone
+      if (containerClone && containerClone.parentNode) {
+        containerClone.parentNode.removeChild(containerClone);
+      }
+    }
   };
 
   /**
@@ -1885,113 +2138,234 @@ function PdfDownloadButton({ markdown, previewRef }) {
    * @param {NodeList} pageBreaks - The page break elements
    */
   const generateMultiPagePDF = async (container, pageBreaks) => {
-    console.log('Generating multi-page PDF with page breaks');
+    console.log('Generating multi-page PDF with explicit page breaks');
+    console.log(`Found ${pageBreaks.length} explicit page breaks`);
 
     // Create PDF
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgWidth = 210; // A4 width in mm
     const pageHeight = 297; // A4 height in mm
+    const marginTop = 15; // Top margin in mm
+    const marginBottom = 15; // Bottom margin in mm
+    const contentHeight = pageHeight - marginTop - marginBottom; // Available content height per page
 
-    // Create an array of page sections
-    const pageSections = [];
+    // Create a deep clone of the container to work with
+    const containerClone = container.cloneNode(true);
+    document.body.appendChild(containerClone);
 
-    // Add the first section (from start to first page break)
-    if (pageBreaks.length > 0) {
-      const firstBreak = pageBreaks[0];
-      const firstSection = document.createElement('div');
-      firstSection.style.cssText = container.style.cssText;
+    try {
+      // Get all page break elements in the clone
+      const clonedPageBreaks = containerClone.querySelectorAll('.pagebreak, .page-break');
+      console.log(`Found ${clonedPageBreaks.length} page breaks in cloned container`);
 
-      // Clone all elements before the first page break
-      let currentNode = container.firstChild;
-      while (currentNode && currentNode !== firstBreak) {
-        firstSection.appendChild(currentNode.cloneNode(true));
-        currentNode = currentNode.nextSibling;
-      }
+      // Create an array to store page sections
+      const pageSections = [];
 
-      pageSections.push(firstSection);
+      // Create a temporary container for each section
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '0';
+      tempContainer.style.top = '0';
+      tempContainer.style.width = `${containerClone.scrollWidth}px`;
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.padding = '20mm';
+      tempContainer.style.fontFamily = 'Arial, Helvetica, sans-serif';
+      tempContainer.style.visibility = 'hidden';
+      document.body.appendChild(tempContainer);
 
-      // Add middle sections (between page breaks)
-      for (let i = 0; i < pageBreaks.length - 1; i++) {
-        const currentBreak = pageBreaks[i];
-        const nextBreak = pageBreaks[i + 1];
-        const section = document.createElement('div');
-        section.style.cssText = container.style.cssText;
+      // Add the first section (from start to first page break)
+      if (clonedPageBreaks.length > 0) {
+        console.log('Creating first section (start to first page break)');
+        const firstBreak = clonedPageBreaks[0];
+        const firstSection = document.createElement('div');
+        firstSection.style.cssText = containerClone.style.cssText;
+        firstSection.style.padding = '20mm';
+        firstSection.style.backgroundColor = '#ffffff';
 
-        // Skip the page break itself
-        currentNode = currentBreak.nextSibling;
-
-        // Clone all elements until the next page break
-        while (currentNode && currentNode !== nextBreak) {
-          section.appendChild(currentNode.cloneNode(true));
+        // Clone all elements before the first page break
+        let currentNode = containerClone.firstChild;
+        while (currentNode && currentNode !== firstBreak) {
+          firstSection.appendChild(currentNode.cloneNode(true));
           currentNode = currentNode.nextSibling;
         }
 
-        pageSections.push(section);
-      }
+        pageSections.push(firstSection);
 
-      // Add the last section (from last page break to end)
-      const lastBreak = pageBreaks[pageBreaks.length - 1];
-      const lastSection = document.createElement('div');
-      lastSection.style.cssText = container.style.cssText;
+        // Add middle sections (between page breaks)
+        for (let i = 0; i < clonedPageBreaks.length - 1; i++) {
+          console.log(`Creating section ${i + 2} (between page breaks)`);
+          const currentBreak = clonedPageBreaks[i];
+          const nextBreak = clonedPageBreaks[i + 1];
+          const section = document.createElement('div');
+          section.style.cssText = containerClone.style.cssText;
+          section.style.padding = '20mm';
+          section.style.backgroundColor = '#ffffff';
 
-      // Skip the page break itself
-      currentNode = lastBreak.nextSibling;
+          // Skip the page break itself
+          currentNode = currentBreak.nextSibling;
 
-      // Clone all remaining elements
-      while (currentNode) {
-        lastSection.appendChild(currentNode.cloneNode(true));
-        currentNode = currentNode.nextSibling;
-      }
+          // Clone all elements until the next page break
+          while (currentNode && currentNode !== nextBreak) {
+            section.appendChild(currentNode.cloneNode(true));
+            currentNode = currentNode.nextSibling;
+          }
 
-      pageSections.push(lastSection);
-    }
-
-    // If no page sections were created (e.g., if page breaks weren't properly detected),
-    // fall back to treating the entire container as one section
-    if (pageSections.length === 0) {
-      pageSections.push(container);
-    }
-
-    // Process each page section
-    for (let i = 0; i < pageSections.length; i++) {
-      const section = pageSections[i];
-
-      // Temporarily add the section to the document for rendering
-      document.body.appendChild(section);
-
-      try {
-        // Render the section to canvas
-        const canvas = await html2canvas(section, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          allowTaint: true,
-          letterRendering: true,
-          scrollX: 0,
-          scrollY: 0
-        });
-
-        // Calculate dimensions
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        // Add a new page for all but the first section
-        if (i > 0) {
-          pdf.addPage();
+          pageSections.push(section);
         }
 
-        // Add the canvas as an image to the PDF
-        const imgData = canvas.toDataURL('image/jpeg', 1.0);
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-      } finally {
-        // Clean up the temporary section
-        if (section && section.parentNode) {
-          section.parentNode.removeChild(section);
+        // Add the last section (from last page break to end)
+        console.log('Creating last section (last page break to end)');
+        const lastBreak = clonedPageBreaks[clonedPageBreaks.length - 1];
+        const lastSection = document.createElement('div');
+        lastSection.style.cssText = containerClone.style.cssText;
+        lastSection.style.padding = '20mm';
+        lastSection.style.backgroundColor = '#ffffff';
+
+        // Skip the page break itself
+        currentNode = lastBreak.nextSibling;
+
+        // Clone all remaining elements
+        while (currentNode) {
+          lastSection.appendChild(currentNode.cloneNode(true));
+          currentNode = currentNode.nextSibling;
+        }
+
+        pageSections.push(lastSection);
+      }
+
+      // If no page sections were created, fall back to treating the entire container as one section
+      if (pageSections.length === 0) {
+        console.log('No page sections created, using entire container as one section');
+        pageSections.push(containerClone);
+      }
+
+      console.log(`Created ${pageSections.length} page sections`);
+
+      // Process each page section
+      for (let i = 0; i < pageSections.length; i++) {
+        const section = pageSections[i];
+        console.log(`Processing section ${i + 1} of ${pageSections.length}`);
+
+        // Clear the temp container and add the current section
+        tempContainer.innerHTML = '';
+        tempContainer.appendChild(section);
+
+        // Check if this section needs further pagination (if it's too long)
+        const sectionHeight = section.scrollHeight;
+        const pageHeightPx = contentHeight * 3.779527559; // Convert mm to px (approximate)
+
+        if (sectionHeight > pageHeightPx) {
+          console.log(`Section ${i + 1} is too long (${sectionHeight}px), needs further pagination`);
+
+          // Calculate how many pages we need for this section
+          const pagesForSection = Math.ceil(sectionHeight / pageHeightPx);
+          console.log(`Section ${i + 1} will be split into ${pagesForSection} pages`);
+
+          // Create a wrapper for positioning
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'absolute';
+          wrapper.style.top = '0';
+          wrapper.style.left = '0';
+          wrapper.style.width = `${section.scrollWidth}px`;
+          wrapper.style.backgroundColor = '#ffffff';
+          document.body.appendChild(wrapper);
+
+          // Process each sub-page of this section
+          for (let pageNum = 0; pageNum < pagesForSection; pageNum++) {
+            console.log(`Processing sub-page ${pageNum + 1} of ${pagesForSection} for section ${i + 1}`);
+
+            // Create a container for this page's content
+            const pageContainer = section.cloneNode(true);
+            pageContainer.style.height = `${sectionHeight}px`;
+            pageContainer.style.width = `${section.scrollWidth}px`;
+
+            // Position the container to show only the current page's content
+            pageContainer.style.position = 'absolute';
+            pageContainer.style.top = `-${pageNum * pageHeightPx}px`;
+            pageContainer.style.clip = `rect(${pageNum * pageHeightPx}px, ${section.scrollWidth}px, ${(pageNum + 1) * pageHeightPx}px, 0)`;
+
+            // Add to wrapper
+            wrapper.innerHTML = '';
+            wrapper.appendChild(pageContainer);
+
+            // Use html2canvas to render this page
+            const canvas = await html2canvas(wrapper, {
+              scale: 2,
+              useCORS: true,
+              logging: true,
+              backgroundColor: '#ffffff',
+              allowTaint: true,
+              letterRendering: true,
+              scrollX: 0,
+              scrollY: 0,
+              windowHeight: pageHeightPx,
+              height: pageHeightPx
+            });
+
+            // Add a new page for all but the first page of the first section
+            if (i > 0 || pageNum > 0) {
+              pdf.addPage();
+            }
+
+            // Calculate image height maintaining aspect ratio
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Add the canvas as an image to the PDF
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+          }
+
+          // Clean up the wrapper
+          if (wrapper && wrapper.parentNode) {
+            wrapper.parentNode.removeChild(wrapper);
+          }
+        } else {
+          // Section fits on a single page
+          console.log(`Section ${i + 1} fits on a single page, rendering directly`);
+
+          try {
+            // Render the section to canvas
+            const canvas = await html2canvas(tempContainer, {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              allowTaint: true,
+              letterRendering: true,
+              scrollX: 0,
+              scrollY: 0
+            });
+
+            // Add a new page for all but the first section
+            if (i > 0) {
+              pdf.addPage();
+            }
+
+            // Calculate dimensions
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Add the canvas as an image to the PDF
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          } catch (error) {
+            console.error(`Error rendering section ${i + 1}:`, error);
+          }
         }
       }
-    }
 
-    // Save the PDF
-    pdf.save(getFilename());
+      // Clean up the temp container
+      if (tempContainer && tempContainer.parentNode) {
+        tempContainer.parentNode.removeChild(tempContainer);
+      }
+
+      // Save the PDF
+      pdf.save(getFilename());
+
+    } finally {
+      // Clean up the clone
+      if (containerClone && containerClone.parentNode) {
+        containerClone.parentNode.removeChild(containerClone);
+      }
+    }
   };
 
   // Generate preview HTML using our custom PDF renderer
