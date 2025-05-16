@@ -1,4 +1,5 @@
 import hljs from 'highlight.js';
+import { decodeHtmlEntities, escapeHtml } from './markdownUtils';
 
 /**
  * A clean, reliable Markdown renderer that properly handles all edge cases
@@ -357,11 +358,11 @@ class MarkdownRenderer {
     let code = token.content;
 
     // Decode HTML entities in the code
-    code = this.decodeHtmlEntities(code);
+    code = decodeHtmlEntities(code);
 
     // Escape HTML in the code for security
     if (this.options.escapeHtml) {
-      code = this.escapeHtml(code);
+      code = escapeHtml(code);
     }
 
     // Apply syntax highlighting if enabled
@@ -543,11 +544,11 @@ class MarkdownRenderer {
     // Process inline code
     text = text.replace(/`([^`]+)`/g, (match, code) => {
       // Decode HTML entities in the code
-      let processedCode = this.decodeHtmlEntities(code);
+      let processedCode = decodeHtmlEntities(code);
 
       // Escape HTML in the code for security
       if (this.options.escapeHtml) {
-        processedCode = this.escapeHtml(processedCode);
+        processedCode = escapeHtml(processedCode);
       }
 
       return `<code class="md-inline-code">${processedCode}</code>`;
@@ -556,34 +557,7 @@ class MarkdownRenderer {
     return text;
   }
 
-  /**
-   * Decodes HTML entities in text
-   * @param {string} text - The text to decode
-   * @returns {string} - The decoded text
-   */
-  decodeHtmlEntities(text) {
-    return text
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&#039;/g, "'")
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&');
-  }
 
-  /**
-   * Escapes HTML in text
-   * @param {string} text - The text to escape
-   * @returns {string} - The escaped text
-   */
-  escapeHtml(text) {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, "'"); // Use plain single quote instead of entity
-  }
 }
 
 export default MarkdownRenderer;

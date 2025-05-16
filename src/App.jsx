@@ -105,9 +105,9 @@ function App() {
   const editorRef = useRef(null);
   const previewRef = useRef(null); // This ref is still used for scroll syncing, so it should remain.
 
-  const handleMarkdownChange = (newMarkdown) => {
+  const handleMarkdownChange = useCallback((newMarkdown) => {
     setMarkdown(newMarkdown);
-  };
+  }, []);
 
   // Enhanced scroll synchronization with improved reliability
   useEffect(() => {
@@ -216,7 +216,7 @@ function App() {
     };
   }, [markdown]); // Re-run when markdown content changes
 
-  const handleToolbarAction = (action) => {
+  const handleToolbarAction = useCallback((action) => {
     // Get the CodeMirror editor view
     const editorElement = editorRef.current?.querySelector('.cm-editor');
     if (!editorElement) return;
@@ -358,7 +358,7 @@ function App() {
         insert: textToInsert
       }
     });
-  };
+  }, [markdown, editorRef]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">

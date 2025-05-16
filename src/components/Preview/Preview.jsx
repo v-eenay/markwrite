@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import hljs from 'highlight.js';
 import { useTheme } from '../../contexts/ThemeContext';
 import MarkdownRenderer from '../../utils/markdownRenderer';
+import { processPageBreaks } from '../../utils/markdownUtils';
 // Import both light and dark themes
 import 'highlight.js/styles/github.css'; // Light theme
 import './syntax-dark.css'; // We'll create this custom dark theme
@@ -28,7 +29,7 @@ function Preview({ markdown }) {
       let html;
       try {
         // Process page breaks before rendering
-        const processedMarkdown = (markdown || '').replace(/---pagebreak---/g, '\n\n<div class="page-break"></div>\n\n');
+        const processedMarkdown = processPageBreaks(markdown);
         html = markdownRenderer.render(processedMarkdown);
       } catch (err) {
         console.error('Error rendering markdown:', err);

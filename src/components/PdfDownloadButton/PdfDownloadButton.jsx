@@ -7,6 +7,7 @@ import PdfIcon from '../icons/PdfIcon';
 import { useTheme } from '../../contexts/ThemeContext';
 import hljs from 'highlight.js';
 import MarkdownRenderer from '../../utils/markdownRenderer';
+import { getFilenameFromMarkdown, processPageBreaks } from '../../utils/markdownUtils';
 
 /**
  * PdfDownloadButton Component
@@ -218,18 +219,11 @@ function PdfDownloadButton({ markdown, previewRef }) {
   };
 
   /**
-   * Extracts a filename from the markdown content
-   * Uses the first heading if available, otherwise uses a default name
+   * Gets the filename for the PDF export
    * @returns {string} The PDF filename
    */
   const getFilename = () => {
-    // Try to extract the first heading from markdown
-    const headingMatch = markdown.match(/^# (.+)$/m);
-    if (headingMatch && headingMatch[1]) {
-      // Clean the heading to make it suitable for a filename
-      return `${headingMatch[1].replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`;
-    }
-    return 'markwrite-document.pdf';
+    return getFilenameFromMarkdown(markdown, 'pdf');
   };
 
   /**
@@ -579,10 +573,15 @@ function PdfDownloadButton({ markdown, previewRef }) {
   };
 
   /**
-   * Processes page breaks for PDF rendering
+   * Processes page breaks in HTML elements for PDF rendering
    * @param {HTMLElement} element - The element to process
    */
-  const processPageBreaks = (element) => {
+  const processPageBreaksInHtml = (element) => {
+    if (!element || !element.querySelectorAll) {
+      console.warn('Invalid element passed to processPageBreaksInHtml');
+      return;
+    }
+
     // First, find any existing page-break divs and convert them
     const pageBreakDivs = element.querySelectorAll('.page-break');
     pageBreakDivs.forEach(div => {
@@ -596,7 +595,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
 
     // Also check for any remaining ---pagebreak--- markers in the content
     const contentHtml = element.innerHTML;
-    if (contentHtml.includes('---pagebreak---')) {
+    if (contentHtml && contentHtml.includes('---pagebreak---')) {
       element.innerHTML = contentHtml.replace(/---pagebreak---/g, '<div class="pagebreak" style="page-break-after: always; break-after: page; height: 0; display: block; visibility: hidden;"></div>');
     }
   };
@@ -675,8 +674,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
     }
 
     try {
-      // Process page breaks first
-      const processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n<div class="pagebreak"></div>\n\n');
+      // Process page breaks first using the imported utility function
+      const processedMarkdown = processPageBreaks(markdownContent);
 
       // Use our new markdown renderer with PDF-specific options
       const renderer = new MarkdownRenderer({
@@ -1549,7 +1548,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         tempContainer.appendChild(styleElement);
 
         // Process page breaks
-        processPageBreaks(tempContainer);
+        processPageBreaksInHtml(tempContainer);
 
         // Get all page break elements
         const pageBreaks = tempContainer.querySelectorAll('.pagebreak');

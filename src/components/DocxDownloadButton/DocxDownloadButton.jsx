@@ -20,6 +20,7 @@ import { DocxIcon } from '../icons/ToolbarIcons';
 import { marked } from 'marked';
 import PreviewModal from '../PreviewModal/PreviewModal';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getFilenameFromMarkdown } from '../../utils/markdownUtils';
 
 function DocxDownloadButton({ markdown }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,16 +29,12 @@ function DocxDownloadButton({ markdown }) {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const getFilename = () => {
-    const headingMatch = markdown.match(/^# (.+)$/m);
-    if (headingMatch && headingMatch[1]) {
-      return `${headingMatch[1].replace(/[^a-z0-9]/gi, '-').toLowerCase()}.docx`;
-    }
-    return 'markwrite-document.docx';
+    return getFilenameFromMarkdown(markdown, 'docx');
   };
 
   const parseMarkdownToDocElements = (markdownContent) => {
     // Process page breaks first - ensure proper spacing
-    let processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n[PAGE_BREAK]\n\n');
+    let processedMarkdown = markdownContent.replace(/---pagebreak---/g, '[PAGE_BREAK]');
 
     const lines = processedMarkdown.split('\n');
     const elements = [];
@@ -735,7 +732,9 @@ function DocxDownloadButton({ markdown }) {
     setIsGenerating(true);
 
     try {
+      console.log('Starting DOCX generation...');
       const docElements = parseMarkdownToDocElements(markdown);
+      console.log('Parsed markdown to DOCX elements');
       const doc = new Document({
         sections: [
           {
@@ -856,8 +855,11 @@ function DocxDownloadButton({ markdown }) {
         },
       });
 
+      console.log('Creating DOCX blob...');
       const blob = await Packer.toBlob(doc);
+      console.log('DOCX blob created, saving file...');
       saveAs(blob, getFilename());
+      console.log('DOCX file saved successfully');
     } catch (err) {
       console.error('Error generating DOCX:', err);
       setError(`Failed to generate DOCX: ${err.message || String(err)}`);
@@ -879,7 +881,12 @@ function DocxDownloadButton({ markdown }) {
 
   const handleConfirmDownload = async () => {
     setIsPreviewModalOpen(false);
-    await handleDownload();
+    try {
+      await handleDownload();
+    } catch (err) {
+      console.error('Error in handleConfirmDownload:', err);
+      setError(`Failed to generate DOCX: ${err.message || String(err)}`);
+    }
   };
 
   return (
