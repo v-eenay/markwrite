@@ -102,36 +102,44 @@ export function parseMarkdown(markdown, options = {}) {
   text = text.replace(/```([a-z]*)\n([\s\S]*?)```/g, function(match, language, code) {
     const validLanguage = language || 'plaintext';
 
-    // Escape HTML in the code to prevent security issues
-    let escapedCode = code;
-    if (opts.escapeHtml) {
-      // First decode any existing HTML entities to prevent double-encoding
-      const tempElement = document.createElement('div');
-      tempElement.innerHTML = escapedCode;
-      const decodedCode = tempElement.textContent;
+    // Simple function to decode HTML entities
+    function decodeHtmlEntities(text) {
+      return text
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#039;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+    }
 
-      // Now escape HTML properly
-      escapedCode = decodedCode
+    // First decode any HTML entities in the code
+    let processedCode = decodeHtmlEntities(code);
+
+    // Then escape HTML for security if needed
+    if (opts.escapeHtml) {
+      processedCode = processedCode
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;'); // Use &#39; instead of &#039; for better compatibility
+        .replace(/'/g, "'"); // Use plain single quote instead of entity
     }
 
-    let highlightedCode = escapedCode;
+    let highlightedCode = processedCode;
 
     if (opts.highlightCode) {
       try {
         if (hljs.getLanguage(validLanguage)) {
-          highlightedCode = hljs.highlight(escapedCode, { language: validLanguage }).value;
+          highlightedCode = hljs.highlight(processedCode, { language: validLanguage }).value;
         }
       } catch (err) {
         console.warn('Error highlighting code:', err);
       }
     }
 
-    return `<pre class="md-pre" data-language="${validLanguage}"><code class="md-code language-${validLanguage}">${highlightedCode}</code></pre>\n\n`;
+    // Return the code block with a single newline after it to prevent double spacing
+    return `<pre class="md-pre" data-language="${validLanguage}"><code class="md-code language-${validLanguage}">${highlightedCode}</code></pre>\n`;
   });
 
   // Process horizontal rules
@@ -217,24 +225,31 @@ export function parseMarkdown(markdown, options = {}) {
 
   // Process inline code with HTML escaping for security
   text = text.replace(/`([^`]+)`/g, function(match, code) {
-    // Escape HTML in the code to prevent security issues
-    let escapedCode = code;
-    if (opts.escapeHtml) {
-      // First decode any existing HTML entities to prevent double-encoding
-      const tempElement = document.createElement('div');
-      tempElement.innerHTML = escapedCode;
-      const decodedCode = tempElement.textContent;
+    // Simple function to decode HTML entities
+    function decodeHtmlEntities(text) {
+      return text
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#039;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+    }
 
-      // Now escape HTML properly
-      escapedCode = decodedCode
+    // First decode any HTML entities in the code
+    let processedCode = decodeHtmlEntities(code);
+
+    // Then escape HTML for security if needed
+    if (opts.escapeHtml) {
+      processedCode = processedCode
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;'); // Use &#39; instead of &#039; for better compatibility
+        .replace(/'/g, "'"); // Use plain single quote instead of entity
     }
 
-    return `<code class="md-inline-code">${escapedCode}</code>`;
+    return `<code class="md-inline-code">${processedCode}</code>`;
   });
 
   // Process links
@@ -312,11 +327,23 @@ export function parseMarkdown(markdown, options = {}) {
   for (let i = 0; i < processedBlocks.length; i++) {
     const block = processedBlocks[i];
     const isCodeBlock = block.startsWith('<pre') || block.includes('</pre>');
+    const nextIsCodeBlock = i < processedBlocks.length - 1 &&
+                           (processedBlocks[i+1].startsWith('<pre') ||
+                            processedBlocks[i+1].includes('</pre>'));
     const isLastBlock = i === processedBlocks.length - 1;
 
+    // Add the current block
     result += block;
+
+    // Add appropriate spacing
     if (!isLastBlock) {
-      result += isCodeBlock ? '\n' : '\n\n';
+      // If this is a code block or the next block is a code block, use a single newline
+      // Otherwise use double newlines for proper paragraph spacing
+      if (isCodeBlock || nextIsCodeBlock) {
+        result += '\n';
+      } else {
+        result += '\n\n';
+      }
     }
   }
 
