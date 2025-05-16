@@ -240,11 +240,16 @@ function PdfDownloadButton({ markdown, previewRef }) {
     console.log('Applying theme transformations for PDF export');
 
     try {
-      // Remove dark mode classes but preserve the content
+      // Force light mode styling for PDF export regardless of current theme
+
+      // Remove all theme-related classes
       if (element.classList) {
         element.classList.remove('dark');
         element.classList.remove('dark-preview');
         element.classList.remove('dark-theme');
+        element.classList.add('light');
+        element.classList.add('light-preview');
+        element.classList.add('light-theme');
       }
 
       // Remove any dark mode specific classes that might affect rendering
@@ -254,6 +259,9 @@ function PdfDownloadButton({ markdown, previewRef }) {
           el.classList.remove('dark');
           el.classList.remove('dark-preview');
           el.classList.remove('dark-theme');
+          el.classList.add('light');
+          el.classList.add('light-preview');
+          el.classList.add('light-theme');
         }
       });
 
@@ -273,7 +281,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
       element.style.backgroundColor = '#ffffff';
       element.style.color = '#333333';
 
-      // Make sure all elements are visible
+      // Make sure all elements are visible and have proper colors
       const allElements = element.querySelectorAll('*');
       allElements.forEach(el => {
         if (el.style) {
@@ -283,6 +291,29 @@ function PdfDownloadButton({ markdown, previewRef }) {
           }
           el.style.visibility = 'visible';
           el.style.opacity = '1';
+
+          // Force light mode colors for all text elements
+          if (el.tagName && ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'SPAN', 'DIV', 'LI', 'TD', 'TH', 'BLOCKQUOTE'].includes(el.tagName)) {
+            // Check if the element has a very light color that would be invisible on white
+            const computedStyle = window.getComputedStyle(el);
+            const color = computedStyle.color;
+
+            // If the color is very light (like in dark mode), force it to be dark
+            if (color.includes('rgba') || color.includes('rgb')) {
+              // Extract RGB values
+              const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+              if (rgbMatch) {
+                const r = parseInt(rgbMatch[1], 10);
+                const g = parseInt(rgbMatch[2], 10);
+                const b = parseInt(rgbMatch[3], 10);
+
+                // If the color is light (high RGB values), make it dark
+                if (r > 200 && g > 200 && b > 200) {
+                  el.style.color = '#333333';
+                }
+              }
+            }
+          }
         }
       });
 
@@ -363,12 +394,14 @@ function PdfDownloadButton({ markdown, previewRef }) {
       lists.forEach(list => {
         list.style.paddingLeft = '2em';
         list.style.margin = '1em 0';
+        list.style.color = '#333';
       });
 
       // Fix all list items
       const listItems = element.querySelectorAll('li');
       listItems.forEach(item => {
         item.style.marginBottom = '0.5em';
+        item.style.color = '#333';
       });
 
       // Fix all tables
@@ -386,6 +419,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         cell.style.border = '1px solid #ddd';
         cell.style.padding = '8px';
         cell.style.textAlign = 'left';
+        cell.style.color = '#333';
       });
 
       // Fix all images
@@ -406,6 +440,30 @@ function PdfDownloadButton({ markdown, previewRef }) {
         blockquote.style.backgroundColor = '#f9fafb';
         blockquote.style.color = '#4b5563';
         blockquote.style.fontStyle = 'italic';
+      });
+
+      // Fix any inline elements that might have light text color
+      const inlineElements = element.querySelectorAll('span, em, strong, b, i, u, del, code');
+      inlineElements.forEach(el => {
+        // Get computed style
+        const computedStyle = window.getComputedStyle(el);
+        const color = computedStyle.color;
+
+        // If the color is very light (like in dark mode), force it to be dark
+        if (color.includes('rgba') || color.includes('rgb')) {
+          // Extract RGB values
+          const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+          if (rgbMatch) {
+            const r = parseInt(rgbMatch[1], 10);
+            const g = parseInt(rgbMatch[2], 10);
+            const b = parseInt(rgbMatch[3], 10);
+
+            // If the color is light (high RGB values), make it dark
+            if (r > 200 && g > 200 && b > 200) {
+              el.style.color = '#333333';
+            }
+          }
+        }
       });
     } catch (err) {
       console.error('Error during theme transformation:', err);
@@ -719,22 +777,30 @@ function PdfDownloadButton({ markdown, previewRef }) {
         margin: 15mm;
         size: A4;
       }
+      /* Base styles - force light mode for PDF regardless of current theme */
       body {
         font-family: 'Arial', 'Helvetica', sans-serif;
         line-height: 1.6;
-        color: #333;
-        background-color: #fff;
+        color: #333 !important;
+        background-color: #fff !important;
         font-size: 11pt;
         margin: 0;
         padding: 0;
       }
+
+      /* Override any dark mode styles that might be applied */
+      * {
+        color: inherit;
+        background-color: transparent;
+      }
+
       /* Headings */
       .pdf-heading, h1, h2, h3, h4, h5, h6 {
         margin-top: 1.2em;
         margin-bottom: 0.6em;
         page-break-after: avoid;
         break-after: avoid;
-        color: #2f3e46;
+        color: #2f3e46 !important;
         font-weight: 600;
         line-height: 1.3;
       }
@@ -751,30 +817,31 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-heading-3, h3 { font-size: 1.25em; }
       .pdf-heading-4, h4 { font-size: 1em; }
       .pdf-heading-5, h5 { font-size: 0.875em; }
-      .pdf-heading-6, h6 { font-size: 0.85em; color: #57606a; }
+      .pdf-heading-6, h6 { font-size: 0.85em; color: #57606a !important; }
 
       /* Paragraphs */
       .pdf-paragraph, p {
         margin-bottom: 0.8em;
         margin-top: 0;
         text-align: justify;
-        color: #333;
+        color: #333 !important;
         line-height: 1.6;
       }
 
       /* Text formatting */
       .pdf-strong, strong, b {
         font-weight: 600;
-        color: #24292e;
+        color: #24292e !important;
       }
       .pdf-em, em, i {
         font-style: italic;
+        color: #333 !important;
       }
 
       /* Strikethrough */
       .pdf-del, del, s {
         text-decoration: line-through;
-        color: #666;
+        color: #666 !important;
         /* Fix for strikethrough alignment */
         text-decoration-thickness: 0.5px;
         text-decoration-skip-ink: none;
@@ -784,8 +851,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-inline-code, code:not(pre code) {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.9em;
-        color: #d63384;
-        background-color: rgba(214, 51, 132, 0.05);
+        color: #d63384 !important;
+        background-color: rgba(214, 51, 132, 0.05) !important;
         border-radius: 3px;
         border: 1px solid rgba(214, 51, 132, 0.1);
         padding: 0.1em 0.4em;
@@ -799,7 +866,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
 
       /* Code blocks */
       .pdf-pre, pre {
-        background-color: #f8f9fa;
+        background-color: #f8f9fa !important;
         border-radius: 6px;
         padding: 1em;
         margin: 1em 0;
@@ -812,11 +879,11 @@ function PdfDownloadButton({ markdown, previewRef }) {
       }
       .pdf-code, pre code {
         padding: 0;
-        background-color: transparent;
+        background-color: transparent !important;
         border-radius: 0;
         display: block;
         white-space: pre-wrap;
-        color: #333;
+        color: #333 !important;
         font-size: 0.9em;
         border: none;
         font-weight: normal;
@@ -827,13 +894,13 @@ function PdfDownloadButton({ markdown, previewRef }) {
       }
 
       /* Syntax highlighting */
-      .hljs-keyword, .hljs-selector-tag, .hljs-addition { color: #0550ae; font-weight: bold; }
-      .hljs-number, .hljs-string, .hljs-meta .hljs-meta-string, .hljs-literal, .hljs-doctag, .hljs-regexp { color: #2e7d32; }
-      .hljs-title, .hljs-section, .hljs-name, .hljs-selector-id, .hljs-selector-class { color: #d32f2f; }
-      .hljs-attribute, .hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-class .hljs-title, .hljs-type { color: #e65100; }
-      .hljs-symbol, .hljs-bullet, .hljs-subst, .hljs-meta, .hljs-meta .hljs-keyword, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-link { color: #7b1fa2; }
-      .hljs-built_in, .hljs-deletion { color: #0277bd; }
-      .hljs-comment, .hljs-quote { color: #5d6c79; font-style: italic; }
+      .hljs-keyword, .hljs-selector-tag, .hljs-addition { color: #0550ae !important; font-weight: bold; }
+      .hljs-number, .hljs-string, .hljs-meta .hljs-meta-string, .hljs-literal, .hljs-doctag, .hljs-regexp { color: #2e7d32 !important; }
+      .hljs-title, .hljs-section, .hljs-name, .hljs-selector-id, .hljs-selector-class { color: #d32f2f !important; }
+      .hljs-attribute, .hljs-attr, .hljs-variable, .hljs-template-variable, .hljs-class .hljs-title, .hljs-type { color: #e65100 !important; }
+      .hljs-symbol, .hljs-bullet, .hljs-subst, .hljs-meta, .hljs-meta .hljs-keyword, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-link { color: #7b1fa2 !important; }
+      .hljs-built_in, .hljs-deletion { color: #0277bd !important; }
+      .hljs-comment, .hljs-quote { color: #5d6c79 !important; font-style: italic; }
 
       /* Images */
       .pdf-image, img {
@@ -850,10 +917,12 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-list, .pdf-ul, .pdf-ol, ul, ol {
         padding-left: 2em;
         margin: 1em 0;
+        color: #333 !important;
       }
       .pdf-list-item, li {
         margin-bottom: 0.5em;
         line-height: 1.6;
+        color: #333 !important;
         /* Fix for list item alignment */
         padding-left: 0.5em;
       }
@@ -863,6 +932,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
       /* Fix for list marker alignment */
       li::marker {
         vertical-align: baseline;
+        color: #333 !important;
       }
 
       /* Unordered lists */
@@ -892,8 +962,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
         border-left: 4px solid #6b7280;
         padding: 0.5em 1em;
         margin: 1em 0;
-        background-color: #f9fafb;
-        color: #4b5563;
+        background-color: #f9fafb !important;
+        color: #4b5563 !important;
         font-style: italic;
         display: block;
         page-break-inside: avoid;
@@ -904,6 +974,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-blockquote p, blockquote p {
         margin: 0.5em 0;
         text-align: left;
+        color: #4b5563 !important;
         /* Fix for paragraph alignment in blockquotes */
         line-height: 1.6;
       }
@@ -917,6 +988,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         page-break-inside: avoid;
         break-inside: avoid;
         table-layout: fixed;
+        color: #333 !important;
       }
       .pdf-th, .pdf-td, th, td {
         border: 1px solid #ddd;
@@ -925,13 +997,18 @@ function PdfDownloadButton({ markdown, previewRef }) {
         word-wrap: break-word;
         overflow-wrap: break-word;
         vertical-align: top;
+        color: #333 !important;
       }
       .pdf-th, th {
-        background-color: #f2f2f2;
+        background-color: #f2f2f2 !important;
         font-weight: 600;
+        color: #333 !important;
       }
       .pdf-tr:nth-child(even), tr:nth-child(even) {
-        background-color: #f9fafb;
+        background-color: #f9fafb !important;
+      }
+      .pdf-tr:nth-child(odd), tr:nth-child(odd) {
+        background-color: #ffffff !important;
       }
 
       /* Table captions */
@@ -939,7 +1016,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         font-style: italic;
         text-align: center;
         margin-bottom: 0.5em;
-        color: #666;
+        color: #666 !important;
       }
 
       /* Text alignment */
@@ -970,7 +1047,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
 
       /* Links */
       .pdf-link, a {
-        color: #0366d6;
+        color: #0366d6 !important;
         text-decoration: underline;
       }
 
@@ -979,6 +1056,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         list-style-type: none;
         margin-left: -1.5em;
         position: relative;
+        color: #333 !important;
       }
       .task-list-item input[type="checkbox"] {
         margin-right: 0.5em;
@@ -992,13 +1070,13 @@ function PdfDownloadButton({ markdown, previewRef }) {
         font-size: 1.1em;
         line-height: 1;
         vertical-align: middle;
-        color: #333;
+        color: #333 !important;
       }
       .pdf-checkbox-checked {
-        color: #2563eb;
+        color: #2563eb !important;
       }
       .pdf-checkbox-unchecked {
-        color: #6b7280;
+        color: #6b7280 !important;
       }
 
       /* Definition lists */
@@ -1006,12 +1084,13 @@ function PdfDownloadButton({ markdown, previewRef }) {
         margin: 1em 0;
         padding: 0.5em;
         border-left: 3px solid #e5e7eb;
-        background-color: #f9fafb;
+        background-color: #f9fafb !important;
+        color: #333 !important;
       }
       dt, .pdf-dt {
         font-weight: bold;
         margin-top: 0.5em;
-        color: #2f3e46;
+        color: #2f3e46 !important;
         border-bottom: 1px solid #e5e7eb;
         padding-bottom: 0.2em;
       }
@@ -1019,38 +1098,40 @@ function PdfDownloadButton({ markdown, previewRef }) {
         margin-left: 2em;
         margin-bottom: 0.8em;
         padding-left: 0.5em;
-        color: #4b5563;
+        color: #4b5563 !important;
       }
 
       /* Footnotes */
       .footnote, .pdf-footnote-ref {
         font-size: 0.8em;
-        color: #666;
+        color: #666 !important;
         vertical-align: super;
         text-decoration: none;
       }
       .pdf-footnote-sup {
         vertical-align: super;
         font-size: 0.8em;
-        color: #2563eb;
+        color: #2563eb !important;
         font-weight: bold;
       }
       .footnotes, .pdf-footnotes {
         border-top: 1px solid #eaecef;
         margin-top: 2em;
         padding-top: 1em;
-        background-color: #f9fafb;
+        background-color: #f9fafb !important;
         padding: 1em;
         border-radius: 4px;
+        color: #333 !important;
       }
       .footnotes ol, .pdf-footnote-list {
         font-size: 0.9em;
-        color: #666;
+        color: #666 !important;
         padding-left: 1.5em;
       }
       .pdf-footnote-item {
         margin-bottom: 0.5em;
         line-height: 1.4;
+        color: #666 !important;
       }
 
       /* Code block language label */
@@ -1058,9 +1139,14 @@ function PdfDownloadButton({ markdown, previewRef }) {
         content: attr(data-language);
         display: block;
         font-size: 0.7em;
-        color: #999;
+        color: #999 !important;
         margin-bottom: 0.5em;
         text-transform: uppercase;
+      }
+
+      /* Ensure all spans and other inline elements have proper color */
+      span, small, mark, cite, abbr, time, sub, sup {
+        color: #333 !important;
       }
     `;
   };

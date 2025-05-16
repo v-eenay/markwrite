@@ -8,11 +8,12 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
 
   // PDF-specific styles to be applied to the preview content
   const pdfPreviewStyles = `
+    /* Force light mode for PDF preview regardless of current theme */
     .pdf-preview {
       font-family: 'Arial', 'Helvetica', sans-serif;
       line-height: 1.6;
-      color: #333;
-      background-color: #fff;
+      color: #333 !important;
+      background-color: #fff !important;
       font-size: 11pt;
       padding: 15mm;
       max-width: 210mm; /* A4 width */
@@ -20,11 +21,18 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       border-radius: 4px;
     }
+
+    /* Override any dark mode styles that might be applied */
+    .pdf-preview * {
+      color: inherit;
+      background-color: transparent;
+    }
+
     .pdf-preview h1, .pdf-preview h2, .pdf-preview h3,
     .pdf-preview h4, .pdf-preview h5, .pdf-preview h6 {
       margin-top: 1.2em;
       margin-bottom: 0.6em;
-      color: #2f3e46;
+      color: #2f3e46 !important;
       font-weight: 600;
       line-height: 1.3;
     }
@@ -45,28 +53,29 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
       margin-bottom: 0.8em;
       margin-top: 0;
       text-align: justify;
-      color: #333;
+      color: #333 !important;
       line-height: 1.6;
     }
 
     .pdf-preview strong, .pdf-preview b {
       font-weight: 600;
-      color: #24292e;
+      color: #24292e !important;
     }
     .pdf-preview em, .pdf-preview i {
       font-style: italic;
+      color: #333 !important;
     }
 
     .pdf-preview del, .pdf-preview s {
       text-decoration: line-through;
-      color: #666;
+      color: #666 !important;
     }
 
     .pdf-preview code:not(pre code) {
       font-family: 'Courier New', Courier, monospace;
       font-size: 0.9em;
-      color: #d63384;
-      background-color: rgba(214, 51, 132, 0.05);
+      color: #d63384 !important;
+      background-color: rgba(214, 51, 132, 0.05) !important;
       border-radius: 3px;
       border: 1px solid rgba(214, 51, 132, 0.1);
       padding: 0.1em 0.4em;
@@ -75,7 +84,7 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
     }
 
     .pdf-preview pre {
-      background-color: #f8f9fa;
+      background-color: #f8f9fa !important;
       border-radius: 6px;
       padding: 1em;
       margin: 1em 0;
@@ -85,16 +94,66 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
     }
     .pdf-preview pre code {
       padding: 0;
-      background-color: transparent;
+      background-color: transparent !important;
       border-radius: 0;
       display: block;
       white-space: pre;
-      color: #333;
+      color: #333 !important;
       font-size: 0.9em;
       border: none;
       font-weight: normal;
       font-family: 'Courier New', Courier, monospace;
       line-height: 1.5;
+    }
+
+    /* Syntax highlighting for code blocks */
+    .pdf-preview .hljs-keyword,
+    .pdf-preview .hljs-selector-tag,
+    .pdf-preview .hljs-addition {
+      color: #0550ae !important;
+      font-weight: bold;
+    }
+    .pdf-preview .hljs-number,
+    .pdf-preview .hljs-string,
+    .pdf-preview .hljs-meta .hljs-meta-string,
+    .pdf-preview .hljs-literal,
+    .pdf-preview .hljs-doctag,
+    .pdf-preview .hljs-regexp {
+      color: #2e7d32 !important;
+    }
+    .pdf-preview .hljs-title,
+    .pdf-preview .hljs-section,
+    .pdf-preview .hljs-name,
+    .pdf-preview .hljs-selector-id,
+    .pdf-preview .hljs-selector-class {
+      color: #d32f2f !important;
+    }
+    .pdf-preview .hljs-attribute,
+    .pdf-preview .hljs-attr,
+    .pdf-preview .hljs-variable,
+    .pdf-preview .hljs-template-variable,
+    .pdf-preview .hljs-class .hljs-title,
+    .pdf-preview .hljs-type {
+      color: #e65100 !important;
+    }
+    .pdf-preview .hljs-symbol,
+    .pdf-preview .hljs-bullet,
+    .pdf-preview .hljs-subst,
+    .pdf-preview .hljs-meta,
+    .pdf-preview .hljs-meta .hljs-keyword,
+    .pdf-preview .hljs-selector-attr,
+    .pdf-preview .hljs-selector-pseudo,
+    .pdf-preview .hljs-link {
+      color: #7b1fa2 !important;
+    }
+    .pdf-preview .hljs-built_in,
+    .pdf-preview .hljs-deletion {
+      color: #0277bd !important;
+    }
+    .pdf-preview .hljs-comment,
+    .pdf-preview .hljs-quote {
+      color: #5d6c79 !important;
+      font-style: italic;
     }
 
     .pdf-preview img {
@@ -107,9 +166,11 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
     .pdf-preview ul, .pdf-preview ol {
       padding-left: 2em;
       margin: 1em 0;
+      color: #333 !important;
     }
     .pdf-preview li {
       margin-bottom: 0.5em;
+      color: #333 !important;
     }
     .pdf-preview li > ul, .pdf-preview li > ol {
       margin: 0.5em 0;
@@ -119,14 +180,15 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
       border-left: 4px solid #6b7280;
       padding: 0.5em 1em;
       margin: 1em 0;
-      background-color: #f9fafb;
-      color: #4b5563;
+      background-color: #f9fafb !important;
+      color: #4b5563 !important;
       font-style: italic;
       display: block;
     }
     .pdf-preview blockquote p {
       margin: 0.5em 0;
       text-align: left;
+      color: #4b5563 !important;
     }
 
     .pdf-preview table {
@@ -135,6 +197,7 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
       margin: 1em 0;
       border: 1px solid #e5e7eb;
       table-layout: fixed;
+      color: #333 !important;
     }
     .pdf-preview th, .pdf-preview td {
       border: 1px solid #ddd;
@@ -142,13 +205,18 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
       text-align: left;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      color: #333 !important;
     }
     .pdf-preview th {
-      background-color: #f2f2f2;
+      background-color: #f2f2f2 !important;
       font-weight: 600;
+      color: #333 !important;
     }
     .pdf-preview tr:nth-child(even) {
-      background-color: #f9fafb;
+      background-color: #f9fafb !important;
+    }
+    .pdf-preview tr:nth-child(odd) {
+      background-color: #ffffff !important;
     }
 
     .pdf-preview hr {
@@ -159,8 +227,20 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
     }
 
     .pdf-preview a {
-      color: #0366d6;
+      color: #0366d6 !important;
       text-decoration: underline;
+    }
+
+    /* Ensure all spans and other inline elements have proper color */
+    .pdf-preview span,
+    .pdf-preview small,
+    .pdf-preview mark,
+    .pdf-preview cite,
+    .pdf-preview abbr,
+    .pdf-preview time,
+    .pdf-preview sub,
+    .pdf-preview sup {
+      color: #333 !important;
     }
   `;
 
@@ -203,8 +283,8 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-background-light dark:bg-background-dark rounded-lg shadow-xl p-6 w-full max-w-2xl">
-        <h2 className="text-xl font-semibold text-text-light dark:text-text-dark mb-4">Download Preview</h2>
-        <div className="mb-4">
+        <h2 className="text-xl font-semibold text-text-light dark:text-text-dark mb-4">{title}</h2>
+        <div className="mb-4 bg-white">
           {previewContent}
         </div>
         <div className="flex justify-end gap-3">
