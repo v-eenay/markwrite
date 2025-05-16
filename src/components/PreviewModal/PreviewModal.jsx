@@ -244,36 +244,184 @@ function PreviewModal({ isOpen, onClose, onConfirm, content, contentType = 'html
     }
   `;
 
+  // Add DOCX-specific styles for preview
+  const docxPreviewStyles = `
+    .docx-preview {
+      font-family: 'Calibri', 'Arial', sans-serif;
+      line-height: 1.5;
+      color: #333333;
+      background-color: #ffffff;
+      padding: 25mm;
+      max-width: 210mm; /* A4 width */
+      margin: 0 auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    .docx-preview h1, .docx-preview h2, .docx-preview h3,
+    .docx-preview h4, .docx-preview h5, .docx-preview h6 {
+      margin-top: 1.2em;
+      margin-bottom: 0.6em;
+      color: #2F3E46;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .docx-preview h1 {
+      font-size: 1.8em;
+      border-bottom: 1px solid #EAECEF;
+      padding-bottom: 0.3em;
+    }
+
+    .docx-preview h2 {
+      font-size: 1.5em;
+      border-bottom: 1px solid #EAECEF;
+      padding-bottom: 0.3em;
+    }
+
+    .docx-preview h3 { font-size: 1.25em; }
+
+    .docx-preview p {
+      margin-bottom: 0.8em;
+      margin-top: 0;
+    }
+
+    .docx-preview ul, .docx-preview ol {
+      padding-left: 2em;
+      margin: 1em 0;
+      list-style-position: outside;
+    }
+
+    .docx-preview li {
+      margin-bottom: 0.5em;
+      display: list-item;
+      line-height: 1.6;
+    }
+
+    .docx-preview ul {
+      list-style-type: disc;
+    }
+
+    .docx-preview ul ul {
+      list-style-type: circle;
+    }
+
+    .docx-preview ul ul ul {
+      list-style-type: square;
+    }
+
+    .docx-preview ol {
+      list-style-type: decimal;
+    }
+
+    .docx-preview ol ol {
+      list-style-type: lower-alpha;
+    }
+
+    .docx-preview ol ol ol {
+      list-style-type: lower-roman;
+    }
+
+    .docx-preview pre {
+      background-color: #F8F9FA;
+      border: 1px solid #E9ECEF;
+      border-radius: 4px;
+      padding: 1em;
+      margin: 1em 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .docx-preview code {
+      font-family: 'Courier New', monospace;
+      background-color: #F5F5F5;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+
+    .docx-preview blockquote {
+      border-left: 4px solid #6B7280;
+      padding: 0.5em 1em;
+      margin: 1em 0;
+      background-color: #F9FAFB;
+      color: #4B5563;
+      font-style: italic;
+    }
+
+    .docx-preview table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+
+    .docx-preview th, .docx-preview td {
+      border: 1px solid #DDD;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .docx-preview th {
+      background-color: #F2F2F2;
+      font-weight: bold;
+    }
+
+    .docx-preview tr:nth-child(even) {
+      background-color: #F9FAFB;
+    }
+
+    .docx-preview img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .docx-preview a {
+      color: #0366D6;
+      text-decoration: underline;
+    }
+
+    .docx-preview hr {
+      border: 0;
+      border-top: 1px solid #EAECEF;
+      margin: 1.5em 0;
+    }
+  `;
+
   let previewContent;
+  const isDocx = title && title.toLowerCase().includes('docx');
+
   if (contentType === 'markdown') {
     // Sanitize the HTML output from marked
     const rawMarkup = marked.parse(content || '', { breaks: true, gfm: true });
     // A basic sanitizer, consider a more robust one like DOMPurify for production
     const sanitizedMarkup = rawMarkup.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
     previewContent = (
       <>
-        <style>{pdfPreviewStyles}</style>
+        <style>{isDocx ? docxPreviewStyles : pdfPreviewStyles}</style>
         <div
           dangerouslySetInnerHTML={{ __html: sanitizedMarkup }}
-          className="pdf-preview overflow-auto max-h-[60vh] border rounded"
+          className={isDocx ? "docx-preview overflow-auto max-h-[60vh] border rounded" : "pdf-preview overflow-auto max-h-[60vh] border rounded"}
         />
       </>
     );
   } else if (contentType === 'html') {
     previewContent = (
       <>
-        <style>{pdfPreviewStyles}</style>
+        <style>{isDocx ? docxPreviewStyles : pdfPreviewStyles}</style>
         <div
           dangerouslySetInnerHTML={{ __html: content }}
-          className="pdf-preview overflow-auto max-h-[60vh] border rounded"
+          className={isDocx ? "docx-preview overflow-auto max-h-[60vh] border rounded" : "pdf-preview overflow-auto max-h-[60vh] border rounded"}
         />
       </>
     );
   } else {
     previewContent = (
       <>
-        <style>{pdfPreviewStyles}</style>
-        <div className="pdf-preview overflow-auto max-h-[60vh] border rounded">
+        <style>{isDocx ? docxPreviewStyles : pdfPreviewStyles}</style>
+        <div className={isDocx ? "docx-preview overflow-auto max-h-[60vh] border rounded" : "pdf-preview overflow-auto max-h-[60vh] border rounded"}>
           {content}
         </div>
       </>
