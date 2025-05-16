@@ -157,8 +157,14 @@ function parseMarkdown(markdown) {
                      '<ol class="md-list md-ol">$&</ol>\n\n');
 
   // Process emphasis (bold, italic, strikethrough)
-  text = text.replace(/\*\*(.*?)\*\*/g, '<strong class="md-strong">$1</strong>');
+  // Bold with asterisks or underscores
+  text = text.replace(/(\*\*|__)(.*?)\1/g, '<strong class="md-strong">$2</strong>');
+
+  // Italic with single asterisk or underscore, but don't match inside words for underscores
   text = text.replace(/\*(.*?)\*/g, '<em class="md-em">$1</em>');
+  text = text.replace(/(?<![a-zA-Z0-9])_(.*?)_(?![a-zA-Z0-9])/g, '<em class="md-em">$1</em>');
+
+  // Strikethrough
   text = text.replace(/~~(.*?)~~/g, '<del class="md-strikethrough">$1</del>');
 
   // Process inline code
@@ -167,8 +173,17 @@ function parseMarkdown(markdown) {
   // Process links
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>');
 
-  // Process images
-  text = text.replace(/!\[([^\]]+)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="md-image">\n\n');
+  // Process images - ensure proper rendering with correct attributes
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(match, alt, src) {
+    // Clean the src URL if needed
+    const cleanSrc = src.trim();
+    // Create the image tag with proper attributes
+    return `<img src="${cleanSrc}" alt="${alt}" class="md-image">\n\n`;
+  });
+
+  // Process line breaks within paragraphs (before paragraph processing)
+  // Convert explicit line breaks (two spaces followed by newline)
+  text = text.replace(/  \n/g, '<br>\n');
 
   // Process paragraphs (must be done last)
   // First, split by double newlines to identify paragraph blocks
@@ -176,13 +191,22 @@ function parseMarkdown(markdown) {
   let processedBlocks = [];
 
   for (let block of blocks) {
+    const trimmedBlock = block.trim();
+    // Skip empty blocks
+    if (!trimmedBlock) continue;
+
     // Skip blocks that are already HTML elements
-    if (block.trim().startsWith('<') && !block.trim().startsWith('<code') && !block.trim().startsWith('<a ')) {
-      processedBlocks.push(block);
+    if (trimmedBlock.startsWith('<') &&
+        !trimmedBlock.startsWith('<code') &&
+        !trimmedBlock.startsWith('<a ') &&
+        !trimmedBlock.startsWith('<strong') &&
+        !trimmedBlock.startsWith('<em') &&
+        !trimmedBlock.startsWith('<del')) {
+      processedBlocks.push(trimmedBlock);
     }
     // Process plain text as paragraphs
-    else if (block.trim()) {
-      processedBlocks.push(`<p class="md-paragraph">${block.trim()}</p>`);
+    else {
+      processedBlocks.push(`<p class="md-paragraph">${trimmedBlock}</p>`);
     }
   }
 
@@ -191,6 +215,9 @@ function parseMarkdown(markdown) {
 
   // Clean up any empty paragraphs
   text = text.replace(/<p class="md-paragraph"><\/p>/g, '');
+
+  // Ensure proper spacing between block elements
+  text = text.replace(/(<\/h[1-6]>|<\/blockquote>|<\/pre>|<\/table>|<\/ul>|<\/ol>|<\/p>)(<[^\/])/g, '$1\n\n$2');
 
   // Clean up excessive newlines
   text = text.replace(/\n{3,}/g, '\n\n');
