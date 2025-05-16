@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import hljs from 'highlight.js';
 import { useTheme } from '../../contexts/ThemeContext';
-import { parseMarkdown } from '../../utils/markdownParser';
+import MarkdownRenderer from '../../utils/markdownRenderer';
 // Import both light and dark themes
 import 'highlight.js/styles/github.css'; // Light theme
 import './syntax-dark.css'; // We'll create this custom dark theme
@@ -11,6 +11,12 @@ function Preview({ markdown }) {
   const { theme } = useTheme();
   const [renderError, setRenderError] = useState(null);
 
+  // Create a memoized instance of the markdown renderer
+  const markdownRenderer = useMemo(() => new MarkdownRenderer({
+    highlightCode: true,
+    escapeHtml: true
+  }), []);
+
   // Render markdown when content changes
   useEffect(() => {
     if (!previewRef.current) return;
@@ -18,13 +24,15 @@ function Preview({ markdown }) {
     try {
       setRenderError(null);
 
-      // Parse markdown to HTML using our simple parser
+      // Parse markdown to HTML using our new renderer
       let html;
       try {
-        html = parseMarkdown(markdown || '');
+        // Process page breaks before rendering
+        const processedMarkdown = (markdown || '').replace(/---pagebreak---/g, '\n\n<div class="page-break"></div>\n\n');
+        html = markdownRenderer.render(processedMarkdown);
       } catch (err) {
-        console.error('Error parsing markdown:', err);
-        setRenderError('Failed to parse markdown content');
+        console.error('Error rendering markdown:', err);
+        setRenderError('Failed to render markdown content');
 
         // Provide a fallback rendering
         html = `<div class="markdown-error">
@@ -39,47 +47,40 @@ function Preview({ markdown }) {
 
       // Post-processing of the rendered HTML
       try {
-        // Make links open in a new tab
-        const links = previewRef.current.querySelectorAll('a');
-        links.forEach(link => {
-          if (link.getAttribute('href') && link.hostname !== window.location.hostname) {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-          }
-        });
-
         // Process images with relative paths
         previewRef.current.querySelectorAll('img[data-relative-path="true"]').forEach(img => {
           const src = img.getAttribute('src');
           if (src) {
-            // For preview purposes, we can use the relative path directly
-            // The browser will resolve it relative to the current page
-            // We just need to ensure it's properly set
-            img.onerror = function() {
-              // If the image fails to load, show a placeholder with the alt text
-              this.style.padding = '1rem';
-              this.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-              this.style.border = '1px dashed rgba(239, 68, 68, 0.5)';
-              this.style.borderRadius = '0.25rem';
-              this.style.color = '#ef4444';
-              this.style.textAlign = 'center';
-              this.style.fontStyle = 'italic';
-              this.style.fontSize = '0.875rem';
-              this.style.lineHeight = '1.5';
-              this.style.width = 'auto';
-              this.style.height = 'auto';
-              this.style.minHeight = '100px';
-              this.style.display = 'flex';
-              this.style.alignItems = 'center';
-              this.style.justifyContent = 'center';
+            try {
+              // Get the base URL of the current page
+              const baseUrl = window.location.origin;
 
-              // Create a placeholder text
-              const altText = this.getAttribute('alt') || 'Image';
-              this.outerHTML = `<div class="image-placeholder">
-                                  <div>Image: ${altText}</div>
-                                  <div class="image-path">${src}</div>
-                                </div>`;
-            };
+              // Remove the leading ./ if present
+              const cleanPath = src.startsWith('./') ? src.substring(2) : src;
+
+              // Create an absolute URL by combining the base URL with the relative path
+              const absoluteUrl = new URL(cleanPath, baseUrl).href;
+
+              // Update the image source to the absolute URL
+              img.setAttribute('src', absoluteUrl);
+
+              // Set up error handling in case the image still fails to load
+              img.onerror = function() {
+                const altText = this.getAttribute('alt') || 'Image';
+                this.outerHTML = `<div class="image-placeholder">
+                                    <div>Image: ${altText}</div>
+                                    <div class="image-path">${src}</div>
+                                  </div>`;
+              };
+            } catch (err) {
+              console.warn('Error resolving image path:', err);
+              const altText = img.getAttribute('alt') || 'Image';
+              img.outerHTML = `<div class="image-placeholder">
+                                <div>Image: ${altText}</div>
+                                <div class="image-path">${src}</div>
+                                <div class="image-error">Error resolving path</div>
+                              </div>`;
+            }
           }
         });
 
@@ -94,7 +95,10 @@ function Preview({ markdown }) {
               block.parentElement.setAttribute('data-language', language);
             }
 
-            hljs.highlightElement(block);
+            // Only apply highlighting if it wasn't already done by the renderer
+            if (!block.classList.contains('hljs')) {
+              hljs.highlightElement(block);
+            }
           } catch (err) {
             console.warn('Error highlighting code block:', err);
             // Fallback to basic styling if highlighting fails
@@ -122,7 +126,7 @@ function Preview({ markdown }) {
                                         </div>`;
       }
     }
-  }, [markdown, theme]);
+  }, [markdown, theme, markdownRenderer]);
 
   return (
     <div className="h-full flex flex-col">
@@ -510,6 +514,17 @@ function Preview({ markdown }) {
             margin-top: 0.5rem;
             opacity: 0.8;
             word-break: break-all;
+          }
+
+          .image-placeholder .image-error {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            color: #ef4444;
+            font-weight: bold;
+          }
+
+          .dark .image-placeholder .image-error {
+            color: #f87171;
           }
         `}</style>
       </div>

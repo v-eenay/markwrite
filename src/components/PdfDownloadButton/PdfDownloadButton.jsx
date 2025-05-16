@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas';
 import PdfIcon from '../icons/PdfIcon';
 import { useTheme } from '../../contexts/ThemeContext';
 import hljs from 'highlight.js';
-import { parseMarkdown } from '../../utils/markdownParser';
+import MarkdownRenderer from '../../utils/markdownRenderer';
 
 /**
  * PdfDownloadButton Component
@@ -620,12 +620,13 @@ function PdfDownloadButton({ markdown, previewRef }) {
       // Process page breaks first
       const processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n<div class="pagebreak"></div>\n\n');
 
-      // Use our shared markdown parser with PDF-specific options
-      const html = parseMarkdown(processedMarkdown, {
-        addLineBreaks: true,
-        escapeHtml: true,
-        highlightCode: true
+      // Use our new markdown renderer with PDF-specific options
+      const renderer = new MarkdownRenderer({
+        highlightCode: true,
+        escapeHtml: true
       });
+
+      const html = renderer.render(processedMarkdown);
 
       // Final cleanup to remove any remaining [object Object] instances
       const cleanedHtml = html.replace(/\[object Object\]/g, '')
@@ -639,7 +640,7 @@ function PdfDownloadButton({ markdown, previewRef }) {
         console.warn('HTML output contains raw markdown, trying alternative parsing approach');
 
         // Configure marked with custom renderer and options
-        const renderer = createPdfRenderer();
+        const markedRenderer = createPdfRenderer();
 
         // Add a walkTokens function to ensure all tokens have proper text representation
         const walkTokens = function(token) {
@@ -669,12 +670,10 @@ function PdfDownloadButton({ markdown, previewRef }) {
         marked.setOptions({});
 
         // Apply our custom configuration
-        marked.use({ renderer });
+        marked.use({ renderer: markedRenderer });
 
         // Try using the default renderer with our custom options
-        const defaultRenderer = new marked.Renderer();
         const alternativeHtml = marked.parse(processedMarkdown, {
-          renderer: defaultRenderer,
           breaks: true,
           gfm: true,
           headerIds: true,
