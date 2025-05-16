@@ -185,7 +185,10 @@ export function parseMarkdown(markdown, options = {}) {
                      '<ol class="md-list md-ol">$&</ol>\n\n');
 
   // Process emphasis (bold, italic, strikethrough)
-  // We need to handle line breaks properly, so we'll process the text line by line
+  // We need to handle line breaks properly, so we'll process the text in a way that preserves them
+
+  // Process formatting without using tokens
+  // Instead, we'll use a different approach that preserves line breaks
 
   // First, split the text into lines
   const lines = text.split('\n');
@@ -246,6 +249,22 @@ export function parseMarkdown(markdown, options = {}) {
   // Convert explicit line breaks (two spaces followed by newline)
   text = text.replace(/  \n/g, '<br>\n');
 
+  // Also handle single newlines within paragraphs as soft breaks
+  // This ensures that pressing Enter/Return creates a visible line break
+  // We'll do this by looking for single newlines that aren't followed by block elements
+  // The regex looks for newlines that aren't followed by:
+  // - Headers (#)
+  // - Blockquotes (>)
+  // - List items (-, *, or digit followed by .)
+  // - Table rows (|)
+  // - Empty lines (\s*\n)
+  // - Code blocks (```)
+  text = text.replace(/\n(?!#|\>|\-|\*|\d+\.|\||\s*\n|\s*```)/g, '<br>\n');
+
+  // Make sure we handle consecutive newlines properly
+  // This ensures that multiple Enter/Return presses create proper paragraph breaks
+  text = text.replace(/(<br>\n){2,}/g, '\n\n');
+
   // Process paragraphs (must be done last)
   // First, split by double newlines to identify paragraph blocks
   const blocks = text.split(/\n\n+/);
@@ -282,6 +301,10 @@ export function parseMarkdown(markdown, options = {}) {
 
   // Clean up excessive newlines
   text = text.replace(/\n{3,}/g, '\n\n');
+
+  // Final cleanup - ensure no LINE_BREAK_TOKEN remains in the output
+  // This is a safety measure in case any tokens were introduced during processing
+  text = text.replace(/___LINE_BREAK_TOKEN___/g, '\n');
 
   return text;
 }
