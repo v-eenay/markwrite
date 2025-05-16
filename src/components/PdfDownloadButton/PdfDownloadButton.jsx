@@ -6,6 +6,7 @@ import html2canvas from 'html2canvas';
 import PdfIcon from '../icons/PdfIcon';
 import { useTheme } from '../../contexts/ThemeContext';
 import hljs from 'highlight.js';
+import { parseMarkdown } from '../../utils/markdownParser';
 
 /**
  * PdfDownloadButton Component
@@ -615,75 +616,16 @@ function PdfDownloadButton({ markdown, previewRef }) {
       markdownContent = String(markdownContent || '');
     }
 
-    // Process page breaks first
-    const processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n<div class="pagebreak"></div>\n\n');
-
-    // Configure marked with custom renderer and options
-    const renderer = createPdfRenderer();
-
-    // Add a walkTokens function to ensure all tokens have proper text representation
-    const walkTokens = function(token) {
-      // Handle token.text that might be an object
-      if (token.text && typeof token.text === 'object') {
-        // Try to extract text from the object
-        if (token.text.text) {
-          token.text = token.text.text;
-        } else if (token.text.raw) {
-          token.text = token.text.raw;
-        } else if (Array.isArray(token.text.tokens)) {
-          token.text = token.text.tokens.map(t => t.text || t.raw || '').join('');
-        } else {
-          // Convert to string but avoid [object Object]
-          const str = String(token.text);
-          token.text = str === '[object Object]' ? '' : str;
-        }
-      }
-
-      // Handle token.tokens that might contain objects with text properties
-      if (Array.isArray(token.tokens)) {
-        token.tokens.forEach(walkTokens);
-      }
-    };
-
-    // Configure marked options
-    const markedOptions = {
-      renderer: renderer,
-      highlight: function(code, language) {
-        // Ensure code is a string
-        if (typeof code !== 'string') {
-          code = String(code || '');
-          // Remove [object Object] if present
-          code = code === '[object Object]' ? '' : code;
-        }
-
-        if (language && hljs.getLanguage(language)) {
-          try {
-            return hljs.highlight(code, { language }).value;
-          } catch (err) {
-            console.error('Error highlighting code:', err);
-          }
-        }
-        return code;
-      },
-      breaks: true,
-      gfm: true,
-      headerIds: true,
-      mangle: false,
-      sanitize: false,
-      smartLists: true,
-      smartypants: true,
-      walkTokens: walkTokens
-    };
-
     try {
-      // Reset marked to ensure clean configuration
-      marked.setOptions({});
+      // Process page breaks first
+      const processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n<div class="pagebreak"></div>\n\n');
 
-      // Apply our custom configuration
-      marked.use({ renderer });
-
-      // Parse markdown to HTML with custom renderer
-      const html = marked.parse(processedMarkdown, markedOptions);
+      // Use our shared markdown parser with PDF-specific options
+      const html = parseMarkdown(processedMarkdown, {
+        addLineBreaks: true,
+        escapeHtml: true,
+        highlightCode: true
+      });
 
       // Final cleanup to remove any remaining [object Object] instances
       const cleanedHtml = html.replace(/\[object Object\]/g, '')
@@ -691,10 +633,43 @@ function PdfDownloadButton({ markdown, previewRef }) {
                               .replace(/\{\}/g, '');
 
       // Check if the HTML contains actual formatted content
-      // If it's just raw markdown, try an alternative approach
+      // If it's just raw markdown, try an alternative approach with marked
       if (cleanedHtml.includes('# ') || cleanedHtml.includes('## ') ||
           cleanedHtml.includes('![') || cleanedHtml.includes('```')) {
         console.warn('HTML output contains raw markdown, trying alternative parsing approach');
+
+        // Configure marked with custom renderer and options
+        const renderer = createPdfRenderer();
+
+        // Add a walkTokens function to ensure all tokens have proper text representation
+        const walkTokens = function(token) {
+          // Handle token.text that might be an object
+          if (token.text && typeof token.text === 'object') {
+            // Try to extract text from the object
+            if (token.text.text) {
+              token.text = token.text.text;
+            } else if (token.text.raw) {
+              token.text = token.text.raw;
+            } else if (Array.isArray(token.text.tokens)) {
+              token.text = token.text.tokens.map(t => t.text || t.raw || '').join('');
+            } else {
+              // Convert to string but avoid [object Object]
+              const str = String(token.text);
+              token.text = str === '[object Object]' ? '' : str;
+            }
+          }
+
+          // Handle token.tokens that might contain objects with text properties
+          if (Array.isArray(token.tokens)) {
+            token.tokens.forEach(walkTokens);
+          }
+        };
+
+        // Reset marked to ensure clean configuration
+        marked.setOptions({});
+
+        // Apply our custom configuration
+        marked.use({ renderer });
 
         // Try using the default renderer with our custom options
         const defaultRenderer = new marked.Renderer();
@@ -717,11 +692,14 @@ function PdfDownloadButton({ markdown, previewRef }) {
 
       return cleanedHtml;
     } catch (error) {
-      console.error('Error parsing markdown:', error);
+      console.error('Error parsing markdown for PDF:', error);
       // Fallback to a simpler parsing approach
       try {
         // Reset marked to ensure clean configuration
         marked.setOptions({});
+
+        // Process page breaks first
+        const processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n<div class="pagebreak"></div>\n\n');
 
         return marked.parse(processedMarkdown, {
           breaks: true,
