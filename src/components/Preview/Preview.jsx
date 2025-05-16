@@ -48,6 +48,41 @@ function Preview({ markdown }) {
           }
         });
 
+        // Process images with relative paths
+        previewRef.current.querySelectorAll('img[data-relative-path="true"]').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src) {
+            // For preview purposes, we can use the relative path directly
+            // The browser will resolve it relative to the current page
+            // We just need to ensure it's properly set
+            img.onerror = function() {
+              // If the image fails to load, show a placeholder with the alt text
+              this.style.padding = '1rem';
+              this.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+              this.style.border = '1px dashed rgba(239, 68, 68, 0.5)';
+              this.style.borderRadius = '0.25rem';
+              this.style.color = '#ef4444';
+              this.style.textAlign = 'center';
+              this.style.fontStyle = 'italic';
+              this.style.fontSize = '0.875rem';
+              this.style.lineHeight = '1.5';
+              this.style.width = 'auto';
+              this.style.height = 'auto';
+              this.style.minHeight = '100px';
+              this.style.display = 'flex';
+              this.style.alignItems = 'center';
+              this.style.justifyContent = 'center';
+
+              // Create a placeholder text
+              const altText = this.getAttribute('alt') || 'Image';
+              this.outerHTML = `<div class="image-placeholder">
+                                  <div>Image: ${altText}</div>
+                                  <div class="image-path">${src}</div>
+                                </div>`;
+            };
+          }
+        });
+
         // Apply syntax highlighting to code blocks
         previewRef.current.querySelectorAll('pre code').forEach((block) => {
           try {
@@ -440,6 +475,41 @@ function Preview({ markdown }) {
 
           .dark .page-break {
             background-color: #444;
+          }
+
+          /* Image placeholder styling */
+          .image-placeholder {
+            padding: 1rem;
+            margin: 1em auto;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px dashed rgba(239, 68, 68, 0.5);
+            border-radius: 0.25rem;
+            color: #ef4444;
+            text-align: center;
+            font-style: italic;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            width: auto;
+            height: auto;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 100%;
+          }
+
+          .dark .image-placeholder {
+            background-color: rgba(248, 113, 113, 0.1);
+            border-color: rgba(248, 113, 113, 0.3);
+            color: #f87171;
+          }
+
+          .image-placeholder .image-path {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+            word-break: break-all;
           }
         `}</style>
       </div>
