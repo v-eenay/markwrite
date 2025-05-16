@@ -105,12 +105,18 @@ export function parseMarkdown(markdown, options = {}) {
     // Escape HTML in the code to prevent security issues
     let escapedCode = code;
     if (opts.escapeHtml) {
-      escapedCode = code
+      // First decode any existing HTML entities to prevent double-encoding
+      const tempElement = document.createElement('div');
+      tempElement.innerHTML = escapedCode;
+      const decodedCode = tempElement.textContent;
+
+      // Now escape HTML properly
+      escapedCode = decodedCode
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#39;'); // Use &#39; instead of &#039; for better compatibility
     }
 
     let highlightedCode = escapedCode;
@@ -214,12 +220,18 @@ export function parseMarkdown(markdown, options = {}) {
     // Escape HTML in the code to prevent security issues
     let escapedCode = code;
     if (opts.escapeHtml) {
-      escapedCode = code
+      // First decode any existing HTML entities to prevent double-encoding
+      const tempElement = document.createElement('div');
+      tempElement.innerHTML = escapedCode;
+      const decodedCode = tempElement.textContent;
+
+      // Now escape HTML properly
+      escapedCode = decodedCode
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#39;'); // Use &#39; instead of &#039; for better compatibility
     }
 
     return `<code class="md-inline-code">${escapedCode}</code>`;
@@ -266,7 +278,10 @@ export function parseMarkdown(markdown, options = {}) {
   text = text.replace(/(<br>\n){2,}/g, '\n\n');
 
   // Process paragraphs (must be done last)
-  // First, split by double newlines to identify paragraph blocks
+  // First, normalize newlines to ensure consistent processing
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  // Split by double newlines to identify paragraph blocks
   const blocks = text.split(/\n\n+/);
   let processedBlocks = [];
 
@@ -282,6 +297,7 @@ export function parseMarkdown(markdown, options = {}) {
         !trimmedBlock.startsWith('<strong') &&
         !trimmedBlock.startsWith('<em') &&
         !trimmedBlock.startsWith('<del')) {
+      // Add the block to our processed blocks
       processedBlocks.push(trimmedBlock);
     }
     // Process plain text as paragraphs
@@ -291,7 +307,20 @@ export function parseMarkdown(markdown, options = {}) {
   }
 
   // Join blocks with proper spacing
-  text = processedBlocks.join('\n\n');
+  // Use a single newline for code blocks to prevent extra spacing
+  let result = '';
+  for (let i = 0; i < processedBlocks.length; i++) {
+    const block = processedBlocks[i];
+    const isCodeBlock = block.startsWith('<pre') || block.includes('</pre>');
+    const isLastBlock = i === processedBlocks.length - 1;
+
+    result += block;
+    if (!isLastBlock) {
+      result += isCodeBlock ? '\n' : '\n\n';
+    }
+  }
+
+  text = result;
 
   // Clean up any empty paragraphs
   text = text.replace(/<p class="md-paragraph"><\/p>/g, '');
