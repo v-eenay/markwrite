@@ -14,68 +14,95 @@ import { MoonIcon, SunIcon } from './components/icons/ThemeIcons';
 
 const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
 
-A minimalist Markdown editor with real-time preview.
+MarkWrite is a professional Markdown editor designed for writers, developers, and content creators who value simplicity and productivity. With its real-time preview and intuitive interface, you can focus on creating beautiful documents without distractions.
 
-## Features
+## Key Features
 
-- **Clean Interface**: Focus on your content
-- **Split View**: Edit and preview side by side
-- **Syntax Highlighting**: For both Markdown and code blocks
-- **Real-time Preview**: See changes instantly
+- **Professional Interface**: Clean design focused on content creation
+- **Split View**: Edit and preview simultaneously for immediate feedback
+- **Syntax Highlighting**: Enhanced visibility for both Markdown and code blocks
+- **Real-time Preview**: Instantly visualize your formatted content
+- **Export Options**: Download your work as PDF or DOCX with proper formatting
+- **Dark/Light Mode**: Choose your preferred theme for comfortable editing
 
-## Basic Markdown Guidez
+## Comprehensive Markdown Guide
 
-### Headers
+### Document Structure
 
-# H1
-## H2
-### H3
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
 
-### Emphasis
-
-*italic* or _italic_
-**bold** or __bold__
-~~strikethrough~~
+Paragraphs are separated by a blank line.
+Text can be **bold**, *italic*, or ~~strikethrough~~.
 
 ### Lists
 
-- Unordered list item
-- Another item
+#### Unordered Lists
+- First item
+- Second item
   - Nested item
+  - Another nested item
+- Third item
 
-1. Ordered list item
-2. Another item
+#### Ordered Lists
+1. First step
+2. Second step
+   1. Sub-step A
+   2. Sub-step B
+3. Third step
 
-### Code
+### Code Formatting
 
-Inline \`code\` with backticks
+Inline code: \`const greeting = "Hello, world!";\`
+
+Code blocks with syntax highlighting:
 
 \`\`\`javascript
-// Code block
-function hello() {
-  console.log('Hello, world!');
+// Function example
+function calculateTotal(items) {
+  return items
+    .filter(item => item.price > 0)
+    .map(item => item.price * item.quantity)
+    .reduce((total, value) => total + value, 0);
 }
 \`\`\`
 
 ### Links and Images
 
-[Link text](https://github.com/v-eenay/markwrite.git)
+[Visit MarkWrite Repository](https://github.com/v-eenay/markwrite.git)
 
-![Alt text](./placeholder.svg)
+![MarkWrite Logo](./placeholder.svg)
 
 ### Blockquotes
 
-> This is a blockquote
-> It can span multiple lines
+> "Markdown is designed to be easy to write and easy to read."
+>
+> — John Gruber, creator of Markdown
 
 ### Tables
 
-| Header 1 | Header 2 |
-| -------- | -------- |
-| Cell 1   | Cell 2   |
-| Cell 3   | Cell 4   |
+| Feature | Description | Support |
+| ------- | ----------- | ------- |
+| Tables | Organize data in rows and columns | ✓ |
+| Code Blocks | Syntax highlighting for multiple languages | ✓ |
+| Math Formulas | LaTeX-style math expressions | ✓ |
 
-Start writing your own content now!
+### Page Breaks
+
+Add \`---pagebreak---\` on its own line to create a page break in exported documents.
+
+---pagebreak---
+
+## Getting Started
+
+1. Write your content in the editor panel (left)
+2. See the formatted output in the preview panel (right)
+3. Use the toolbar for quick formatting options
+4. Export your document when finished
+
+Start creating professional documents now!
 `;
 
 function App() {
@@ -105,9 +132,9 @@ function App() {
   const editorRef = useRef(null);
   const previewRef = useRef(null); // This ref is still used for scroll syncing, so it should remain.
 
-  const handleMarkdownChange = (newMarkdown) => {
+  const handleMarkdownChange = useCallback((newMarkdown) => {
     setMarkdown(newMarkdown);
-  };
+  }, []);
 
   // Enhanced scroll synchronization with improved reliability
   useEffect(() => {
@@ -216,7 +243,7 @@ function App() {
     };
   }, [markdown]); // Re-run when markdown content changes
 
-  const handleToolbarAction = (action) => {
+  const handleToolbarAction = useCallback((action) => {
     // Get the CodeMirror editor view
     const editorElement = editorRef.current?.querySelector('.cm-editor');
     if (!editorElement) return;
@@ -358,7 +385,7 @@ function App() {
         insert: textToInsert
       }
     });
-  };
+  }, [markdown, editorRef]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">

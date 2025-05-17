@@ -20,6 +20,7 @@ import { DocxIcon } from '../icons/ToolbarIcons';
 import { marked } from 'marked';
 import PreviewModal from '../PreviewModal/PreviewModal';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getFilenameFromMarkdown } from '../../utils/markdownUtils';
 
 function DocxDownloadButton({ markdown }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,16 +29,12 @@ function DocxDownloadButton({ markdown }) {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const getFilename = () => {
-    const headingMatch = markdown.match(/^# (.+)$/m);
-    if (headingMatch && headingMatch[1]) {
-      return `${headingMatch[1].replace(/[^a-z0-9]/gi, '-').toLowerCase()}.docx`;
-    }
-    return 'markwrite-document.docx';
+    return getFilenameFromMarkdown(markdown, 'docx');
   };
 
   const parseMarkdownToDocElements = (markdownContent) => {
     // Process page breaks first - ensure proper spacing
-    let processedMarkdown = markdownContent.replace(/---pagebreak---/g, '\n\n[PAGE_BREAK]\n\n');
+    let processedMarkdown = markdownContent.replace(/---pagebreak---/g, '[PAGE_BREAK]');
 
     const lines = processedMarkdown.split('\n');
     const elements = [];
@@ -68,14 +65,26 @@ function DocxDownloadButton({ markdown }) {
       if (line.startsWith('```')) {
         if (inCodeBlock) {
           const codeRuns = [];
+
+          // Add language header with better styling
           if (codeBlockLanguage) {
             codeRuns.push(
               new TextRun({
                 text: `Language: ${codeBlockLanguage}\n`,
                 bold: true,
                 font: 'Courier New',
-                size: 18,
+                size: 20,
                 color: '0550AE',
+              })
+            );
+
+            // Add a separator line
+            codeRuns.push(
+              new TextRun({
+                text: "─".repeat(40) + "\n",
+                font: 'Courier New',
+                size: 20,
+                color: '666666',
               })
             );
           }
@@ -84,6 +93,16 @@ function DocxDownloadButton({ markdown }) {
           codeLines.forEach((codeLine, index) => {
             let processedLine = codeLine;
             const hasMoreLines = index < codeLines.length - 1;
+
+            // Add line numbers for better readability
+            codeRuns.push(
+              new TextRun({
+                text: `${(index + 1).toString().padStart(3, ' ')} | `,
+                font: 'Courier New',
+                size: 18,
+                color: '888888',
+              })
+            );
 
             if (codeBlockLanguage === 'javascript' || codeBlockLanguage === 'typescript') {
               processedLine = processedLine.replace(
@@ -203,14 +222,16 @@ function DocxDownloadButton({ markdown }) {
             new Paragraph({
               children: codeRuns,
               spacing: { before: 240, after: 240 },
-              indent: { left: 720 },
+              indent: { left: 720, right: 720 },
               shading: { type: 'solid', color: 'F8F9FA' },
               border: {
-                top: { style: 'single', size: 1, color: 'E9ECEF' },
-                bottom: { style: 'single', size: 1, color: 'E9ECEF' },
-                left: { style: 'single', size: 1, color: 'E9ECEF' },
-                right: { style: 'single', size: 1, color: 'E9ECEF' },
+                top: { style: 'single', size: 2, color: 'E9ECEF' },
+                bottom: { style: 'single', size: 2, color: 'E9ECEF' },
+                left: { style: 'single', size: 2, color: 'E9ECEF' },
+                right: { style: 'single', size: 2, color: 'E9ECEF' },
               },
+              keepLines: true,
+              keepNext: true,
             })
           );
           codeBlockContent = '';
@@ -388,7 +409,13 @@ function DocxDownloadButton({ markdown }) {
           new Paragraph({
             text: line.substring(2),
             heading: HeadingLevel.HEADING_1,
-            spacing: { before: 240, after: 120 },
+            spacing: { before: 360, after: 240 },
+            keepNext: true,
+            pageBreakBefore: false,
+            thematicBreak: false,
+            border: {
+              bottom: { style: 'single', size: 1, color: 'EAECEF' },
+            },
           })
         );
       } else if (line.startsWith('## ')) {
@@ -396,7 +423,11 @@ function DocxDownloadButton({ markdown }) {
           new Paragraph({
             text: line.substring(3),
             heading: HeadingLevel.HEADING_2,
-            spacing: { before: 240, after: 120 },
+            spacing: { before: 300, after: 180 },
+            keepNext: true,
+            border: {
+              bottom: { style: 'single', size: 1, color: 'EAECEF' },
+            },
           })
         );
       } else if (line.startsWith('### ')) {
@@ -405,6 +436,7 @@ function DocxDownloadButton({ markdown }) {
             text: line.substring(4),
             heading: HeadingLevel.HEADING_3,
             spacing: { before: 240, after: 120 },
+            keepNext: true,
           })
         );
       } else if (line.match(/^[\s]*[-*+][\s]+/)) {
@@ -412,6 +444,16 @@ function DocxDownloadButton({ markdown }) {
         const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
         const listText = line.replace(/^[\s]*[-*+][\s]+/, '');
         const processedRuns = [];
+
+        // Add bullet marker for better visual representation
+        processedRuns.push(
+          new TextRun({
+            text: "• ",
+            bold: true,
+            size: 24,
+          })
+        );
+
         let processedText = listText;
         processedText = processedText.replace(
           /(\*\*|__)(.*?)\1/g,
@@ -450,17 +492,33 @@ function DocxDownloadButton({ markdown }) {
         }
         listItems.push(
           new Paragraph({
-            children: processedRuns.length > 0 ? processedRuns : [new TextRun({ text: listText })],
+            children: processedRuns.length > 0 ? processedRuns : [new TextRun({ text: "• " + listText })],
             bullet: { level: indentLevel },
-            spacing: { before: 80, after: 80 },
+            spacing: { before: 120, after: 120 },
             indent: { left: 720 * (indentLevel + 1), hanging: 360 },
+            style: "ListParagraph",
           })
         );
       } else if (line.match(/^[\s]*\d+\.[\s]+/)) {
         const indentMatch = line.match(/^(\s*)/);
         const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
         const listText = line.replace(/^[\s]*\d+\.[\s]+/, '');
+
+        // Extract the number from the list marker
+        const numberMatch = line.match(/^[\s]*(\d+)\./);
+        const number = numberMatch ? numberMatch[1] : "1";
+
         const processedRuns = [];
+
+        // Add number marker for better visual representation
+        processedRuns.push(
+          new TextRun({
+            text: number + ". ",
+            bold: true,
+            size: 24,
+          })
+        );
+
         let processedText = listText;
         processedText = processedText.replace(
           /(\*\*|__)(.*?)\1/g,
@@ -499,19 +557,60 @@ function DocxDownloadButton({ markdown }) {
         }
         listItems.push(
           new Paragraph({
-            children: processedRuns.length > 0 ? processedRuns : [new TextRun({ text: listText })],
+            children: processedRuns.length > 0 ? processedRuns : [new TextRun({ text: number + ". " + listText })],
             numbering: { reference: 'default-numbering', level: indentLevel },
-            spacing: { before: 80, after: 80 },
+            spacing: { before: 120, after: 120 },
             indent: { left: 720 * (indentLevel + 1), hanging: 360 },
+            style: "ListParagraph",
           })
         );
       } else if (line.startsWith('> ')) {
+        // Process blockquote text for formatting
+        const quoteText = line.substring(2);
+        const processedRuns = [];
+
+        // Add a quote symbol
+        processedRuns.push(
+          new TextRun({
+            text: "❝ ",
+            bold: true,
+            size: 24,
+            color: '6B7280',
+          })
+        );
+
+        let processedText = quoteText;
+        processedText = processedText.replace(
+          /(\*\*|__)(.*?)\1/g,
+          (match, delimiter, content) => {
+            processedRuns.push(new TextRun({ text: content, bold: true, italics: true, color: '4B5563' }));
+            return '';
+          }
+        );
+        processedText = processedText.replace(
+          /(\*|_)(.*?)\1/g,
+          (match, delimiter, content) => {
+            processedRuns.push(new TextRun({ text: content, italics: true, color: '4B5563' }));
+            return '';
+          }
+        );
+
+        if (processedText) {
+          processedRuns.push(new TextRun({ text: processedText, italics: true, color: '4B5563' }));
+        }
+
         elements.push(
           new Paragraph({
-            children: [new TextRun({ text: line.substring(2), italics: true })],
-            indent: { left: 720 },
-            spacing: { before: 120, after: 120 },
-            border: { left: { style: 'single', size: 4, color: 'CCCCCC' } },
+            children: processedRuns.length > 0 ? processedRuns : [
+              new TextRun({ text: "❝ ", bold: true, size: 24, color: '6B7280' }),
+              new TextRun({ text: quoteText, italics: true, color: '4B5563' })
+            ],
+            indent: { left: 720, right: 720 },
+            spacing: { before: 180, after: 180 },
+            border: {
+              left: { style: 'single', size: 4, color: '6B7280' },
+            },
+            shading: { type: 'solid', color: 'F9FAFB' },
           })
         );
       } else if (line.startsWith('---') || line.startsWith('***') || line.startsWith('___')) {
@@ -539,14 +638,50 @@ function DocxDownloadButton({ markdown }) {
         let currentText = line;
 
         currentText = currentText.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
-          // Placeholder for images, actual image handling would require fetching and embedding
-          runs.push(new TextRun({ text: `[Image: ${alt} at ${src}]`, color: '0000FF', underline: {} }));
+          // Create a better image placeholder with descriptive text
+          runs.push(
+            new TextRun({
+              text: "📷 ",
+              size: 24
+            })
+          );
+          runs.push(
+            new TextRun({
+              text: `Image: ${alt || "Unnamed image"}`,
+              bold: true,
+              color: '0366D6',
+              size: 24
+            })
+          );
+          runs.push(
+            new TextRun({
+              text: ` (${src})`,
+              italics: true,
+              color: '666666',
+              size: 20
+            })
+          );
           return '';
         });
 
         currentText = currentText.replace(/\[(.*?)\]\((.*?)\)/g, (match, text, url) => {
-          runs.push(new TextRun({ text: text, style: 'Hyperlink', color: '0000FF', underline: {} }));
-          // Note: Actual hyperlink functionality in DOCX requires more setup
+          // Create a better hyperlink representation
+          runs.push(
+            new TextRun({
+              text: text,
+              color: '0366D6',
+              underline: {},
+              bold: true
+            })
+          );
+          runs.push(
+            new TextRun({
+              text: ` (${url})`,
+              italics: true,
+              color: '666666',
+              size: 20
+            })
+          );
           return '';
         });
 
@@ -564,7 +699,14 @@ function DocxDownloadButton({ markdown }) {
           runs.push(new TextRun({ text: currentText }));
         }
 
-        elements.push(new Paragraph({ children: runs, spacing: { after: 120 } }));
+        elements.push(
+          new Paragraph({
+            children: runs,
+            spacing: { before: 120, after: 240 },
+            style: "Normal",
+            alignment: AlignmentType.LEFT,
+          })
+        );
       }
     }
 
@@ -590,14 +732,97 @@ function DocxDownloadButton({ markdown }) {
     setIsGenerating(true);
 
     try {
+      console.log('Starting DOCX generation...');
       const docElements = parseMarkdownToDocElements(markdown);
+      console.log('Parsed markdown to DOCX elements');
       const doc = new Document({
         sections: [
           {
-            properties: {},
+            properties: {
+              page: {
+                margin: {
+                  top: 1440, // 1 inch
+                  right: 1440, // 1 inch
+                  bottom: 1440, // 1 inch
+                  left: 1440, // 1 inch
+                },
+              },
+            },
             children: docElements,
           },
         ],
+        styles: {
+          paragraphStyles: [
+            {
+              id: "Normal",
+              name: "Normal",
+              run: {
+                size: 24, // 12pt
+                font: "Calibri",
+                color: "333333",
+              },
+              paragraph: {
+                spacing: { line: 360, before: 120, after: 120 }, // 1.5 line spacing
+              },
+            },
+            {
+              id: "Heading1",
+              name: "Heading 1",
+              basedOn: "Normal",
+              next: "Normal",
+              run: {
+                size: 36, // 18pt
+                bold: true,
+                color: "2F3E46",
+                font: "Calibri",
+              },
+              paragraph: {
+                spacing: { before: 360, after: 240 },
+              },
+            },
+            {
+              id: "Heading2",
+              name: "Heading 2",
+              basedOn: "Normal",
+              next: "Normal",
+              run: {
+                size: 32, // 16pt
+                bold: true,
+                color: "2F3E46",
+                font: "Calibri",
+              },
+              paragraph: {
+                spacing: { before: 300, after: 180 },
+              },
+            },
+            {
+              id: "Heading3",
+              name: "Heading 3",
+              basedOn: "Normal",
+              next: "Normal",
+              run: {
+                size: 28, // 14pt
+                bold: true,
+                color: "2F3E46",
+                font: "Calibri",
+              },
+              paragraph: {
+                spacing: { before: 240, after: 120 },
+              },
+            },
+            {
+              id: "ListParagraph",
+              name: "List Paragraph",
+              basedOn: "Normal",
+              run: {
+                size: 24, // 12pt
+              },
+              paragraph: {
+                spacing: { before: 120, after: 120 },
+              },
+            },
+          ],
+        },
         numbering: {
           config: [
             {
@@ -617,14 +842,24 @@ function DocxDownloadButton({ markdown }) {
                   alignment: AlignmentType.LEFT,
                   style: { paragraph: { indent: { left: 1440, hanging: 360 } } },
                 },
+                {
+                  level: 2,
+                  format: 'lowerRoman',
+                  text: '%3.',
+                  alignment: AlignmentType.LEFT,
+                  style: { paragraph: { indent: { left: 2160, hanging: 360 } } },
+                },
               ],
             },
           ],
         },
       });
 
+      console.log('Creating DOCX blob...');
       const blob = await Packer.toBlob(doc);
+      console.log('DOCX blob created, saving file...');
       saveAs(blob, getFilename());
+      console.log('DOCX file saved successfully');
     } catch (err) {
       console.error('Error generating DOCX:', err);
       setError(`Failed to generate DOCX: ${err.message || String(err)}`);
@@ -646,7 +881,12 @@ function DocxDownloadButton({ markdown }) {
 
   const handleConfirmDownload = async () => {
     setIsPreviewModalOpen(false);
-    await handleDownload();
+    try {
+      await handleDownload();
+    } catch (err) {
+      console.error('Error in handleConfirmDownload:', err);
+      setError(`Failed to generate DOCX: ${err.message || String(err)}`);
+    }
   };
 
   return (
