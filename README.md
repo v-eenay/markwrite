@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/Tailwind-3-38bdf8" alt="Tailwind CSS">
   <img src="https://img.shields.io/badge/CodeMirror-6-orange" alt="CodeMirror 6">
   <img src="https://img.shields.io/badge/Status-Active-success" alt="Status">
-  <img src="https://img.shields.io/badge/License-Proprietary-red" alt="License">
+  <img src="https://img.shields.io/badge/License-Unlicense-blue" alt="License">
 </div>
 
 <br />
@@ -156,6 +156,15 @@ Please ensure your code follows the project's style guidelines and includes appr
 
 ## 📝 License
 
-Copyright © 2025 Binay Koirala. All Rights Reserved.
+This project is released into the **public domain** under the [Unlicense](https://unlicense.org/).
 
-This project is proprietary software. Unauthorized copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without express permission from the author.
+**You are completely free to:**
+- ✅ Use this software for any purpose, including commercial use
+- ✅ Modify, copy, and distribute the code without any restrictions
+- ✅ Sell products based on this code
+- ✅ Use it in proprietary projects without attribution requirements
+- ✅ Do absolutely anything you want with this code
+
+**No obligations whatsoever** — you don't need to credit the original author, include license notices, or reference this project in any way. This software is truly free for everyone to use however they see fit.
+
+For the complete license text, see the [LICENSE](LICENSE) file.
