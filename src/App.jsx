@@ -48,6 +48,45 @@ Text can be **bold**, *italic*, or ~~strikethrough~~.
 
 #### Ordered Lists
 1. First step
+
+## Original Content
+
+# Welcome to MarkWrite
+
+MarkWrite is a professional Markdown editor designed for writers, developers, and content creators who value simplicity and productivity. With its real-time preview and intuitive interface, you can focus on creating beautiful documents without distractions.
+
+## Key Features
+
+- **Professional Interface**: Clean design focused on content creation
+- **Split View**: Edit and preview simultaneously for immediate feedback
+- **Syntax Highlighting**: Enhanced visibility for both Markdown and code blocks
+- **Real-time Preview**: Instantly visualize your formatted content
+- **Export Options**: Download your work as PDF or DOCX with proper formatting
+- **Dark/Light Mode**: Choose your preferred theme for comfortable editing
+
+## Comprehensive Markdown Guide
+
+### Document Structure
+
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+
+Paragraphs are separated by a blank line.
+Text can be **bold**, *italic*, or ~~strikethrough~~.
+
+### Lists
+
+#### Unordered Lists
+- First item
+- Second item
+  - Nested item
+  - Another nested item
+- Third item
+
+#### Ordered Lists
+1. First step
 2. Second step
    1. Sub-step A
    2. Sub-step B

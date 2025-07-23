@@ -509,8 +509,24 @@ class MarkdownRenderer {
    * @returns {string} - The rendered HTML
    */
   renderInline(text) {
+    if (!text) return '';
+
     // Process line breaks
     text = text.replace(/  \n/g, '<br>\n');
+
+    // Process inline code FIRST to avoid conflicts with other formatting
+    // Use a more robust regex that handles edge cases
+    text = text.replace(/`([^`\n]+)`/g, (match, code) => {
+      // Decode HTML entities in the code
+      let processedCode = decodeHtmlEntities(code);
+
+      // Escape HTML in the code for security
+      if (this.options.escapeHtml) {
+        processedCode = escapeHtml(processedCode);
+      }
+
+      return `<code class="md-inline-code">${processedCode}</code>`;
+    });
 
     // Process images (must be done before links)
     text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
@@ -532,27 +548,14 @@ class MarkdownRenderer {
     // Process bold with asterisks or underscores
     text = text.replace(/(\*\*|__)(.*?)\1/g, '<strong class="md-strong">$2</strong>');
 
-    // Process italic with asterisks
-    text = text.replace(/\*(.*?)\*/g, '<em class="md-em">$1</em>');
+    // Process italic with asterisks (avoid conflicts with bold)
+    text = text.replace(/\*([^*\n]+)\*/g, '<em class="md-em">$1</em>');
 
-    // Process italic with underscores (don't match inside words)
-    text = text.replace(/(?<![a-zA-Z0-9])_(.*?)_(?![a-zA-Z0-9])/g, '<em class="md-em">$1</em>');
+    // Process italic with underscores (simple pattern)
+    text = text.replace(/(^|[^a-zA-Z0-9])_([^_\n]+)_($|[^a-zA-Z0-9])/g, '$1<em class="md-em">$2</em>$3');
 
-    // Process strikethrough
-    text = text.replace(/~~(.*?)~~/g, '<del class="md-strikethrough">$1</del>');
-
-    // Process inline code
-    text = text.replace(/`([^`]+)`/g, (match, code) => {
-      // Decode HTML entities in the code
-      let processedCode = decodeHtmlEntities(code);
-
-      // Escape HTML in the code for security
-      if (this.options.escapeHtml) {
-        processedCode = escapeHtml(processedCode);
-      }
-
-      return `<code class="md-inline-code">${processedCode}</code>`;
-    });
+    // Process strikethrough (more robust regex)
+    text = text.replace(/~~([^~\n]+)~~/g, '<del class="md-strikethrough">$1</del>');
 
     return text;
   }
