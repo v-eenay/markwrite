@@ -582,22 +582,37 @@ function PdfDownloadButton({ markdown, previewRef }) {
       return;
     }
 
+    console.log('Processing page breaks in HTML for PDF generation');
+
     // First, find any existing page-break divs and convert them
     const pageBreakDivs = element.querySelectorAll('.page-break');
-    pageBreakDivs.forEach(div => {
+    console.log(`Found ${pageBreakDivs.length} .page-break divs`);
+
+    pageBreakDivs.forEach((div, index) => {
+      console.log(`Processing page break ${index + 1}`);
       div.className = 'pagebreak';
       div.style.pageBreakAfter = 'always';
       div.style.breakAfter = 'page';
       div.style.height = '0';
       div.style.display = 'block';
       div.style.visibility = 'hidden';
+      div.style.margin = '0';
+      div.style.padding = '0';
+      div.style.border = 'none';
+      // Add a data attribute to help with debugging
+      div.setAttribute('data-page-break', 'true');
     });
 
     // Also check for any remaining ---pagebreak--- markers in the content
     const contentHtml = element.innerHTML;
     if (contentHtml && contentHtml.includes('---pagebreak---')) {
-      element.innerHTML = contentHtml.replace(/---pagebreak---/g, '<div class="pagebreak" style="page-break-after: always; break-after: page; height: 0; display: block; visibility: hidden;"></div>');
+      console.log('Found remaining ---pagebreak--- markers, converting them');
+      element.innerHTML = contentHtml.replace(/---pagebreak---/g, '<div class="pagebreak" data-page-break="true" style="page-break-after: always; break-after: page; height: 0; display: block; visibility: hidden; margin: 0; padding: 0; border: none;"></div>');
     }
+
+    // Final check - count all pagebreak elements
+    const finalPageBreaks = element.querySelectorAll('.pagebreak, [data-page-break="true"]');
+    console.log(`Final count: ${finalPageBreaks.length} page break elements`);
   };
 
   /**
@@ -793,8 +808,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
         background-color: transparent;
       }
 
-      /* Headings */
-      .pdf-heading, h1, h2, h3, h4, h5, h6 {
+      /* Headings - support both PDF-specific and MarkdownRenderer classes */
+      .pdf-heading, .md-heading, h1, h2, h3, h4, h5, h6 {
         margin-top: 1.2em;
         margin-bottom: 0.6em;
         page-break-after: avoid;
@@ -818,8 +833,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-heading-5, h5 { font-size: 0.875em; }
       .pdf-heading-6, h6 { font-size: 0.85em; color: #57606a !important; }
 
-      /* Paragraphs */
-      .pdf-paragraph, p {
+      /* Paragraphs - support both PDF-specific and MarkdownRenderer classes */
+      .pdf-paragraph, .md-paragraph, p {
         margin-bottom: 0.8em;
         margin-top: 0;
         text-align: justify;
@@ -827,18 +842,18 @@ function PdfDownloadButton({ markdown, previewRef }) {
         line-height: 1.6;
       }
 
-      /* Text formatting */
-      .pdf-strong, strong, b {
+      /* Text formatting - support both PDF-specific and MarkdownRenderer classes */
+      .pdf-strong, .md-strong, strong, b {
         font-weight: 600;
         color: #24292e !important;
       }
-      .pdf-em, em, i {
+      .pdf-em, .md-em, em, i {
         font-style: italic;
         color: #333 !important;
       }
 
-      /* Strikethrough */
-      .pdf-del, del, s {
+      /* Strikethrough - support both PDF-specific and MarkdownRenderer classes */
+      .pdf-del, .md-strikethrough, del, s {
         text-decoration: line-through;
         color: #666 !important;
         /* Fix for strikethrough alignment */
@@ -846,8 +861,8 @@ function PdfDownloadButton({ markdown, previewRef }) {
         text-decoration-skip-ink: none;
       }
 
-      /* Inline code */
-      .pdf-inline-code, code:not(pre code) {
+      /* Inline code - support both PDF-specific and MarkdownRenderer classes */
+      .pdf-inline-code, .md-inline-code, code:not(pre code) {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.9em;
         color: #d63384 !important;
@@ -1023,13 +1038,21 @@ function PdfDownloadButton({ markdown, previewRef }) {
       .pdf-text-center { text-align: center; }
       .pdf-text-right { text-align: right; }
 
-      /* Page breaks */
-      .pagebreak, .page-break {
+      /* Page breaks - enhanced for better PDF generation */
+      .pagebreak, .page-break, [data-page-break="true"] {
         page-break-after: always;
         break-after: page;
-        height: 0;
-        display: block;
-        visibility: hidden;
+        height: 0 !important;
+        display: block !important;
+        visibility: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        width: 100% !important;
+        clear: both !important;
+        float: none !important;
+        position: static !important;
       }
 
       /* Horizontal rule */
