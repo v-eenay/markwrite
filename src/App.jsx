@@ -12,56 +12,42 @@ import LinkedInIcon from './components/icons/LinkedInIcon';
 import EmailIcon from './components/icons/EmailIcon';
 import { MoonIcon, SunIcon } from './components/icons/ThemeIcons';
 
-const DEFAULT_MARKDOWN = `# PDF Export Test Document
+const DEFAULT_MARKDOWN = `# Welcome to MarkWrite
 
-This document tests the PDF export functionality with all formatting elements.
+MarkWrite is a professional Markdown editor designed for writers, developers, and content creators who value simplicity and productivity. With its real-time preview and intuitive interface, you can focus on creating beautiful documents without distractions.
 
-## Text Formatting Tests
+## Key Features
 
-### Strikethrough Test
-This text should be ~~strikethrough~~ in both preview and PDF.
-Regular text with ~~deleted content~~ in the middle.
-Multiple ~~strikethrough~~ elements in ~~one line~~.
+- **Professional Interface**: Clean design focused on content creation
+- **Split View**: Edit and preview simultaneously for immediate feedback
+- **Syntax Highlighting**: Enhanced visibility for both Markdown and code blocks
+- **Real-time Preview**: Instantly visualize your formatted content
+- **Export Options**: Download your work as PDF or DOCX with proper formatting
+- **Dark/Light Mode**: Choose your preferred theme for comfortable editing
 
-### Inline Code Test
-Here is some \`inline code\` that should be highlighted.
-Multiple \`code snippets\` in the same line.
-Code with special chars: \`<div>Hello</div>\`.
-JavaScript example: \`const greeting = "Hello, world!";\`
+## Comprehensive Markdown Guide
 
-### Combined Formatting
-Here we test **bold**, *italic*, ~~strikethrough~~, and \`inline code\` all together.
-**Bold with ~~strikethrough~~ inside** and *italic with \`code\` inside*.
+### Document Structure
 
-## Page Break Test
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
 
-This is content before the first page break.
+Paragraphs are separated by a blank line.
+Text can be **bold**, *italic*, or ~~strikethrough~~.
 
----pagebreak---
+### Lists
 
-This is the second page content. It should appear on a new page in the PDF.
+#### Unordered Lists
+- First item
+- Second item
+  - Nested item
+  - Another nested item
+- Third item
 
-More content on the second page with ~~strikethrough~~ and \`inline code\`.
-
----pagebreak---
-
-This is the third page content. Testing multiple page breaks.
-
-## Code Block Test
-
-\`\`\`javascript
-function testFunction() {
-  console.log("This is a code block");
-  return "Should be properly formatted";
-}
-\`\`\`
-
-## Final Test
-
-This document should export to PDF with:
-- ✅ Proper strikethrough formatting
-- ✅ Highlighted inline code
-- ✅ Correct page breaks
+#### Ordered Lists
+1. First step
 
 ## Original Content
 
